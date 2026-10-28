@@ -705,6 +705,20 @@ export const workspace = {
     return workspace.openEntry({ path, name: fileName, dir: false, size: 0, mtimeMs: 0 })
   },
 
+  /** 跳到指定行并居中（搜索结果用） */
+  revealLine(line: number) {
+    const target = editor
+    if (!target) return
+    const lineNumber = Math.max(1, Math.round(line))
+    try {
+      target.setPosition({ lineNumber, column: 1 })
+      target.revealLineInCenter(lineNumber)
+      target.focus()
+    } catch {
+      /* ignore */
+    }
+  },
+
   close(key: string) {
     const tab = tabOf(key)
     if (!tab) return

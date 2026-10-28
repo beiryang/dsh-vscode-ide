@@ -3,6 +3,20 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## 1.1.0
+
+### Added
+
+- **Content search** (`Ctrl+Alt+F`, sidebar “搜索” view): search the whole workspace, results grouped by file
+  with line numbers, click to jump to the line; `Aa` / `ab` / `.*` toggles for case sensitivity, whole word and regex
+- Host uses `git grep` inside Git repositories (fast, skips binaries) and falls back to a bounded filesystem walk
+  elsewhere (skips `node_modules`/`.git`/build dirs, binary files and files over 1 MB; 500 result cap)
+- Remote (SFTP) workspaces report a clear “not supported yet” message instead of hanging
+
+### Changed
+
+- `openFile` accepts an optional `line`, so any feature (search, future problem matchers) can jump to a position
+
 ## 1.0.0 — first public release
 
 The first release that is meant to be installed by people other than the author.

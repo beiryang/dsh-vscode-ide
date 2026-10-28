@@ -11,6 +11,7 @@ import { connectSession, sessionStore } from './session'
 import { layout } from './layout'
 import { palette } from './palette'
 import { registry } from './registry'
+import { runCommand } from './commands'
 import { WorkbenchWindow } from './window/Window'
 import { PeekFab } from './window/PeekFab'
 
@@ -70,6 +71,14 @@ export function App({ ctx }: { ctx: unknown }) {
         event.preventDefault()
         event.stopPropagation()
         layout.togglePeek()
+        return
+      }
+      // 全局搜索：打开侧栏搜索视图并聚焦输入框
+      const isSearch = event.ctrlKey && event.altKey && (event.code === 'KeyF' || event.key.toLowerCase() === 'f')
+      if (isSearch) {
+        event.preventDefault()
+        event.stopPropagation()
+        void runCommand('search.inFiles')
         return
       }
       // Esc 关窗作为逃生出口：编辑区/输入框里不抢（那里 Esc 有别的用途），

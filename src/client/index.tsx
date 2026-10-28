@@ -23,6 +23,7 @@ import { runProbe } from './kernel/probe'
 import { registerEditorFeature } from './features/editor/register'
 import { registerExplorerFeature } from './features/explorer/register'
 import { registerGitFeature } from './features/git/register'
+import { registerSearchFeature } from './features/search/register'
 import { registerTerminalFeature } from './features/terminal/register'
 import { CSS } from './kernel/styles'
 import { CSS as DSH_CSS } from './dsh/styles'
@@ -84,6 +85,7 @@ function applyUnsafe(ctx: AnyCtx) {
   const disposeFeatures = [
     registerEditorFeature(),
     registerExplorerFeature(),
+    registerSearchFeature(),
     registerGitFeature(),
     registerTerminalFeature()
   ]

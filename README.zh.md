@@ -50,6 +50,7 @@ dsh/      DSH 插槽适配：左侧栏入口、设置页分区
 - ✅ 保存：`Ctrl+S`（临时文件 + rename 原子写）、`Ctrl+W` 关标签、脏标记与关闭确认
 - ✅ 查找替换：Monaco 自带 widget（`Ctrl+F`）
 - ✅ 快速打开 `Ctrl+Alt+P` / 命令面板 `Ctrl+Alt+Shift+P`（`Ctrl+P` 被 DSH 占用）
+- ✅ 全局搜索 `Ctrl+Alt+F`：整工作区搜内容，按文件分组、点击跳到对应行；Git 仓库走 `git grep`，其余遍历（远程工作区暂不支持）
 - ✅ 草稿恢复（hot exit）：未保存内容写 `localStorage: dsv:drafts.v1`，重启后自动接回并保留脏标记
 - ✅ Diff 视图：与磁盘版本比较 / 与 HEAD 比较 / 比较两个文件
 - ✅ Git：分支与变更列表、diff、逐文件暂存、全部暂存、提交、推送（无上游时自动 publish）

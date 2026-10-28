@@ -21,7 +21,7 @@ export type WorkbenchContext = {
   cwdError: string | null
   remote: boolean
   /** 打开文件（由 editor feature 提供实现） */
-  openFile(path: string, options?: { name?: string }): void
+  openFile(path: string, options?: { name?: string; line?: number }): void
   /** 关闭工作台窗口 */
   closeWindow(): void
   /** 重新读取工作区根目录 */
@@ -204,10 +204,10 @@ export const registry = {
   },
 
   /* ── 服务：打开文件 / 打开 diff（实现由 editor feature 注入） ── */
-  setFileOpener(opener: (path: string, options?: { name?: string }) => void) {
+  setFileOpener(opener: (path: string, options?: { name?: string; line?: number }) => void) {
     fileOpener = opener
   },
-  openFile(path: string, options?: { name?: string }) {
+  openFile(path: string, options?: { name?: string; line?: number }) {
     if (!fileOpener) {
       console.warn('[dsh-vscode-ide] 还没有编辑器可以打开文件')
       return

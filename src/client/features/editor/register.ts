@@ -39,7 +39,9 @@ export function registerEditorFeature(): () => void {
   )
 
   registry.setFileOpener((path, options) => {
-    void workspace.openPath(path, options?.name)
+    void workspace.openPath(path, options?.name).then(() => {
+      if (options?.line) workspace.revealLine(options.line)
+    })
   })
   registry.setDiffOpener((left, right) => {
     void workspace.openDiff(left, right)

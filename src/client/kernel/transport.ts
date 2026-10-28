@@ -86,6 +86,16 @@ export const api = {
   stat: (path: string) => call<{ path: string; dir: boolean; size: number; mtimeMs: number }>('stat', { path }),
   search: (options: { query?: string; limit?: number } = {}) =>
     call<{ files: Array<{ path: string; rel: string; name: string }>; truncated: boolean; root: string }>('search', options),
+  /** 全局内容搜索（Git 仓库走 git grep，其余遍历） */
+  searchContent: (options: { query: string; regex?: boolean; caseSensitive?: boolean; wholeWord?: boolean }) =>
+    call<{
+      engine: 'git' | 'walk'
+      root: string
+      truncated: boolean
+      elapsedMs: number
+      scanned?: number
+      matches: Array<{ path: string; rel: string; line: number; text: string }>
+    }>('search/content', options),
   write: (path: string, text: string, bom = false) => call<{ path: string; size: number; mtimeMs: number }>('write', { path, text, bom }),
   gitStatus: () =>
     call<{
