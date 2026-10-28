@@ -6,6 +6,17 @@
 
 Not a VS Code port, and it does not load `.vsix` extensions. It brings the part of VS Code people use every day — multi-tab editing, find/replace, diff, quick open, command palette, themes — into DSH, keeps it in a window you can move anywhere, and adds features only when they earn their weight.
 
+## Screenshots
+
+![Workbench: file tree, Monaco editor and an SSH terminal in one floating window](docs/screenshots/workbench.png)
+
+| | |
+|---|---|
+| ![File explorer following the session workspace](docs/screenshots/explorer.png) | ![Source control and command palette](docs/screenshots/palette.png) |
+| ![Diff against HEAD](docs/screenshots/diff.png) | ![SSH terminal built on xterm.js](docs/screenshots/ssh.png) |
+
+![Settings: theme, editor font, theme and icon import, diagnostics](docs/screenshots/settings.png)
+
 ## Why another editor plugin?
 
 | | Layout | Editor | Extensibility | Package size |

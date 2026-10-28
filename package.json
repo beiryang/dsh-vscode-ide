@@ -13,14 +13,16 @@
   "files": [
     "lib",
     "vendor",
-    "docs",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
     "CHANGELOG.md",
     "THIRD-PARTY.md",
     "LICENSE",
-    "install.mjs"
+    "install.mjs",
+    "docs/ARCHITECTURE.md",
+    "docs/PROBE.md",
+    "docs/PUBLISH.md"
   ],
   "keywords": [
     "dsh",

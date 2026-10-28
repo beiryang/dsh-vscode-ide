@@ -4,6 +4,17 @@
 
 > 不是 VS Code 移植，也不加载 `.vsix` 扩展；它是一个**轻量工作台**——把 VS Code 里真正每天用的那部分（快速打开、多标签、查找替换、diff、命令面板、主题）搬进 DSH，其余按需再加。
 
+## 截图
+
+![工作台：文件树、Monaco 编辑器与 SSH 终端同处一个浮动窗口](docs/screenshots/workbench.png)
+
+| | |
+|---|---|
+| ![跟随会话工作区的文件树](docs/screenshots/explorer.png) | ![源代码管理与命令面板](docs/screenshots/palette.png) |
+| ![与 HEAD 比较的 diff](docs/screenshots/diff.png) | ![基于 xterm.js 的 SSH 终端](docs/screenshots/ssh.png) |
+
+![设置页：主题、编辑器字体、主题与图标导入、诊断](docs/screenshots/settings.png)
+
 ## 和市场上同类插件的区别
 
 | | 形态 | 编辑器 | 扩展能力 | 包体积 |
