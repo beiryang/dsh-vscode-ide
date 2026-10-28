@@ -1,0 +1,136 @@
+/**
+ * 宿主 API 客户端。
+ *
+ * 所有请求都走相对路径 `/dsh-vscode-ide/api/*`：DSH 页面无论是
+ * `http://127.0.0.1:<port>` 还是 Electron 的 `dsh-app://` 自定义协议，
+ * 相对路径都会被它自己的协议处理器转给本地服务（探针会验证这一点）。
+ */
+
+export const BASE = '/dsh-vscode-ide'
+
+export type Entry = {
+  name: string
+  path: string
+  dir: boolean
+  link?: boolean
+  size: number
+  mtimeMs: number
+}
+
+export type Listing = { path: string; entries: Entry[] }
+
+export type ReadResult = {
+  path: string
+  size: number
+  mtimeMs: number
+  binary: boolean
+  truncated: boolean
+  bom?: boolean
+  text: string
+  lines: number
+  eol: 'lf' | 'crlf'
+}
+
+let sessionId = ''
+
+export function setSessionId(id: string | undefined) {
+  sessionId = id || ''
+}
+
+export function getSessionId() {
+  return sessionId
+}
+
+type ApiError = Error & { code?: string }
+
+export async function call<T>(method: string, body: Record<string, unknown> = {}): Promise<T> {
+  const response = await fetch(`${BASE}/api/${method}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ sessionId, ...body })
+  })
+
+  let payload: { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } } | null = null
+  try {
+    payload = await response.json()
+  } catch {
+    /* 非 JSON 响应（例如 404 页面），下面统一报错 */
+  }
+
+  if (!response.ok || !payload || payload.ok !== true) {
+    const error = new Error(payload?.error?.message || `HTTP ${response.status}`) as ApiError
+    error.code = payload?.error?.code
+    throw error
+  }
+  return payload.value as T
+}
+
+/** GET 健康检查：不走 session，用来判断宿主半边是否挂上 */
+export async function health(timeoutMs = 4000) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const response = await fetch(`${BASE}/health`, { signal: controller.signal })
+    const payload = await response.json()
+    return payload as { ok: boolean; value?: Record<string, unknown> }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+export const api = {
+  info: () => call<{ name: string; version: string; cwd: string | null }>('info'),
+  roots: () => call<{ cwd: string; remote?: boolean; remoteRoot?: string | null }>('roots'),
+  list: (path: string) => call<Listing>('list', { path }),
+  read: (path: string) => call<ReadResult>('read', { path }),
+  stat: (path: string) => call<{ path: string; dir: boolean; size: number; mtimeMs: number }>('stat', { path }),
+  search: (options: { query?: string; limit?: number } = {}) =>
+    call<{ files: Array<{ path: string; rel: string; name: string }>; truncated: boolean; root: string }>('search', options),
+  write: (path: string, text: string, bom = false) => call<{ path: string; size: number; mtimeMs: number }>('write', { path, text, bom }),
+  gitStatus: () =>
+    call<{
+      root: string
+      branch: string
+      ahead: number
+      behind: number
+      changes: Array<{ path: string; absPath: string; code: string; staged: boolean; from?: string }>
+    }>('git/status'),
+  gitLog: (limit = 20) =>
+    call<{ root: string; commits: Array<{ hash: string; author: string; when: string; subject: string }> }>('git/log', { limit }),
+  gitHead: (path: string) => call<{ root: string; rel: string; text: string; exists: boolean }>('git/head', { path }),
+  gitStage: (paths: string[]) => call<{ staged: number }>('git/stage', { paths }),
+  gitUnstage: (paths: string[]) => call<{ unstaged: number }>('git/unstage', { paths }),
+  gitStageAll: () => call<{ ok: boolean }>('git/stageAll', {}),
+  gitUnstageAll: () => call<{ ok: boolean }>('git/unstageAll', {}),
+  gitCommit: (message: string) => call<{ output: string }>('git/commit', { message }),
+  gitPush: () => call<{ output: string }>('git/push', {}),
+  termOpen: (cols: number, rows: number) => call<{ id: string; label: string }>('term/open', { cols, rows }),
+  localOpen: () => call<{ id: string; label: string; shell: string }>('local/open', {}),
+  termWrite: (id: string, data: string) => call<{ written: boolean }>('term/write', { id, data }),
+  termResize: (id: string, cols: number, rows: number) => call<{ resized: boolean }>('term/resize', { id, cols, rows }),
+  termClose: (id: string) => call<{ closed: boolean }>('term/close', { id }),
+  /** 导入本地 VS Code 主题 JSON（宿主读文件） */
+  importTheme: (path: string) =>
+    call<{ name: string; path: string; type: 'dark' | 'light'; colors: Record<string, string>; rules: Array<{ token: string; foreground?: string; fontStyle?: string }> }>(
+      'theme/import',
+      { path }
+    ),
+  /** 导入本地 VS Code 图标主题（宿主读 JSON + SVG，返回合成好的 sprite） */
+  importIcons: (path: string) =>
+    call<{
+      name: string
+      path: string
+      icons: number
+      missing: number
+      sprite: string
+      mapping: {
+        fileNames: Record<string, string>
+        fileExtensions: Record<string, string>
+        folderNames: Record<string, string>
+        folderNamesExpanded: Record<string, string>
+        defaults: { file: string; folder: string; folderExpanded: string }
+      }
+    }>('icons/import', { path }),
+  /** 把探针结果落到宿主临时目录，返回文件路径（免去复制粘贴） */
+  saveProbe: (result: unknown) => call<{ path: string }>('probe', { result })
+}

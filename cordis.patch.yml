@@ -1,0 +1,5 @@
+# dsh-vscode-ide bundle patch: mounts the host half (web routes + static assets).
+# The client half is served by DSH itself from lib/client.js.
+- insert:
+    - id: vscode-ide
+      name: 'dsh-vscode-ide'

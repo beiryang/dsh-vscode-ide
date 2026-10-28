@@ -1,0 +1,19 @@
+# 依赖
+node_modules/
+
+# 构建产物（vendor/ 与 client.js 由 npm run build 生成，不进仓库）
+vendor/
+lib/client.js
+lib/*.map
+
+# 打包与临时文件
+*.tgz
+*.log
+_*.mjs
+_*.ts
+_*.txt
+pack-test/
+
+# 系统
+.DS_Store
+Thumbs.db
