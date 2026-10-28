@@ -38,26 +38,45 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 
 ## Install
 
-Published version:
+> npm publishing is pending (region-restricted signup). Until then use the GitHub release package.
+
+### From GitHub Releases
+
+1. Download `dsh-vscode-ide-1.0.0.tgz` from [Releases](https://github.com/beiryang/dsh-vscode-ide/releases)
+2. Extract it and run the bundled installer:
+
+```powershell
+tar -xzf dsh-vscode-ide-1.0.0.tgz
+cd package
+node install.mjs
+```
+
+`install.mjs` detects the profile that already contains this plugin and falls back to the default desktop profile;
+pass `--profile "<dir>"` to target an explicit profile directory.
+
+3. **Fully quit DSH** (tray icon → Quit) and start it again — the client bundle is loaded only at startup.
+
+### From source (development)
+
+```powershell
+npm install
+npm run build                     # required: vendor/ and lib/client.js are not committed
+node install.mjs
+```
+
+### npm (once published)
 
 ```sh
 dsh plugin --profile web add dsh-vscode-ide
 ```
 
-From this checkout (development):
-
-```powershell
-node install.mjs                       # copies into the desktop profile
-node install.mjs --profile <dir>       # or an explicit profile directory
-```
-
-Then **fully quit DSH** (tray icon → Quit) and start it again — the client bundle is only loaded at startup.
-
-Uninstall (keeps `localStorage` user data):
+### Uninstall
 
 ```powershell
 node install.mjs --remove
 ```
+
+Removing the plugin keeps its `localStorage` data (window geometry, theme, tabs).
 
 ## Usage
 

@@ -51,21 +51,38 @@ dsh/      DSH 插槽适配：左侧栏入口、设置页分区
 
 ## 安装
 
-开发期（本地包）：
+> npm 尚未发布（注册受地区风控限制），当前请用 GitHub Release 里的安装包。
+
+### 从 GitHub Release 安装（推荐）
+
+1. 到 [Releases](https://github.com/beiryang/dsh-vscode-ide/releases) 下载 `dsh-vscode-ide-1.0.0.tgz`
+2. 解压并运行自带的安装器：
 
 ```powershell
-node B:\Coding\workbench\dsh-vscode-ide\install.mjs
+tar -xzf dsh-vscode-ide-1.0.0.tgz
+cd package
+node install.mjs
 ```
 
-然后**完全退出 DSH**（托盘图标 → 退出）再打开——客户端 bundle 只在启动时加载。
+`install.mjs` 会自动找到已装有本插件的 profile；要指定目录就加 `--profile "<目录>"`。
 
-发布后：
+3. **完全退出 DSH**（托盘图标 → 退出）再打开——客户端 bundle 只在启动时加载。
+
+### 从源码安装（开发）
+
+```powershell
+npm install
+npm run build                     # 必须：vendor/ 与 lib/client.js 不在仓库里
+node install.mjs
+```
+
+### npm（发布后）
 
 ```sh
 dsh plugin --profile web add dsh-vscode-ide
 ```
 
-卸载（保留 `localStorage` 里的窗口几何等用户数据）：
+### 卸载（保留 `localStorage` 里的窗口几何等用户数据）
 
 ```powershell
 node install.mjs --remove

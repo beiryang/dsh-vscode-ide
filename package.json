@@ -85,5 +85,13 @@
   },
   "dependencies": {
     "ssh2": "^1.17.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beiryang/dsh-vscode-ide.git"
+  },
+  "homepage": "https://github.com/beiryang/dsh-vscode-ide#readme",
+  "bugs": {
+    "url": "https://github.com/beiryang/dsh-vscode-ide/issues"
   }
 }
