@@ -83,6 +83,10 @@ export const api = {
   roots: () => call<{ cwd: string; remote?: boolean; remoteRoot?: string | null }>('roots'),
   list: (path: string) => call<Listing>('list', { path }),
   read: (path: string) => call<ReadResult>('read', { path }),
+  createEntry: (path: string, dir: boolean) => call<{ path: string; dir: boolean }>('fs/create', { path, dir }),
+  deleteEntry: (path: string) => call<{ path: string }>('fs/delete', { path }),
+  renameEntry: (path: string, name: string) => call<{ path: string; name: string }>('fs/rename', { path, name }),
+  revealEntry: (path: string) => call<{ path: string }>('fs/reveal', { path }),
   stat: (path: string) => call<{ path: string; dir: boolean; size: number; mtimeMs: number }>('stat', { path }),
   search: (options: { query?: string; limit?: number } = {}) =>
     call<{ files: Array<{ path: string; rel: string; name: string }>; truncated: boolean; root: string }>('search', options),
