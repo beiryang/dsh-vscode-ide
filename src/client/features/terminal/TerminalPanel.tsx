@@ -19,6 +19,7 @@ export function TerminalPanel() {
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
   const lastHeight = React.useRef(260)
+  const rootRef = React.useRef<HTMLDivElement | null>(null)
   const collapsed = dock === 'bottom' && snap.height <= 48
 
   if (!snap.open) return null
@@ -45,15 +46,21 @@ export function TerminalPanel() {
     const startHeight = snap.height
     const startWidth = snap.width
     const onMove = (moveEvent: PointerEvent) => {
-      if (dock === 'right') terminal.setWidth(startWidth + (startX - moveEvent.clientX))
-      else terminal.setHeight(startHeight + (startY - moveEvent.clientY))
+      if (dock === 'right') {
+        terminal.setWidth(startWidth + (startX - moveEvent.clientX))
+        return
+      }
+      // 上限用「编辑器列的真实高度」，这样能一路顶到最上面，让编辑器收成一条线
+      const columnHeight = rootRef.current?.parentElement?.clientHeight ?? window.innerHeight
+      const next = Math.min(startHeight + (startY - moveEvent.clientY), columnHeight - 4)
+      terminal.setHeight(next)
     }
     const onUp = () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       if (dock !== 'bottom') return
       const next = terminal.getSnapshot().height
-      if (next < 90) {
+      if (next < 120) {
         // 拖到很薄：吸附成一条线，靠手柄或点击恢复
         terminal.setHeight(26)
       } else {
@@ -69,6 +76,7 @@ export function TerminalPanel() {
   return h(
     'div',
     {
+      ref: rootRef,
       className: 'dsv-term',
       'data-dock': dock,
       'data-collapsed': collapsed ? 'true' : 'false',
@@ -80,7 +88,17 @@ export function TerminalPanel() {
       onPointerDown: beginResize,
       onClick: () => {
         if (!collapsed) return
-        terminal.setHeight(Math.max(lastHeight.current, 220))
+        terminal.setHeight(Math.max(lastHeight.current, 240))
+      },
+      onDoubleClick: () => {
+        if (dock !== 'bottom') return
+        const current = terminal.getSnapshot().height
+        if (current > 100) {
+          lastHeight.current = current
+          terminal.setHeight(26)
+        } else {
+          terminal.setHeight(Math.max(lastHeight.current, 240))
+        }
       },
       title: collapsed
         ? '点击或向上拖动展开终端'

@@ -183,6 +183,8 @@ export const CSS = `
 
 .dsv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--dsv-bg); }
 
+.dsv-main > *:not(.dsv-panel-bottom) { min-height: 0; }
+
 .dsv-panel-bottom {
   flex: none;
   display: flex;
