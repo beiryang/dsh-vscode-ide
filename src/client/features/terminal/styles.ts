@@ -241,7 +241,7 @@ export const CSS = `
 
 .dsv-term-view .xterm { height: 100%; }
 
-.dsv-term-empty { padding: 12px; font-size: 11px; color: var(--dsv-fg-faint); }
+.dsv-term-empty { padding: 12px; font-size: 11px; color: var(--dsv-fg-dim); }
 
 /* ── 本地命令控制台（非 PTY） ── */
 .dsv-local[data-active="true"] { display: flex; flex-direction: column; }

@@ -61,6 +61,10 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
 
 ### Changed
 
+- **Dark-theme contrast pass**: brighter shell text palette (`fg` / `fgDim` / `fgFaint` in One Dark), no more
+  low-opacity metadata text, brighter placeholders, directory paths and counts in the Git panel, tab labels,
+  panel titles and search hints — matching VS Code’s readability on dark backgrounds
+
 - `openFile` accepts an optional `line`, so any feature can jump to a position
 - Monaco indentation detection is disabled so the configured tab width actually takes effect
 

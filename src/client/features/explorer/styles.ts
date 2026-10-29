@@ -20,7 +20,7 @@ export const CSS = `
 
 .dsv-tree-row[data-active="true"] { background: var(--dsv-panel-alt); }
 
-.dsv-caret { width: 12px; flex: none; text-align: center; color: var(--dsv-fg-faint); font-size: 10px; }
+.dsv-caret { width: 12px; flex: none; text-align: center; color: var(--dsv-fg-dim); font-size: 10px; }
 
 /* Material Icon Theme 的 sprite 符号：固定 15px，颜色由 SVG 自带 */
 .dsv-file-icon { width: 15px; height: 15px; flex: none; display: block; }
@@ -30,9 +30,9 @@ export const CSS = `
 
 .dsv-tree-row[data-dir="true"] .dsv-tree-name { font-weight: 500; }
 
-.dsv-tree-size { flex: none; font-size: 10px; color: var(--dsv-fg-faint); }
+.dsv-tree-size { flex: none; font-size: 10px; color: var(--dsv-fg-dim); }
 
-.dsv-tree-note { padding: 4px 12px; font-size: 11px; color: var(--dsv-fg-faint); }
+.dsv-tree-note { padding: 4px 12px; font-size: 11px; color: var(--dsv-fg-dim); }
 
 .dsv-tree-error { padding: 8px 12px; font-size: 11px; color: #e06c75; white-space: pre-wrap; }
 `

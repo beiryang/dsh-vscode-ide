@@ -21,7 +21,7 @@ export const CSS = `
 
 .dsv-tabbar-name { color: var(--dsv-fg); }
 
-.dsv-tabbar-tag { font-size: 10px; padding: 1px 6px; border: 1px solid var(--dsv-border); border-radius: 999px; color: var(--dsv-fg-faint); }
+.dsv-tabbar-tag { font-size: 10px; padding: 1px 6px; border: 1px solid var(--dsv-border); border-radius: 999px; color: var(--dsv-fg-dim); }
 
 .dsv-placeholder {
   flex: 1;
@@ -32,7 +32,7 @@ export const CSS = `
   gap: 10px;
   padding: 24px;
   text-align: center;
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   font-size: 12px;
 }
 
@@ -95,7 +95,7 @@ export const CSS = `
 
 .dsv-tab-name { overflow: hidden; text-overflow: ellipsis; }
 
-.dsv-tab-tag { font-size: 9px; padding: 0 4px; border: 1px solid var(--dsv-border); border-radius: 3px; color: var(--dsv-fg-faint); }
+.dsv-tab-tag { font-size: 9px; padding: 0 4px; border: 1px solid var(--dsv-border); border-radius: 3px; color: var(--dsv-fg-dim); }
 
 .dsv-tab-close {
   flex: none;
@@ -114,7 +114,7 @@ export const CSS = `
 
 .dsv-tab-close:hover { opacity: 1; background: var(--dsv-hover); }
 
-.dsv-tab-meta { flex: none; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--dsv-fg-faint); }
+.dsv-tab-meta { flex: none; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--dsv-fg-dim); }
 
 .dsv-tab-dirty { color: var(--dsv-accent); }
 
@@ -147,7 +147,7 @@ export const CSS = `
 
 .dsv-placeholder-overlay { position: absolute; inset: 0; }
 
-.dsv-hint { font-size: 11px; color: var(--dsv-fg-faint); }
+.dsv-hint { font-size: 11px; color: var(--dsv-fg-dim); }
 
 .dsv-editor-toast {
   position: absolute;

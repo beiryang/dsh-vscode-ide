@@ -17,6 +17,12 @@ export const CSS = `
   app-region: no-drag !important;
 }
 
+.dsv-window input::placeholder,
+.dsv-window textarea::placeholder {
+  color: var(--dsv-fg-dim);
+  opacity: 0.9;
+}
+
 .dsv-root {
   position: fixed;
   inset: 0;
@@ -129,7 +135,7 @@ export const CSS = `
   flex: 1;
   min-width: 0;
   font-size: 11px;
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -313,9 +319,9 @@ export const CSS = `
 
 .dsv-palette-label { flex: none; max-width: 55%; overflow: hidden; text-overflow: ellipsis; }
 
-.dsv-palette-detail { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--dsv-fg-faint); font-size: 11px; }
+.dsv-palette-detail { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--dsv-fg-dim); font-size: 11px; }
 
-.dsv-palette-hint { flex: none; color: var(--dsv-fg-faint); font-size: 10px; font-family: var(--dsv-mono, monospace); }
+.dsv-palette-hint { flex: none; color: var(--dsv-fg-dim); font-size: 10px; font-family: var(--dsv-mono, monospace); }
 
 .dsv-palette-empty { padding: 16px 12px; font-size: 12px; color: var(--dsv-fg-faint); text-align: center; }
 
@@ -356,7 +362,7 @@ export const CSS = `
   gap: 8px;
   padding: 6px 8px 2px;
 }
-.dsv-sidebar-floating-title { font-size: 11px; letter-spacing: .4px; color: var(--dsv-fg-faint); }
+.dsv-sidebar-floating-title { font-size: 11px; letter-spacing: .4px; color: var(--dsv-fg-dim); }
 
 .dsv-sidebar-tab-icon { margin-right: 5px; font-size: 11px; opacity: 0.75; }
 
@@ -366,7 +372,7 @@ export const CSS = `
   border: 0;
   border-radius: 5px;
   background: transparent;
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   font-size: 11px;
   cursor: pointer;
 }

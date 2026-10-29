@@ -21,10 +21,10 @@ export const CSS = `
   white-space: nowrap;
 }
 
-.dsv-scm-sync { color: var(--dsv-fg-faint); font-size: 10px; }
+.dsv-scm-sync { color: var(--dsv-fg-dim); font-size: 10px; }
 
 .dsv-scm-root {
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   font-size: 10px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -83,6 +83,7 @@ export const CSS = `
 }
 
 .dsv-scm-message:focus { border-color: var(--dsv-accent); }
+.dsv-scm-message::placeholder { color: var(--dsv-fg-dim); opacity: 0.9; }
 
 .dsv-scm-commit-row { display: flex; gap: 4px; }
 
@@ -186,7 +187,7 @@ export const CSS = `
   padding: 0 4px;
   border-radius: 8px;
   background: var(--dsv-hover, rgba(127, 127, 127, 0.18));
-  color: var(--dsv-fg-dim);
+  color: var(--dsv-fg);
   font-size: 10px;
   font-weight: 400;
   text-align: center;
@@ -251,8 +252,8 @@ export const CSS = `
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--dsv-fg-faint);
-  font-size: 10px;
+  color: var(--dsv-fg-dim);
+  font-size: 11px;
 }
 
 .dsv-scm-row-action {
@@ -310,7 +311,7 @@ export const CSS = `
   align-items: center;
   gap: 8px;
   padding: 36px 16px;
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   font-size: 12px;
 }
 
@@ -318,7 +319,7 @@ export const CSS = `
   max-width: 260px;
   text-align: center;
   font-size: 11px;
-  color: var(--dsv-fg-faint);
+  color: var(--dsv-fg-dim);
   line-height: 1.6;
 }
 

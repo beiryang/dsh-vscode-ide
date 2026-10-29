@@ -112,7 +112,7 @@ export const CSS = `
   flex: none;
   padding: 6px 10px;
   font-size: 11px;
-  opacity: 0.62;
+  color: var(--dsv-fg-dim);
   border-bottom: 1px solid var(--dsv-border);
   display: flex;
   gap: 8px;
@@ -162,7 +162,8 @@ export const CSS = `
   flex: none;
   min-width: 34px;
   text-align: right;
-  opacity: 0.45;
+  color: var(--dsv-fg-dim);
+  opacity: 0.85;
   font-family: var(--dsv-mono, monospace);
   font-size: 11px;
 }
@@ -184,7 +185,7 @@ export const CSS = `
 .dsv-search-empty {
   padding: 24px 16px;
   font-size: 11px;
-  opacity: 0.6;
+  color: var(--dsv-fg-dim);
   line-height: 1.7;
 }
 `
