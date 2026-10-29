@@ -189,7 +189,11 @@ function GraphRow({
           'div',
           {
             className: 'dsv-scm-commit-files',
-            style: { borderLeftColor: LANE_COLORS[lanes.dot % LANE_COLORS.length] }
+            style: {
+              borderLeftColor: LANE_COLORS[lanes.dot % LANE_COLORS.length],
+              // 让竖线正对车道中心：行左内边距 4 + 车道中心 6 + 半线宽 1
+              marginLeft: `${lanes.dot * 10 + 9}px`
+            }
           },
           busy
             ? h('div', { className: 'dsv-scm-hint' }, '读取提交内容…')
