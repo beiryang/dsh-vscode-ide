@@ -248,15 +248,14 @@ export const CSS = `
 
 .dsv-local {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
 .dsv-local-scroll {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: 0;
   overflow: auto;
   padding: 6px 10px 10px;
   font-family: var(--dsv-mono, monospace);

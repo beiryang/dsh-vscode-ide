@@ -86,10 +86,16 @@ export function LocalConsole({ session, active }: { session: TermSession; active
     return () => controller.abort()
   }, [session.id])
 
-  // 输出或输入变化时，把滚动区钉在底部（光标跟随输出）
-  React.useEffect(() => {
+  // 输出或输入变化时，把滚动区钉在底部（光标跟随输出）。
+  // 用 layout effect + 下一帧再滚一次：内容渲染后的高度才是最终高度。
+  React.useLayoutEffect(() => {
     const element = scrollRef.current
-    if (element) element.scrollTop = element.scrollHeight
+    if (!element) return
+    element.scrollTop = element.scrollHeight
+    const frame = requestAnimationFrame(() => {
+      element.scrollTop = element.scrollHeight
+    })
+    return () => cancelAnimationFrame(frame)
   }, [output, line])
 
   React.useEffect(() => {
