@@ -84,8 +84,7 @@ export function TerminalView({ session, active }: { session: TermSession; active
           cursorBlink: true,
           fontSize: terminalFontSize(),
           fontFamily: TERMINAL_FONT,
-          lineHeight: 1.0,
-        letterSpacing: 0,
+          lineHeight: 1.15,
           allowProposedApi: true,
           scrollback: 5000,
           theme: terminalTheme()

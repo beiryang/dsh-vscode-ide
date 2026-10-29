@@ -241,14 +241,6 @@ export const CSS = `
 
 .dsv-term-view .xterm { height: 100%; }
 
-/* DOM 渲染器下，行高会被外层 CSS 继承拉大，这里强制回正 */
-.dsv-term-view .xterm,
-.dsv-term-view .xterm-rows,
-.dsv-term-view .xterm-rows > div,
-.dsv-term-view .xterm-helpers {
-  line-height: normal !important;
-}
-
 .dsv-term-empty { padding: 12px; font-size: 11px; color: var(--dsv-fg-dim); }
 
 /* ── 本地命令控制台（非 PTY） ── */
