@@ -52,7 +52,7 @@ export const DEFAULT_PREFS: Prefs = {
   editorWordWrap: false,
   editorTabSize: 2,
   editorLineNumbers: true,
-  panelDock: 'right'
+  panelDock: 'bottom'
 }
 
 export const TERMINAL_FONT_MIN = 10
@@ -103,7 +103,7 @@ function load(): Prefs {
       editorWordWrap: asBoolean(parsed.editorWordWrap, DEFAULT_PREFS.editorWordWrap),
       editorTabSize: clampNumber(parsed.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, DEFAULT_PREFS.editorTabSize),
       editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers),
-      panelDock: parsed.panelDock === 'bottom' ? 'bottom' : 'right'
+      panelDock: parsed.panelDock === 'right' ? 'right' : 'bottom'
     }
   } catch {
     return { ...DEFAULT_PREFS }

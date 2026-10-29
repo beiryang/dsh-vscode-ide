@@ -132,6 +132,24 @@ export const CSS = `
 
 .dsv-term-resize { position: absolute; top: -3px; left: 0; right: 0; height: 6px; cursor: ns-resize; z-index: 3; }
 
+/* 折叠成一条线：只留可拖拽的横条，头部和内容都隐藏 */
+.dsv-term[data-collapsed="true"] {
+  overflow: hidden;
+  background: var(--dsv-panel);
+  border-top: 1px solid var(--dsv-accent);
+}
+
+.dsv-term[data-collapsed="true"] .dsv-term-head,
+.dsv-term[data-collapsed="true"] .dsv-term-body { display: none; }
+
+.dsv-term[data-collapsed="true"] .dsv-term-resize {
+  top: 0;
+  height: 100%;
+  background: transparent;
+}
+
+.dsv-term[data-collapsed="true"] .dsv-term-resize:hover { background: color-mix(in srgb, var(--dsv-accent) 22%, transparent); }
+
 /* 右侧停靠：竖着占满高度，拖拽手柄换成左边缘 */
 .dsv-term[data-dock="right"] {
   border-top: none;

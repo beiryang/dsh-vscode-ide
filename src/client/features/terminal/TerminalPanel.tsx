@@ -18,6 +18,8 @@ export function TerminalPanel() {
   void prefsVersion
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
+  const lastHeight = React.useRef(260)
+  const collapsed = dock === 'bottom' && snap.height <= 48
 
   if (!snap.open) return null
 
@@ -49,6 +51,14 @@ export function TerminalPanel() {
     const onUp = () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      if (dock !== 'bottom') return
+      const next = terminal.getSnapshot().height
+      if (next < 90) {
+        // 拖到很薄：吸附成一条线，靠手柄或点击恢复
+        terminal.setHeight(26)
+      } else {
+        lastHeight.current = next
+      }
     }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
@@ -61,12 +71,22 @@ export function TerminalPanel() {
     {
       className: 'dsv-term',
       'data-dock': dock,
+      'data-collapsed': collapsed ? 'true' : 'false',
       style: dock === 'right' ? { width: `${snap.width}px`, height: '100%' } : { height: `${snap.height}px` }
     },
     h('div', {
       className: 'dsv-term-resize',
+      'data-collapsed': collapsed ? 'true' : 'false',
       onPointerDown: beginResize,
-      title: dock === 'right' ? '拖动调整宽度' : '拖动调整高度'
+      onClick: () => {
+        if (!collapsed) return
+        terminal.setHeight(Math.max(lastHeight.current, 220))
+      },
+      title: collapsed
+        ? '点击或向上拖动展开终端'
+        : dock === 'right'
+          ? '拖动调整宽度'
+          : '拖动调整高度'
     }),
     h(
       'div',

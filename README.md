@@ -44,8 +44,9 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Git** — branch and changes list, per-file stage/unstage, commit (dropdown: staged / all / commit-and-push), discard, push;
   works on remote workspaces too — the commands run on the server over SSH. If the workspace root is not a repo,
   “select repository folder…” lets you point Git at a subdirectory (local and remote)
-- **SSH terminal** — xterm.js, multiple sessions. The panel docks on the **right by default** (full height, like VS Code’s
-  side panel) and can be switched to the bottom with the `⇩`/`⇨` button in its header; drag its edge to resize. Connection details are reused from
+- **SSH terminal** — xterm.js, multiple sessions. The panel sits **under the editor inside the editor column**
+  (VS Code style, file tree keeps the full height): drag the divider to resize, drag all the way down to collapse it
+  to a single strip and click/drag that strip to bring it back. A header button can dock it to the right side instead. Connection details are reused from
   `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
   first use needs no pre-configured remote workspace. With exactly one remembered host (or a remote workspace)
   “＋SSH” connects immediately; the chooser only appears when there are several or none. Passwords are never stored

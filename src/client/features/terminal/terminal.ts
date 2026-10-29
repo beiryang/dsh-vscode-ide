@@ -29,7 +29,7 @@ export type TerminalState = {
 }
 
 const KEY = 'dsv:terminal.v1'
-export const MIN_TERM_HEIGHT = 120
+export const MIN_TERM_HEIGHT = 8
 export const MAX_TERM_HEIGHT = 720
 export const MIN_TERM_WIDTH = 320
 export const MAX_TERM_WIDTH = 900
@@ -60,7 +60,7 @@ function clampWidth(value: number) {
 }
 
 function clampHeight(value: number) {
-  const max = Math.min(MAX_TERM_HEIGHT, Math.max(MIN_TERM_HEIGHT, window.innerHeight - 200))
+  const max = Math.min(MAX_TERM_HEIGHT, Math.max(MIN_TERM_HEIGHT, window.innerHeight - 120))
   return Math.min(Math.max(Math.round(value), MIN_TERM_HEIGHT), max)
 }
 

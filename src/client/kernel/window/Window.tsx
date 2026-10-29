@@ -208,7 +208,14 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
       'div',
       { className: 'dsv-body' },
       h(SidebarHost, { ctx }),
-      h('div', { className: 'dsv-main' }, mainViews.map((view) => h(view.component, { key: view.id, ctx }))),
+      h(
+        'div',
+        { className: 'dsv-main' },
+        mainViews.map((view) => h(view.component, { key: view.id, ctx })),
+        panelDock === 'bottom'
+          ? h('div', { className: 'dsv-panel-bottom' }, panelViews.map((view) => h(view.component, { key: view.id, ctx })))
+          : null
+      ),
       panelDock === 'right'
         ? h(
             'div',
@@ -217,7 +224,6 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
           )
         : null
     ),
-    panelDock === 'bottom' ? panelViews.map((view) => h(view.component, { key: view.id, ctx })) : null,
     h(Palette, null),
     registry.getOverlays().map((overlay) => h(overlay.component, { key: overlay.id, ctx })),
     h(

@@ -183,6 +183,13 @@ export const CSS = `
 
 .dsv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--dsv-bg); }
 
+.dsv-panel-bottom {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .dsv-panel-dock:empty { border-left: none; }
 
 .dsv-panel-dock {
