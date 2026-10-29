@@ -246,29 +246,57 @@ export const CSS = `
 /* ── 本地命令控制台（非 PTY） ── */
 .dsv-local[data-active="true"] { display: flex; flex-direction: column; }
 
-.dsv-local-out {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  padding: 6px 8px;
-  overflow: auto;
-  font-family: var(--dsv-mono, monospace);
-  font-size: 12px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--dsv-fg);
-  background: var(--dsv-bg);
+.dsv-local {
+  position: relative;
 }
 
-.dsv-local-input-row {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-top: 1px solid var(--dsv-border);
+.dsv-local-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px 10px 10px;
+  font-family: var(--dsv-mono, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
+
+.dsv-local-out { color: var(--dsv-fg); }
+
+.dsv-local-hint { color: var(--dsv-fg-dim); }
+
+.dsv-local-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dsv-local-prompt {
+  flex: none;
+  color: var(--dsv-accent);
+  user-select: none;
+}
+
+.dsv-local-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--dsv-fg);
+  font: inherit;
+  padding: 0;
+  caret-color: var(--dsv-accent);
+}
+
+.dsv-local-toolbar {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0.8;
 
 .dsv-local-prompt { color: var(--dsv-accent); font-family: var(--dsv-mono, monospace); font-size: 12px; }
 

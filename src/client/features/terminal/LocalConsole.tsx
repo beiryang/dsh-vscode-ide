@@ -1,11 +1,10 @@
 /**
  * 本地命令控制台（PowerShell，基于管道，不是 PTY）。
  *
- * 为什么不用 xterm：没有 PTY 就没有输入回显与行编辑，xterm 里会变成"盲打"。
- * 所以这里用「输出区 + 输入行」的形态：命令由用户在自己看得到的输入框里敲，
- * Enter 才整行发给 shell，输出流式追加。
+ * 没有 PTY 就没有输入回显与行编辑，所以这里不用 xterm，而是「流式输出 + 行内输入」：
+ * 输入行作为滚动区里的最后一行，回车后这一行进入上方历史，视觉上光标跟着输出走。
  *
- * 已知限制（面板里也会提示）：不能跑 vim/top 这类全屏交互程序。
+ * 已知限制：不能跑 vim/top 这类全屏交互程序。
  */
 
 import * as React from 'react'
@@ -38,7 +37,7 @@ export function LocalConsole({ session, active }: { session: TermSession; active
   const [history, setHistory] = React.useState<string[]>([])
   const [historyAt, setHistoryAt] = React.useState(-1)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
-  const outputRef = React.useRef<HTMLPreElement | null>(null)
+  const scrollRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     const controller = new AbortController()
@@ -83,10 +82,11 @@ export function LocalConsole({ session, active }: { session: TermSession; active
     return () => controller.abort()
   }, [session.id])
 
+  // 输出或输入变化时，把滚动区钉在底部（光标跟随输出）
   React.useEffect(() => {
-    const element = outputRef.current
+    const element = scrollRef.current
     if (element) element.scrollTop = element.scrollHeight
-  }, [output])
+  }, [output, line])
 
   React.useEffect(() => {
     if (active) inputRef.current?.focus()
@@ -103,7 +103,7 @@ export function LocalConsole({ session, active }: { session: TermSession; active
     setHistoryAt(-1)
     setLine('')
     void api.termWrite(session.id, command).catch((error) => {
-      setOutput((prev) => `${prev}\n[发送失败] ${error instanceof Error ? error.message : String(error)}\n`)
+      setOutput((prev) => `${prev}\\n[发送失败] ${error instanceof Error ? error.message : String(error)}\\n`)
     })
   }
 
@@ -138,22 +138,36 @@ export function LocalConsole({ session, active }: { session: TermSession; active
   return h(
     'div',
     { className: 'dsv-term-view dsv-local', 'data-active': active ? 'true' : 'false' },
-    h('pre', { className: 'dsv-local-out', ref: outputRef }, output || '（本地 PowerShell 控制台）'),
     h(
       'div',
-      { className: 'dsv-local-input-row' },
-      h('span', { className: 'dsv-local-prompt' }, 'PS>'),
-      h('input', {
-        ref: inputRef,
-        className: 'dsv-local-input',
-        value: line,
-        spellCheck: false,
-        placeholder: '输入命令后回车（↑↓ 历史，Ctrl+L 清屏；不支持 vim/top 等全屏程序）',
-        onChange: (event: React.ChangeEvent<HTMLInputElement>) => setLine(event.target.value),
-        onKeyDown
-      }),
-      h('button', { className: 'dsv-mini-btn', title: '清屏', onClick: () => setOutput('') }, '清'),
-      h('button', { className: 'dsv-mini-btn', title: '关闭', onClick: () => void terminal.closeSession(session.id) }, '✕')
+      {
+        className: 'dsv-local-scroll',
+        ref: scrollRef,
+        onMouseDown: (event: React.MouseEvent) => {
+          if (event.target === event.currentTarget) inputRef.current?.focus()
+        }
+      },
+      output ? h('div', { className: 'dsv-local-out' }, output) : h('div', { className: 'dsv-local-hint' }, '（本地 PowerShell 控制台 · 不支持 vim/top 等全屏程序）'),
+      h(
+        'div',
+        { className: 'dsv-local-line' },
+        h('span', { className: 'dsv-local-prompt' }, 'PS>'),
+        h('input', {
+          ref: inputRef,
+          className: 'dsv-local-input',
+          value: line,
+          spellCheck: false,
+          autoComplete: 'off',
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) => setLine(event.target.value),
+          onKeyDown
+        })
+      )
+    ),
+    h(
+      'div',
+      { className: 'dsv-local-toolbar' },
+      h('button', { className: 'dsv-mini-btn', title: '清屏（Ctrl+L）', onClick: () => setOutput('') }, '清'),
+      h('button', { className: 'dsv-mini-btn', title: '关闭终端', onClick: () => void terminal.closeSession(session.id) }, '✕')
     )
   )
 }
