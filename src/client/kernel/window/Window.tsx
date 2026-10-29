@@ -155,12 +155,6 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
     [sessionId, cwd, cwdError, remote, loadRoot]
   )
 
-  if (!state.open) return null
-
-  // 最大化也只在安全带以下：顶部留出 DSH 标题栏与系统窗口按钮，保证永远退得出来
-  const rect = state.max
-    ? { x: 0, y: SAFE_TOP, w: viewport.w, h: Math.max(MIN_H, viewport.h - SAFE_TOP) }
-    : state.rect
   const [sidebarWidth, setSidebarWidth] = React.useState(() => {
     try {
       const raw = localStorage.getItem('dsv:sidebar.width.v1')
@@ -208,6 +202,12 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
     }
   }
 
+  if (!state.open) return null
+
+  // 最大化也只在安全带以下：顶部留出 DSH 标题栏与系统窗口按钮，保证永远退得出来
+  const rect = state.max
+    ? { x: 0, y: SAFE_TOP, w: viewport.w, h: Math.max(MIN_H, viewport.h - SAFE_TOP) }
+    : state.rect
   const mainViews = registry.getViews('main')
   const panelViews = registry.getViews('panel')
   const panelDock = prefs.getSnapshot().panelDock
