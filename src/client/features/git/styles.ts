@@ -409,8 +409,17 @@ export const CSS = `
 .dsv-scm-commit-caret { flex: none; font-size: 9px; color: var(--dsv-fg-dim); margin-left: 2px; }
 
 .dsv-scm-commit-files {
-  padding: 2px 0 4px 16px;
-  border-left: 2px solid var(--dsv-border-soft, var(--dsv-border));
+  position: relative;
+  padding: 2px 0 4px 18px;
+}
+
+.dsv-scm-lane-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  pointer-events: none;
 }
 
 .dsv-scm-commit-file {
