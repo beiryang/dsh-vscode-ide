@@ -11,6 +11,7 @@ import * as React from 'react'
 import { h } from '../../h'
 import { WINDOW_TITLE } from '../brand'
 import { layout, MIN_H, MIN_W, SAFE_TOP, type Rect } from '../layout'
+import { runCommand } from '../commands'
 import { palette } from '../palette'
 import { api, health } from '../transport'
 import { registry, type WorkbenchContext } from '../registry'
@@ -190,6 +191,11 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         { className: 'dsv-titlebar-actions', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
         document.dirtyCount > 0 ? h('span', { className: 'dsv-titlebar-badge' }, `${document.dirtyCount} 未保存`) : null,
         h('button', { title: '转到文件（Ctrl+Alt+P）', onClick: () => palette.open('files') }, '⌕'),
+        h(
+          'button',
+          { title: '在文件中搜索（Ctrl+Alt+Shift+F）', onClick: () => void runCommand('search.inFiles') },
+          '搜'
+        ),
         h('button', { title: '命令面板（Ctrl+Alt+Shift+P）', onClick: () => palette.open('commands') }, '>'),
         h('button', { title: '刷新工作区', onClick: () => void loadRoot() }, '↻'),
         h('button', { title: state.max ? '还原' : '最大化', onClick: () => layout.setMax(!state.max) }, state.max ? '⤡' : '⤢'),

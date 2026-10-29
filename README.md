@@ -37,7 +37,7 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Save / close** — `Ctrl+S` (temp file + atomic rename), `Ctrl+W`, dirty markers, close confirmation
 - **Find & replace** — Monaco's built-in widget (`Ctrl+F`)
 - **Quick open / command palette** — `Ctrl+Alt+P` and `Ctrl+Alt+Shift+P` (`Ctrl+P` belongs to DSH)
-- **Content search** — `Ctrl+Alt+F`: search the whole workspace, results grouped per file, click to jump to the line;
+- **Content search** — `Ctrl+Alt+Shift+F`: search the whole workspace, results grouped per file, click to jump to the line;
   `git grep` inside repositories, bounded filesystem walk elsewhere (local workspaces only for now)
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files
@@ -94,7 +94,7 @@ Removing the plugin keeps its `localStorage` data (window geometry, theme, tabs)
 ## Usage
 
 - Click **Code Space** in the left sidebar to open/close the workbench (works even if the window was dragged off-screen)
-- `Ctrl+Alt+I` toggles the workbench; `Ctrl+Alt+Q` peeks at the conversation; `Ctrl+Alt+F` opens content search
+- `Ctrl+Alt+I` toggles the workbench; `Ctrl+Alt+Q` peeks at the conversation; `Ctrl+Alt+Shift+F` opens content search
 - Floating button: same as `Ctrl+Alt+Q`, draggable, position remembered
 - Title bar: `⌕` quick open, `>` command palette, `↻` refresh workspace, `⤢` maximize, `✕` close
 - Settings live in **DSH Settings → Code Space**

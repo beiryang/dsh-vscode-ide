@@ -73,8 +73,9 @@ export function App({ ctx }: { ctx: unknown }) {
         layout.togglePeek()
         return
       }
-      // 全局搜索：打开侧栏搜索视图并聚焦输入框
-      const isSearch = event.ctrlKey && event.altKey && (event.code === 'KeyF' || event.key.toLowerCase() === 'f')
+      // 全局搜索：Ctrl+Alt+Shift+F（Ctrl+Alt+F 被 DSH 的「复制会话」占用）
+      const isSearch =
+        event.ctrlKey && event.altKey && event.shiftKey && (event.code === 'KeyF' || event.key.toLowerCase() === 'f')
       if (isSearch) {
         event.preventDefault()
         event.stopPropagation()

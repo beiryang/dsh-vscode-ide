@@ -1,4 +1,4 @@
-/** 搜索 feature：侧栏「搜索」视图 + `Ctrl+Alt+F` 入口。 */
+/** 搜索 feature：侧栏「搜索」视图 + `Ctrl+Alt+Shift+F` 入口。 */
 
 import { registerCommand } from '../../kernel/commands'
 import { layout } from '../../kernel/layout'
@@ -22,7 +22,7 @@ export function registerSearchFeature(): () => void {
       id: 'search.inFiles',
       title: '在文件中搜索',
       category: '搜索',
-      keybinding: 'Ctrl+Alt+F',
+      keybinding: 'Ctrl+Alt+Shift+F',
       run: () => {
         layout.open()
         sidebar.setActive('search')

@@ -190,7 +190,7 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
                       null,
                       h('div', null, '输入关键词后按 Enter 搜索整个工作区。'),
                       h('div', null, 'Aa 区分大小写 · ab 全词 · .* 正则；点击结果跳到对应行。'),
-                      h('div', null, 'Ctrl+Alt+F 随时回到这里。')
+                      h('div', null, 'Ctrl+Alt+Shift+F 随时回到这里。')
                     )
             )
           : groups.map(([rel, list]) =>
