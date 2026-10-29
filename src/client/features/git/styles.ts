@@ -304,6 +304,70 @@ export const CSS = `
 
 .dsv-scm-menu button:hover { background: var(--dsv-hover); }
 
+/* ── 提交行图标 ── */
+.dsv-scm-row .dsv-file-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  margin-right: 2px;
+}
+
+/* ── Graph 区块 ── */
+.dsv-scm-graph {
+  max-height: 40vh;
+  overflow: auto;
+  padding-bottom: 6px;
+}
+
+.dsv-scm-graph-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px 0 18px;
+  font-size: 12px;
+}
+
+.dsv-scm-graph-row:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.14)); }
+
+.dsv-scm-graph-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dsv-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--dsv-accent) 25%, transparent);
+}
+
+.dsv-scm-graph-subject {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsv-scm-graph-author {
+  flex: none;
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+}
+
+.dsv-scm-ref {
+  flex: none;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.dsv-scm-ref[data-kind="branch"] { background: #2f6fb3; color: #fff; }
+.dsv-scm-ref[data-kind="remote"] { background: rgba(168, 120, 220, 0.35); color: #e6dcff; }
+.dsv-scm-ref[data-kind="tag"] { background: rgba(215, 186, 125, 0.3); color: #f0dfb4; }
+.dsv-scm-ref[data-kind="ref"] { background: var(--dsv-hover); color: var(--dsv-fg-dim); }
+
 /* ── 空状态 ── */
 .dsv-scm-empty {
   display: flex;

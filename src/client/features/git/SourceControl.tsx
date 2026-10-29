@@ -19,6 +19,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { FileIcon } from '../explorer/FileIcon'
 import { git, type GitChange } from './git'
 import { gitRootDialog } from './rootDialog'
 
@@ -43,6 +44,34 @@ function codeHint(code: string): string {
 
 type MenuState = { x: number; y: number; change: GitChange; staged: boolean }
 
+type Commit = { hash: string; author: string; when: string; subject: string; refs: string }
+
+function refBadges(refs: string): Array<{ label: string; kind: 'branch' | 'remote' | 'tag' | 'ref' }> {
+  return refs
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((raw) => {
+      if (raw.startsWith('HEAD -> ')) return { label: raw.slice('HEAD -> '.length), kind: 'branch' as const }
+      if (raw.startsWith('tag: ')) return { label: raw.slice(5), kind: 'tag' as const }
+      if (/^[^/]+\//.test(raw)) return { label: raw, kind: 'remote' as const }
+      return { label: raw, kind: 'ref' as const }
+    })
+}
+
+function GraphRow({ commit }: { commit: Commit }) {
+  return h(
+    'div',
+    { className: 'dsv-scm-graph-row', title: `${commit.hash} · ${commit.author} · ${commit.when}` },
+    h('span', { className: 'dsv-scm-graph-dot' }),
+    h('span', { className: 'dsv-scm-graph-subject' }, commit.subject),
+    h('span', { className: 'dsv-scm-graph-author' }, commit.author),
+    refBadges(commit.refs).map((badge) =>
+      h('span', { key: `${commit.hash}:${badge.label}`, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
+    )
+  )
+}
+
 function Row({
   change,
   busy,
@@ -62,10 +91,11 @@ function Row({
       onClick: () => void git.openChange(change),
       onContextMenu: (event: React.MouseEvent) => onMenu(event, change, staged)
     },
-    h('span', { className: 'dsv-scm-status', 'data-code': change.code }, change.code),
+    h(FileIcon, { name: baseOf(change.path), dir: false, expanded: false }),
     h('span', { className: 'dsv-scm-name' }, baseOf(change.path)),
     h('span', { className: 'dsv-scm-dir' }, dirOf(change.path)),
     h('span', { className: 'dsv-scm-spacer' }),
+    h('span', { className: 'dsv-scm-status', 'data-code': change.code }, change.code),
     h(
       'button',
       {
@@ -120,6 +150,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [menu, setMenu] = React.useState<MenuState | null>(null)
   const [commitMenu, setCommitMenu] = React.useState(false)
   const [rootMenu, setRootMenu] = React.useState(false)
+  const [graphCollapsed, setGraphCollapsed] = React.useState(false)
 
   React.useEffect(() => {
     git.attach(cwd)
@@ -378,6 +409,31 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
           )
         : null
     ),
+
+    /* Graph：最近提交 + 远端操作 */
+    h(
+      'div',
+      { className: 'dsv-scm-section-head' },
+      h(
+        'button',
+        { className: 'dsv-scm-section-toggle', onClick: () => setGraphCollapsed((previous) => !previous), title: graphCollapsed ? '展开' : '折叠' },
+        graphCollapsed ? '▸' : '▾'
+      ),
+      h('span', { className: 'dsv-scm-section-title', onClick: () => setGraphCollapsed((previous) => !previous) }, 'Graph'),
+      h('span', { className: 'dsv-scm-count' }, String(snap.commits.length)),
+      h('span', { className: 'dsv-scm-spacer' }),
+      h('button', { className: 'dsv-scm-icon-btn', title: '刷新', onClick: () => void git.refresh() }, '↻'),
+      h('button', { className: 'dsv-scm-icon-btn', title: '获取远端（fetch）', disabled: snap.busy, onClick: () => void git.fetch() }, '⤓'),
+      h('button', { className: 'dsv-scm-icon-btn', title: '拉取（pull）', disabled: snap.busy, onClick: () => void git.pull() }, '↓'),
+      h('button', { className: 'dsv-scm-icon-btn', title: '推送（push）', disabled: snap.busy, onClick: () => void git.push() }, '↑')
+    ),
+    graphCollapsed
+      ? null
+      : h(
+          'div',
+          { className: 'dsv-scm-graph' },
+          snap.commits.map((commit) => h(GraphRow, { key: commit.hash, commit }))
+        ),
 
     /* 右键菜单 */
     menu

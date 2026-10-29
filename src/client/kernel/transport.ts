@@ -114,7 +114,10 @@ export const api = {
       changes: Array<{ path: string; absPath: string; code: string; staged: boolean; from?: string }>
     }>('git/status', { gitDir }),
   gitLog: (limit = 20, gitDir = '') =>
-    call<{ root: string; commits: Array<{ hash: string; author: string; when: string; subject: string }> }>('git/log', { limit, gitDir }),
+    call<{
+      root: string
+      commits: Array<{ hash: string; author: string; when: string; subject: string; refs: string }>
+    }>('git/log', { limit, gitDir }),
   gitHead: (path: string, gitDir = '') =>
     call<{ root: string; rel: string; text: string; exists: boolean }>('git/head', { path, gitDir }),
   gitStage: (paths: string[], gitDir = '') => call<{ staged: number }>('git/stage', { paths, gitDir }),
@@ -124,6 +127,8 @@ export const api = {
   gitDiscard: (paths: string[], untracked: string[] = [], gitDir = '') =>
     call<{ restored: number; removed: number }>('git/discard', { paths, untracked, gitDir }),
   gitCommit: (message: string, gitDir = '') => call<{ output: string }>('git/commit', { message, gitDir }),
+  gitPull: (gitDir = '') => call<{ output: string }>('git/pull', { gitDir }),
+  gitFetch: (gitDir = '') => call<{ output: string }>('git/fetch', { gitDir }),
   gitPush: (gitDir = '') => call<{ output: string }>('git/push', { gitDir }),
   /** 新建 SSH 终端；ssh 省略时用当前远程工作区的元数据 */
   termOpen: (

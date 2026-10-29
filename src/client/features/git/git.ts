@@ -31,6 +31,8 @@ export type GitState = {
   note: string | null
   /** 当前使用的 Git 目录（相对工作区根，'' = 工作区根） */
   gitRoot: string
+  /** 最近的提交（Graph 区块） */
+  commits: Array<{ hash: string; author: string; when: string; subject: string; refs: string }>
 }
 
 let state: GitState = {
@@ -44,7 +46,8 @@ let state: GitState = {
   updatedAt: 0,
   busy: false,
   note: null,
-  gitRoot: ''
+  gitRoot: '',
+  commits: []
 }
 
 const listeners = new Set<() => void>()
@@ -111,9 +114,9 @@ export const git = {
   async refresh(): Promise<void> {
     if (inflight) return inflight
     publish({ phase: 'loading', message: null })
-    inflight = api
-      .gitStatus(state.gitRoot)
-      .then((result) => {
+    const logPromise = api.gitLog(20, state.gitRoot).catch(() => ({ root: '', commits: [] }))
+    inflight = Promise.all([api.gitStatus(state.gitRoot), logPromise])
+      .then(([result, log]) => {
         publish({
           phase: 'ready',
           message: null,
@@ -122,6 +125,7 @@ export const git = {
           ahead: result.ahead,
           behind: result.behind,
           changes: result.changes,
+          commits: log.commits ?? [],
           updatedAt: Date.now()
         })
       })
@@ -135,13 +139,14 @@ export const git = {
           message,
           root: null,
           branch: null,
-          changes: []
+          changes: [],
+          commits: []
         })
       })
       .finally(() => {
         inflight = null
       })
-    return inflight
+    await inflight
   },
 
   /** 打开某个变更的 diff：左 = HEAD，右 = 工作区当前内容 */
@@ -227,6 +232,12 @@ export const git = {
     return git.run('放弃更改', () => api.gitDiscard(paths, untracked, state.gitRoot))
   },
   push() {
-    return git.run('推送', () => api.gitPush())
+    return git.run('推送', () => api.gitPush(state.gitRoot))
+  },
+  pull() {
+    return git.run('拉取', () => api.gitPull(state.gitRoot))
+  },
+  fetch() {
+    return git.run('获取远端', () => api.gitFetch(state.gitRoot))
   }
 }
