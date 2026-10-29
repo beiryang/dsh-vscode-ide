@@ -112,8 +112,14 @@ if (!existsSync(join(SRC, 'lib', 'client.js'))) fail('源目录里缺 lib/client
 if (!existsSync(join(SRC, 'lib', 'index.js'))) fail('源目录里缺 lib/index.js，安装包不完整')
 
 if (existsSync(targetDir)) {
-  rmSync(targetDir, { recursive: true, force: true })
-  log(`清掉旧版本 ${targetDir}`)
+  // DSH 运行时可能锁住已加载的 .node（node-pty），删除会 EPERM；
+  // 删不掉就退化为覆盖安装，避免把插件目录删到一半。
+  try {
+    rmSync(targetDir, { recursive: true, force: true })
+    log(`清掉旧版本 ${targetDir}`)
+  } catch {
+    log('旧版本目录被占用，改为覆盖安装（建议先托盘退出 DSH）')
+  }
 }
 mkdirSync(targetDir, { recursive: true })
 for (const entry of [
@@ -145,6 +151,8 @@ log(`已复制到 ${targetDir}`)
       continue
     }
     const to = join(targetDir, 'node_modules', name)
+    // 已存在就跳过：覆盖写入正在被 DSH 映射的 .node 会 EPERM
+    if (existsSync(join(to, 'package.json'))) continue
     mkdirSync(dirname(to), { recursive: true })
     cpSync(from, to, { recursive: true })
   }
