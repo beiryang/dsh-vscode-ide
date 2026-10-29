@@ -164,4 +164,35 @@ export const CSS = `
 }
 
 .dsv-editor-toast[data-kind="error"] { color: #e06c75; border-color: #e06c7566; }
+
+/* 标签右键菜单 / 拖拽指示 / 预览态 */
+.dsv-tab[data-preview="true"] .dsv-tab-name { font-style: italic; }
+
+.dsv-tab[data-drop="true"] { box-shadow: inset 2px 0 0 var(--dsv-accent); }
+
+.dsv-tab-menu {
+  position: fixed;
+  z-index: 1400;
+  min-width: 160px;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.dsv-tab-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-tab-menu-item:hover { background: var(--dsv-hover); }
 `

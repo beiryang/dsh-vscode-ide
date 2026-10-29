@@ -12,7 +12,7 @@ import { FileIcon } from './FileIcon'
 type Props = {
   cwd: string | null
   activePath: string | null
-  onOpen: (entry: Entry) => void
+  onOpen: (entry: Entry, options?: { preview?: boolean }) => void
 }
 
 type MenuState = { x: number; y: number; entry: Entry | null; parentDir: string }
@@ -170,7 +170,10 @@ export function FileTree(props: Props) {
             'data-active': entry.path === props.activePath ? 'true' : 'false',
             style: { paddingLeft: `${6 + depth * 12}px` },
             title: entry.path,
-            onClick: () => (entry.dir ? toggle(entry) : props.onOpen(entry)),
+            onClick: () => (entry.dir ? toggle(entry) : props.onOpen(entry, { preview: true })),
+            onDoubleClick: () => {
+              if (!entry.dir) props.onOpen(entry, { preview: false })
+            },
             onContextMenu: (event: React.MouseEvent) => openMenu(event, entry, entry.dir ? entry.path : parentOf(entry.path))
           },
           h('span', { className: 'dsv-caret' }, entry.dir ? (open ? '▾' : '▸') : ''),

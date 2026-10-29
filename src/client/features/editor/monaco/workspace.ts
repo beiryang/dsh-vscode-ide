@@ -29,6 +29,8 @@ export type WorkspaceTab = {
   truncated: boolean
   /** file = 可编辑标签；diff = 只读对比标签 */
   kind: 'file' | 'diff'
+  /** 预览标签：单击打开，被下一次预览打开替换（像 VS Code） */
+  preview?: boolean
   diff?: { left: DiffSide; right: DiffSide }
 }
 
@@ -206,6 +208,42 @@ function restoreDraft(key: string, model: any, file: { path: string; text: strin
 function setStatus(phase: WorkspaceStatus['phase'], message: string | null) {
   if (status.phase === phase && status.message === message) return
   status = { phase, message }
+  publish()
+}
+
+/** 无条件关闭（脏检查由调用方负责）；不会为空活动标签做兜底 */
+function forceClose(key: string) {
+  const tab = tabOf(key)
+  if (!tab) return
+  const index = tabs.findIndex((item) => item.key === key)
+  try {
+    models.get(key)?.dispose()
+  } catch {
+    /* ignore */
+  }
+  const pair = diffModels.get(key)
+  if (pair) {
+    try {
+      pair.original?.dispose()
+      pair.modified?.dispose()
+    } catch {
+      /* ignore */
+    }
+    diffModels.delete(key)
+  }
+  models.delete(key)
+  savedVersion.delete(key)
+  baseInfo.delete(key)
+  removeDraft(key)
+  const timer = draftTimers.get(key)
+  if (timer) window.clearTimeout(timer)
+  draftTimers.delete(key)
+  tabs = tabs.filter((item) => item.key !== key)
+  if (active === key) {
+    const next = tabs[Math.min(index, tabs.length - 1)]
+    active = next ? next.key : null
+  }
+  syncEditor()
   publish()
 }
 
@@ -449,11 +487,14 @@ export const workspace = {
   },
 
   /** 从文件树打开一个文件 */
-  async openEntry(entry: Entry) {
+  async openEntry(entry: Entry, options: { preview?: boolean } = {}) {
     layout.open()
     const key = keyOf(entry.path)
     if (models.has(key)) {
       active = key
+      if (options.preview && tabs.some((tab) => tab.key === key)) {
+        // 再次单击预览文件：保留预览态
+      }
       syncEditor()
       publish()
       return
@@ -494,19 +535,32 @@ export const workspace = {
 
       const isDirty = model.getAlternativeVersionId() !== savedVersion.get(modelKey)
 
-      tabs = [
-        ...tabs,
-        {
-          key: modelKey,
-          path,
-          name: entry.name,
-          dirty: isDirty,
-          readOnly: file.truncated,
-          size: file.size,
-          truncated: file.truncated,
-          kind: 'file'
+      const nextTab: WorkspaceTab = {
+        key: modelKey,
+        path,
+        name: entry.name,
+        dirty: isDirty,
+        readOnly: file.truncated,
+        size: file.size,
+        truncated: file.truncated,
+        kind: 'file',
+        preview: options.preview === true && !isDirty
+      }
+
+      // 预览模式：替换掉上一个干净的预览标签（未保存的文件不替换）
+      const previewIndex = options.preview
+        ? tabs.findIndex((tab) => tab.preview === true && tab.kind === 'file' && !tab.dirty)
+        : -1
+      if (previewIndex >= 0) {
+        const replaced = tabs[previewIndex]
+        if (replaced.key !== modelKey) {
+          tabs = tabs.map((tab, index) => (index === previewIndex ? nextTab : tab))
+        } else {
+          tabs = tabs.map((tab) => (tab.key === modelKey ? nextTab : tab))
         }
-      ]
+      } else {
+        tabs = [...tabs, nextTab]
+      }
       active = modelKey
       syncEditor()
       setStatus(
@@ -550,6 +604,55 @@ export const workspace = {
         publish()
       }
     }
+  },
+
+  /** 把预览标签固定下来（双击标签 / 双击文件时调用） */
+  pin(key: string) {
+    let changed = false
+    tabs = tabs.map((tab) => {
+      if (tab.key === key && tab.preview) {
+        changed = true
+        return { ...tab, preview: false }
+      }
+      return tab
+    })
+    if (changed) publish()
+  },
+
+  /** 拖拽排序：把 fromKey 移到 toIndex 的位置 */
+  moveTab(fromKey: string, toIndex: number) {
+    const from = tabs.findIndex((tab) => tab.key === fromKey)
+    if (from < 0) return
+    const clamped = Math.max(0, Math.min(toIndex, tabs.length - 1))
+    if (clamped === from) return
+    const next = tabs.slice()
+    const [moved] = next.splice(from, 1)
+    next.splice(clamped, 0, moved)
+    tabs = next
+    publish()
+  },
+
+  /** 关闭其他标签（脏文件先确认） */
+  closeOthers(key: string) {
+    const rest = tabs.filter((tab) => tab.key !== key)
+    const dirty = rest.filter((tab) => tab.dirty)
+    if (dirty.length > 0 && !window.confirm(`${dirty.length} 个其他标签有未保存的修改，确定关闭？`)) return
+    for (const tab of rest) forceClose(tab.key)
+  },
+
+  /** 关闭右侧标签 */
+  closeRight(key: string) {
+    const index = tabs.findIndex((tab) => tab.key === key)
+    if (index < 0) return
+    const rest = tabs.slice(index + 1)
+    const dirty = rest.filter((tab) => tab.dirty)
+    if (dirty.length > 0 && !window.confirm(`${dirty.length} 个右侧标签有未保存的修改，确定关闭？`)) return
+    for (const tab of rest) forceClose(tab.key)
+  },
+
+  /** 关闭所有已保存的标签（保留脏文件） */
+  closeSaved() {
+    for (const tab of tabs.filter((item) => !item.dirty && !item.preview)) forceClose(tab.key)
   },
 
   activate(key: string) {

@@ -6,6 +6,7 @@ import { h } from '../../h'
 import { customIcons } from '../../kernel/custom-icons'
 import { registry, type WorkbenchContext } from '../../kernel/registry'
 import { api, type Entry } from '../../kernel/transport'
+import { workspace } from '../editor/monaco/workspace'
 import { CSS } from './styles'
 import { FileTree } from './FileTree'
 import { loadIcons } from './icons'
@@ -15,7 +16,9 @@ function ExplorerView({ ctx }: { ctx: WorkbenchContext }) {
   return h(FileTree, {
     cwd: ctx.cwd,
     activePath: document.activePath,
-    onOpen: (entry: Entry) => registry.openFile(entry.path, { name: entry.name })
+    onOpen: (entry: Entry, options?: { preview?: boolean }) => {
+      void workspace.openEntry(entry, options)
+    }
   })
 }
 
