@@ -14,6 +14,8 @@ import { layout, MIN_H, MIN_W, SAFE_TOP, type Rect } from '../layout'
 import { palette } from '../palette'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { prefs } from '../prefs'
+import { statusInfo } from '../status'
+import { statusInfo } from '../status'
 import { api, health } from '../transport'
 import { registry, type WorkbenchContext } from '../registry'
 import { Palette } from '../ui/Palette'
@@ -57,6 +59,8 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
   React.useSyncExternalStore(registry.subscribeViews, registry.getViewVersion)
   React.useSyncExternalStore(registry.subscribeStatus, registry.getStatusVersion)
 
+  const status = React.useSyncExternalStore(statusInfo.subscribe, statusInfo.getSnapshot)
+  const status = React.useSyncExternalStore(statusInfo.subscribe, statusInfo.getSnapshot)
   const [viewport, setViewport] = React.useState({ w: window.innerWidth, h: window.innerHeight })
   const [cwd, setCwd] = React.useState<string | null>(null)
   const [cwdError, setCwdError] = React.useState<string | null>(null)
@@ -302,6 +306,23 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         h('span', { key: item.id, className: 'dsv-status-item' }, item.render(ctx))
       ),
       h('span', { className: 'dsv-spacer' }),
+      status.branch
+        ? h(
+            'span',
+            { className: 'dsv-status-chip', title: '当前分支' },
+            `⎇ ${status.branch}${status.ahead || status.behind ? ` ↑${status.ahead ?? 0} ↓${status.behind ?? 0}` : ''}`
+          )
+        : null,
+      status.line
+        ? h('span', { className: 'dsv-status-chip', title: '光标位置' }, `Ln ${status.line}, Col ${status.column ?? 1}`)
+        : null,
+      status.language
+        ? h(
+            'span',
+            { className: 'dsv-status-chip', title: '语言 / 行尾' },
+            `${status.language}${status.eol ? ` · ${status.eol}` : ''}`
+          )
+        : null,
       h('span', null, cwd || '无工作区'),
       h('span', null, `会话 ${sessionId ? sessionId.slice(0, 8) : '—'}`),
       // 速览：临时隐藏工作台去看 DSH，再按一次原样回来

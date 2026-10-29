@@ -8,6 +8,7 @@
 
 import { api } from '../../kernel/transport'
 import { registry } from '../../kernel/registry'
+import { statusInfo } from '../../kernel/status'
 
 export type GitChange = {
   path: string
@@ -138,6 +139,7 @@ export const git = {
           commits: log.commits ?? [],
           updatedAt: Date.now()
         })
+        statusInfo.set({ branch: result.branch, ahead: result.ahead, behind: result.behind })
       })
       .catch((error) => {
         const raw = error instanceof Error ? error.message : String(error)
@@ -152,6 +154,7 @@ export const git = {
           changes: [],
           commits: []
         })
+        statusInfo.set({ branch: null, ahead: 0, behind: 0 })
       })
       .finally(() => {
         inflight = null

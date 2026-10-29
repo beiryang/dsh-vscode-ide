@@ -12,6 +12,7 @@
 import { api, type Entry } from '../../../kernel/transport'
 import { getDraft, putDraft, removeDraft } from '../drafts'
 import { layout } from '../../../kernel/layout'
+import { statusInfo } from '../../../kernel/status'
 import { DEFAULT_EDITOR_FONT, prefs } from '../../../kernel/prefs'
 import { isDark } from '../../../kernel/theme'
 import { loadMonaco } from './loader'
@@ -131,6 +132,19 @@ const draftTimers = new Map<string, number>()
 const TABS_KEY = 'dsv:tabs.v1'
 
 let tabs: WorkspaceTab[] = []
+let cursor = { line: 1, column: 1 }
+
+/** 把当前编辑器状态同步到内核状态栏 */
+function pushStatus() {
+  const tab = active ? tabOf(active) : undefined
+  const model = active ? models.get(active) : undefined
+  statusInfo.set({
+    line: cursor.line,
+    column: cursor.column,
+    language: tab ? languageOf(tab.name) : '',
+    eol: model ? (model.getEOL() === '\r\n' ? 'CRLF' : 'LF') : ''
+  })
+}
 let active: string | null = null
 let status: WorkspaceStatus = { phase: 'idle', message: null }
 let editorReady = false
@@ -300,6 +314,9 @@ function syncEditor() {
   if (model) {
     if (editor.getModel() !== model) editor.setModel(model)
     editor.updateOptions({ readOnly: tab?.readOnly === true })
+    const position = editor.getPosition?.()
+    if (position) cursor = { line: position.lineNumber, column: position.column }
+    pushStatus()
     focusEditorSoon()
   } else {
     editor.setModel(null)
@@ -402,6 +419,15 @@ export const workspace = {
     editorReady = true
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (active) void workspace.save(active)
+    })
+    editor.onDidChangeCursorPosition((event: any) => {
+      cursor = { line: event.position.lineNumber, column: event.position.column }
+      pushStatus()
+    })
+    editor.onDidChangeModel(() => {
+      const position = editor.getPosition?.()
+      if (position) cursor = { line: position.lineNumber, column: position.column }
+      pushStatus()
     })
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyW, () => {
       if (active) workspace.close(active)

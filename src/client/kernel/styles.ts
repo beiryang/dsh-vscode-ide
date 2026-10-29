@@ -71,6 +71,70 @@ export const CSS = `
   font-size: 12px;
 }
 
+.dsv-breadcrumbs {
+  flex: none;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  font-size: 11px;
+  overflow: hidden;
+}
+
+.dsv-crumb {
+  border: 0;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dsv-crumb:hover { background: var(--dsv-hover); color: var(--dsv-fg); }
+.dsv-crumb[data-last="true"] { color: var(--dsv-fg); }
+.dsv-crumb-sep { color: var(--dsv-fg-faint); }
+
+.dsv-crumb-menu {
+  position: fixed;
+  z-index: 1400;
+  min-width: 180px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.dsv-crumb-item {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dsv-crumb-item:hover { background: var(--dsv-hover); }
+.dsv-crumb-item[data-dir="true"] { color: var(--dsv-fg-dim); }
+.dsv-crumb-empty { padding: 6px 8px; font-size: 11px; color: var(--dsv-fg-dim); }
+
+.dsv-status-chip {
+  padding: 0 6px;
+  border-radius: 3px;
+  background: var(--dsv-hover);
+}
+
 .dsv-root {
   position: fixed;
   inset: 0;

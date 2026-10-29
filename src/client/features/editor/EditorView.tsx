@@ -10,8 +10,9 @@ import { h } from '../../h'
 import { TabBar } from './TabBar'
 import { EditorPane } from './EditorPane'
 import { workspace } from './monaco/workspace'
+import { Breadcrumbs } from './Breadcrumbs'
 
-export function EditorView() {
+export function EditorView({ ctx }: { ctx?: { cwd?: string | null } }) {
   const snap = React.useSyncExternalStore(workspace.subscribe, workspace.getSnapshot)
   const activeTab = snap.tabs.find((tab) => tab.key === snap.active)
 
@@ -34,6 +35,9 @@ export function EditorView() {
           )
         : null
     ),
+    activeTab && activeTab.kind === 'file'
+      ? h(Breadcrumbs, { path: activeTab.path, cwd: ctx?.cwd ?? null })
+      : null,
     h(EditorPane, null)
   )
 }
