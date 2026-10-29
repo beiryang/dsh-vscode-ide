@@ -15,7 +15,6 @@ import { palette } from '../palette'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { prefs } from '../prefs'
 import { statusInfo } from '../status'
-import { statusInfo } from '../status'
 import { api, health } from '../transport'
 import { registry, type WorkbenchContext } from '../registry'
 import { Palette } from '../ui/Palette'
@@ -59,7 +58,6 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
   React.useSyncExternalStore(registry.subscribeViews, registry.getViewVersion)
   React.useSyncExternalStore(registry.subscribeStatus, registry.getStatusVersion)
 
-  const status = React.useSyncExternalStore(statusInfo.subscribe, statusInfo.getSnapshot)
   const status = React.useSyncExternalStore(statusInfo.subscribe, statusInfo.getSnapshot)
   const [viewport, setViewport] = React.useState({ w: window.innerWidth, h: window.innerHeight })
   const [cwd, setCwd] = React.useState<string | null>(null)
