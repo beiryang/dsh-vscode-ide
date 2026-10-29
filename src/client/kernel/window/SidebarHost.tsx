@@ -51,6 +51,19 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
           h('span', { className: 'dsv-activity-icon' }, iconOf(view))
         )
       )
+      h(
+        'button',
+        {
+          key: 'search',
+          className: 'dsv-activity-btn dsv-activity-search',
+          title: '搜索（Ctrl+Alt+Shift+F）',
+          onClick: () => {
+            const open = (window as unknown as { __dsvOpenSearch?: () => void }).__dsvOpenSearch
+            if (open) open()
+          }
+        },
+        h('span', { className: 'dsv-activity-icon' }, '⌕')
+      )
     ),
     /* 内容区 */
     h(

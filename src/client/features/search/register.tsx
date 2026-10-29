@@ -23,6 +23,7 @@ export function registerSearchFeature(): () => void {
       run: () => {
         layout.open()
         searchPanel.open()
+  ;(window as unknown as { __dsvOpenSearch?: () => void }).__dsvOpenSearch = () => searchPanel.open()
       }
     })
   ]

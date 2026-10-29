@@ -15,7 +15,6 @@ export const CSS = `
 }
 
 .dsv-scm-branch-name {
-  font-family: var(--dsv-mono, monospace);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
