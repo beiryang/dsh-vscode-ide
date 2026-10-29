@@ -554,7 +554,10 @@ export const workspace = {
       if (previewIndex >= 0) {
         const replaced = tabs[previewIndex]
         if (replaced.key !== modelKey) {
-          tabs = tabs.map((tab, index) => (index === previewIndex ? nextTab : tab))
+          // 先回收被替换的预览标签（模型/草稿/版本表），再在原位置放入新标签
+          forceClose(replaced.key)
+          const insertAt = Math.min(previewIndex, tabs.length)
+          tabs = [...tabs.slice(0, insertAt), nextTab, ...tabs.slice(insertAt)]
         } else {
           tabs = tabs.map((tab) => (tab.key === modelKey ? nextTab : tab))
         }
