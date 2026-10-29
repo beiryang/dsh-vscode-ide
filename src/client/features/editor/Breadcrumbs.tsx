@@ -71,11 +71,12 @@ export function Breadcrumbs({ path, cwd }: Props) {
   }
 
   const openEntry = (entry: Entry) => {
-    setMenu(null)
     if (entry.dir) {
-      setMenu((previous) => (previous ? { ...previous, dir: entry.path } : null))
+      // 下钻：只更新目录；不要先 setMenu(null)，否则 previous 已是 null，菜单直接关掉
+      setMenu((previous) => (previous ? { ...previous, dir: entry.path } : previous))
       return
     }
+    setMenu(null)
     void workspace.openEntry(entry, { preview: true })
   }
 
