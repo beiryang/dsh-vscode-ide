@@ -1,8 +1,5 @@
 /**
  * 侧栏容器：左侧竖向图标栏（类 VS Code 活动栏）+ 右侧内容区。
- *
- * 内核仍然只知道 id/title/icon/component；图标缺失时用标题首字兜底。
- * hidden 视图（比如设置）不占图标栏位置，激活时顶部出现「返回 + 标题」。
  */
 
 import * as React from 'react'
@@ -11,39 +8,39 @@ import { h } from '../../h'
 import { registry, type ViewContribution, type WorkbenchContext } from '../registry'
 import { sidebar } from '../sidebar'
 
+function svg(children: React.ReactNode) {
+  return h('svg', { className: 'dsv-activity-svg', viewBox: '0 0 16 16', 'aria-hidden': 'true' }, children)
+}
+
 function ActivityIcon({ name }: { name: string }) {
-  const paths: Record<string, string[]> = {
-    explorer: ['M4 2h5l3 3v9H4z', 'M9 2v3h3'],
-    git: ['M5 5.2v5.6', 'M11 7.2c0 2.6-6 2.8-6 3.6'],
-    search: []
-  }
   if (name === 'search') {
-    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
-      h('circle', { cx: 7, cy: 7, r: 4.2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.3 }),
-      h('path', { d: 'M10.2 10.2 14 14', stroke: 'currentColor', 'stroke-width': 1.3, 'stroke-linecap': 'round' })
-    )
+    return svg([
+      h('circle', { key: 'c', cx: 7, cy: 7, r: 4.2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.3 }),
+      h('path', { key: 'l', d: 'M10.2 10.2 14 14', stroke: 'currentColor', 'stroke-width': 1.3, 'stroke-linecap': 'round' })
+    ])
   }
   if (name === 'explorer') {
-    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
-      ...paths.explorer.map((d, i) => h('path', { key: i, d, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2, 'stroke-linejoin': 'round' })
-      )
+    return svg([
+      h('path', { key: 'a', d: 'M4 2.5h4.5L12 6v7.5H4z', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2, 'stroke-linejoin': 'round' }),
+      h('path', { key: 'b', d: 'M8.5 2.5V6H12', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 })
+    ])
   }
   if (name === 'git') {
-    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
-      h('circle', { cx: 5, cy: 3.2, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
-      h('circle', { cx: 5, cy: 12.8, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
-      h('circle', { cx: 11, cy: 6, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
-      h('path', { d: 'M5 4.8v6.4', stroke: 'currentColor', 'stroke-width': 1.2 }),
-      h('path', { d: 'M11 7.6c0 3-6 3.1-6 3.6', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 })
-    )
+    return svg([
+      h('circle', { key: 'a', cx: 5, cy: 3.3, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('circle', { key: 'b', cx: 5, cy: 12.7, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('circle', { key: 'c', cx: 11, cy: 6, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('path', { key: 'd', d: 'M5 4.9v6.2', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('path', { key: 'e', d: 'M11 7.6c0 3-6 3.1-6 3.5', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 })
+    ])
   }
   return h('span', { className: 'dsv-activity-icon' }, name)
 }
 
-function iconOf(view: ViewContribution): string {
-  if (view.icon) return view.icon
-  const title = view.title.trim()
-  return title ? title.slice(0, 1) : '·'
+function iconNameOf(view: ViewContribution): string {
+  if (view.id === 'explorer') return 'explorer'
+  if (view.id === 'git') return 'git'
+  return view.icon ?? view.title.trim().slice(0, 1)
 }
 
 export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
@@ -51,7 +48,6 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
   const activeId = React.useSyncExternalStore(sidebar.subscribe, sidebar.getSnapshot)
   const views = registry.getViews('sidebar')
   const visible = views.filter((view) => !view.hidden)
-
   const active = views.find((item) => item.id === activeId) ?? visible[0] ?? views[0]
 
   if (views.length === 0) {
@@ -63,7 +59,6 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
   return h(
     'div',
     { className: 'dsv-sidebar' },
-    /* 竖向图标栏 */
     h(
       'div',
       { className: 'dsv-activitybar' },
@@ -77,7 +72,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
             title: view.title,
             onClick: () => sidebar.setActive(view.id)
           },
-          h(ActivityIcon, { name: view.id === 'explorer' ? 'explorer' : view.id === 'git' ? 'git' : view.icon ?? view.title })
+          h(ActivityIcon, { name: iconNameOf(view) })
         )
       ),
       h(
@@ -94,7 +89,6 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
         h(ActivityIcon, { name: 'search' })
       )
     ),
-    /* 内容区 */
     h(
       'div',
       { className: 'dsv-sidebar-content' },
