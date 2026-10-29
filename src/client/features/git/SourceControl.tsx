@@ -156,7 +156,7 @@ function GraphRow({
           preserveAspectRatio: 'none'
         },
         lanes.occupied.map((active, index) =>
-          active && index !== lanes.dot
+          active
             ? h('line', {
                 key: `lane-${index}`,
                 x1: index * 10 + 6,
@@ -187,7 +187,10 @@ function GraphRow({
     expanded
       ? h(
           'div',
-          { className: 'dsv-scm-commit-files' },
+          {
+            className: 'dsv-scm-commit-files',
+            style: { borderLeftColor: LANE_COLORS[lanes.dot % LANE_COLORS.length] }
+          },
           busy
             ? h('div', { className: 'dsv-scm-hint' }, '读取提交内容…')
             : detail?.error

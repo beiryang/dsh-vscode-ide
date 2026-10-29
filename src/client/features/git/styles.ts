@@ -409,9 +409,9 @@ export const CSS = `
 .dsv-scm-commit-caret { flex: none; font-size: 9px; color: var(--dsv-fg-dim); margin-left: 2px; }
 
 .dsv-scm-commit-files {
-  padding: 2px 0 4px 26px;
-  border-left: 1px solid var(--dsv-border-soft, var(--dsv-border));
-  margin-left: 22px;
+  padding: 2px 0 4px 18px;
+  border-left: 2px solid var(--dsv-border-soft, var(--dsv-border));
+  margin-left: 5px;
 }
 
 .dsv-scm-commit-file {
