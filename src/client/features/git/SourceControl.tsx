@@ -74,6 +74,29 @@ type CommitDetail = {
   error?: string
 }
 
+function LaneTrack({ lanes, dot }: { lanes: LaneRow; dot: boolean }) {
+  return h(
+    'div',
+    { className: 'dsv-scm-lane-track', style: { width: `${lanes.count * 10 + 2}px` } },
+    lanes.occupied.map((active, index) =>
+      active
+        ? h('span', {
+            key: `lane-${index}`,
+            className: 'dsv-scm-lane',
+            style: { left: `${index * 10 + 5}px`, background: LANE_COLORS[index % LANE_COLORS.length] }
+          })
+        : null
+    ),
+    dot
+      ? h('span', {
+          key: 'dot',
+          className: 'dsv-scm-dot',
+          style: { left: `${lanes.dot * 10 + 2}px`, background: LANE_COLORS[lanes.dot % LANE_COLORS.length] }
+        })
+      : null
+  )
+}
+
 const LANE_COLORS = ['#61afef', '#98c379', '#e5c07b', '#c678dd', '#56b6c2', '#e06c75']
 
 type LaneRow = { dot: number; count: number; occupied: boolean[] }
@@ -146,38 +169,7 @@ function GraphRow({
         onMouseLeave: onLeave,
         title: '点击查看这次提交改了哪些文件'
       },
-      h(
-        'svg',
-        {
-          className: 'dsv-scm-lanes',
-          width: lanes.count * 10 + 2,
-          height: '100%',
-          viewBox: `0 0 ${lanes.count * 10 + 2} 26`,
-          preserveAspectRatio: 'none',
-          'shape-rendering': 'crispEdges'
-        },
-        lanes.occupied.map((active, index) =>
-          active
-            ? h('line', {
-                key: `lane-${index}`,
-                x1: index * 10 + 6,
-                y1: 0,
-                x2: index * 10 + 6,
-                y2: 26,
-                stroke: LANE_COLORS[index % LANE_COLORS.length],
-                'stroke-width': 2,
-                'stroke-opacity': 0.75
-              })
-            : null
-        ),
-        h('circle', {
-          key: 'dot',
-          cx: lanes.dot * 10 + 6,
-          cy: 13,
-          r: 4,
-          fill: LANE_COLORS[lanes.dot % LANE_COLORS.length]
-        })
-      ),
+      h(LaneTrack, { lanes, dot: true }),
       h('span', { className: 'dsv-scm-graph-subject' }, commit.subject),
       h('span', { className: 'dsv-scm-graph-author' }, commit.author),
       refBadges(commit.refs).map((badge) =>
@@ -189,25 +181,7 @@ function GraphRow({
       ? h(
           'div',
           { className: 'dsv-scm-commit-files' },
-          h(
-            'svg',
-            {
-              className: 'dsv-scm-lane-line',
-              width: lanes.count * 10 + 2,
-              height: '100%',
-              viewBox: `0 0 ${lanes.count * 10 + 2} 26`,
-              preserveAspectRatio: 'none',
-              'shape-rendering': 'crispEdges'
-            },
-            h('line', {
-              x1: lanes.dot * 10 + 6,
-              y1: 0,
-              x2: lanes.dot * 10 + 6,
-              y2: 26,
-              stroke: LANE_COLORS[lanes.dot % LANE_COLORS.length],
-              'stroke-width': 2
-            })
-          ),
+          h(LaneTrack, { lanes, dot: false }),
           busy
             ? h('div', { className: 'dsv-scm-hint' }, '读取提交内容…')
             : detail?.error

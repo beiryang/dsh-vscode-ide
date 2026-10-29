@@ -346,10 +346,28 @@ export const CSS = `
   border: none;
 }
 
-.dsv-scm-lanes {
+.dsv-scm-lane-track {
+  position: relative;
   flex: none;
-  height: 26px;
-  display: block;
+  align-self: stretch;
+  height: 100%;
+}
+
+.dsv-scm-lane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  opacity: 0.75;
+}
+
+.dsv-scm-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
 }
 
 .dsv-scm-commit-toggle {
