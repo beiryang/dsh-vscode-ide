@@ -183,6 +183,20 @@ export const CSS = `
 
 .dsv-body { flex: 1; min-height: 0; display: flex; }
 
+.dsv-sidebar-resize {
+  flex: none;
+  width: 6px;
+  margin-left: -3px;
+  cursor: ew-resize;
+  background: transparent;
+  z-index: 5;
+  touch-action: none;
+}
+
+.dsv-sidebar-resize:hover {
+  background: color-mix(in srgb, var(--dsv-accent) 45%, transparent);
+}
+
 .dsv-activitybar {
   flex: none;
   width: 44px;

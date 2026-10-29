@@ -160,6 +160,53 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
   const rect = state.max
     ? { x: 0, y: SAFE_TOP, w: viewport.w, h: Math.max(MIN_H, viewport.h - SAFE_TOP) }
     : state.rect
+  const [sidebarWidth, setSidebarWidth] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem('dsv:sidebar.width.v1')
+      const value = raw ? Number(raw) : NaN
+      if (Number.isFinite(value)) return Math.min(Math.max(Math.round(value), 200), 560)
+    } catch {
+      /* ignore */
+    }
+    return 264
+  })
+
+  const beginSidebarResize = (event: React.PointerEvent) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    const handle = event.currentTarget as HTMLElement
+    const startX = event.clientX
+    const startWidth = sidebarWidth
+    const onMove = (moveEvent: PointerEvent) => {
+      const bodyWidth = handle.parentElement?.clientWidth ?? window.innerWidth
+      const maxWidth = Math.max(240, Math.min(560, bodyWidth * 0.7))
+      setSidebarWidth(Math.min(Math.max(startWidth + (moveEvent.clientX - startX), 200), maxWidth))
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      setSidebarWidth((current) => {
+        try {
+          localStorage.setItem('dsv:sidebar.width.v1', String(current))
+        } catch {
+          /* ignore */
+        }
+        return current
+      })
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
+  const resetSidebarWidth = () => {
+    setSidebarWidth(264)
+    try {
+      localStorage.setItem('dsv:sidebar.width.v1', '264')
+    } catch {
+      /* ignore */
+    }
+  }
+
   const mainViews = registry.getViews('main')
   const panelViews = registry.getViews('panel')
   const panelDock = prefs.getSnapshot().panelDock
@@ -207,7 +254,13 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
     h(
       'div',
       { className: 'dsv-body' },
-      h(SidebarHost, { ctx }),
+      h(SidebarHost, { ctx, width: sidebarWidth }),
+      h('div', {
+        className: 'dsv-sidebar-resize',
+        onPointerDown: beginSidebarResize,
+        onDoubleClick: resetSidebarWidth,
+        title: '拖动调整侧栏宽度（双击恢复默认）'
+      }),
       h(
         'div',
         { className: 'dsv-main' },

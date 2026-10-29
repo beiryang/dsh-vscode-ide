@@ -43,7 +43,7 @@ function iconNameOf(view: ViewContribution): string {
   return view.icon ?? view.title.trim().slice(0, 1)
 }
 
-export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
+export function SidebarHost({ ctx, width }: { ctx: WorkbenchContext; width?: number }) {
   React.useSyncExternalStore(registry.subscribeViews, registry.getViewVersion)
   const activeId = React.useSyncExternalStore(sidebar.subscribe, sidebar.getSnapshot)
   const views = registry.getViews('sidebar')
@@ -58,7 +58,10 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
 
   return h(
     'div',
-    { className: 'dsv-sidebar' },
+    {
+      className: 'dsv-sidebar',
+      style: width ? { width: `${width}px`, minWidth: '200px', maxWidth: '70%' } : undefined
+    },
     h(
       'div',
       { className: 'dsv-activitybar' },
