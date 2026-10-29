@@ -75,9 +75,10 @@ type CommitDetail = {
 }
 
 function LaneTrack({ lanes, dot }: { lanes: LaneRow; dot: boolean }) {
+  const width = lanes.count * 10 + 2
   return h(
     'div',
-    { className: 'dsv-scm-lane-track', style: { width: `${lanes.count * 10 + 2}px` } },
+    { className: 'dsv-scm-lane-track', style: { width: `${width}px` } },
     lanes.occupied.map((active, index) =>
       active
         ? h('span', {
@@ -87,6 +88,30 @@ function LaneTrack({ lanes, dot }: { lanes: LaneRow; dot: boolean }) {
           })
         : null
     ),
+    lanes.links.length > 0
+      ? h(
+          'svg',
+          {
+            key: 'links',
+            className: 'dsv-scm-lane-curves',
+            width,
+            height: '100%',
+            viewBox: `0 0 ${width} 26`,
+            preserveAspectRatio: 'none',
+            'shape-rendering': 'geometricPrecision'
+          },
+          lanes.links.map((link, index) =>
+            h('path', {
+              key: `link-${index}`,
+              d: `M ${link.from * 10 + 6} 13 Q ${link.from * 10 + 6} 26 ${link.to * 10 + 6} 26`,
+              fill: 'none',
+              stroke: LANE_COLORS[link.to % LANE_COLORS.length],
+              'stroke-width': 2,
+              'stroke-opacity': 0.75
+            })
+          )
+        )
+      : null,
     dot
       ? h('span', {
           key: 'dot',
@@ -99,7 +124,7 @@ function LaneTrack({ lanes, dot }: { lanes: LaneRow; dot: boolean }) {
 
 const LANE_COLORS = ['#61afef', '#98c379', '#e5c07b', '#c678dd', '#56b6c2', '#e06c75']
 
-type LaneRow = { dot: number; count: number; occupied: boolean[] }
+type LaneRow = { dot: number; count: number; occupied: boolean[]; links: Array<{ from: number; to: number }> }
 
 /** 简单的多车道布局：每个活跃分支一条竖线，提交落在自己的车道上 */
 function buildLanes(commits: Commit[]): LaneRow[] {
@@ -109,6 +134,7 @@ function buildLanes(commits: Commit[]): LaneRow[] {
     // 关键：parents 是完整 hash（%P），提交列表里是短 hash（%h），
     // 必须用完整 hash 做车道匹配，否则线性历史会被误判成一条条新分支
     const key = commit.full ?? commit.hash
+    const links: Array<{ from: number; to: number }> = []
     let lane = lanes.indexOf(key)
     if (lane < 0) {
       lane = lanes.findIndex((value) => value === null)
@@ -128,9 +154,10 @@ function buildLanes(commits: Commit[]): LaneRow[] {
         lanes.push(null)
       }
       lanes[slot] = parent
+      links.push({ from: lane, to: slot })
     }
     while (lanes.length > 0 && lanes[lanes.length - 1] === null) lanes.pop()
-    rows.push({ dot: lane, count: Math.max(1, lanes.length), occupied: lanes.map((value) => value !== null) })
+    rows.push({ dot: lane, count: Math.max(1, lanes.length), occupied: lanes.map((value) => value !== null), links })
   }
   return rows
 }
@@ -144,7 +171,8 @@ function GraphRow({
   onToggle,
   onOpenFile,
   onHover,
-  onLeave
+  onLeave,
+  onMenu
 }: {
   commit: Commit
   lanes: LaneRow
@@ -155,6 +183,7 @@ function GraphRow({
   onOpenFile: (path: string) => void
   onHover: (event: React.MouseEvent, commit: Commit) => void
   onLeave: () => void
+  onMenu: (event: React.MouseEvent, commit: Commit) => void
 }) {
   return h(
     'div',
@@ -166,6 +195,7 @@ function GraphRow({
         'data-active': expanded ? 'true' : 'false',
         onClick: onToggle,
         onMouseEnter: (event: React.MouseEvent) => onHover(event, commit),
+        onContextMenu: (event: React.MouseEvent) => onMenu(event, commit),
         onMouseLeave: onLeave,
         title: '点击查看这次提交改了哪些文件'
       },
@@ -288,10 +318,13 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [message, setMessage] = React.useState('')
   const [collapsed, setCollapsed] = React.useState({ staged: false, unstaged: false })
   const [menu, setMenu] = React.useState<MenuState | null>(null)
-  const [commitMenu, setCommitMenu] = React.useState(false)
+  const [commitDropdown, setCommitDropdown] = React.useState(false)
   const [rootMenu, setRootMenu] = React.useState(false)
   const [graphCollapsed, setGraphCollapsed] = React.useState(false)
   const [tip, setTip] = React.useState<{ commit: Commit; x: number; y: number } | null>(null)
+  const [commitMenu, setCommitMenu] = React.useState<{ x: number; y: number; commit: Commit } | null>(null)
+  const [branchFor, setBranchFor] = React.useState<Commit | null>(null)
+  const [branchName, setBranchName] = React.useState('')
   const [openCommit, setOpenCommit] = React.useState<string | null>(null)
   const [commitDetails, setCommitDetails] = React.useState<Record<string, CommitDetail>>({})
   const [commitBusy, setCommitBusy] = React.useState<string | null>(null)
@@ -312,10 +345,10 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
 
   // 点别处关掉右键菜单 / 提交下拉
   React.useEffect(() => {
-    if (!menu && !commitMenu && !rootMenu) return
+    if (!menu && !commitDropdown && !rootMenu) return
     const close = () => {
       setMenu(null)
-      setCommitMenu(false)
+      setCommitDropdown(false)
       setRootMenu(false)
     }
     const timer = window.setTimeout(() => {
@@ -327,7 +360,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       window.removeEventListener('pointerdown', close)
       window.removeEventListener('blur', close)
     }
-  }, [menu, commitMenu, rootMenu])
+  }, [menu, commitDropdown, rootMenu])
 
   const lanes = React.useMemo(() => buildLanes(snap.commits), [snap.commits])
   const staged = snap.changes.filter((change) => change.staged)
@@ -373,6 +406,13 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
     } finally {
       setCommitBusy(null)
     }
+  }
+
+  const fullRef = (commit: Commit) => commit.full ?? commit.hash
+
+  const runCommitAction = async (label: string, action: () => Promise<unknown>) => {
+    await git.run(label, action)
+    await git.refresh()
   }
 
   const openCommitFile = async (hash: string, filePath: string) => {
@@ -426,7 +466,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const openMenu = (event: React.MouseEvent, change: GitChange, stagedRow: boolean) => {
     event.preventDefault()
     event.stopPropagation()
-    setCommitMenu(false)
+    setCommitDropdown(false)
     setMenu({ x: event.clientX, y: event.clientY, change, staged: stagedRow })
   }
 
@@ -560,7 +600,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
               event.stopPropagation()
               setMenu(null)
               setRootMenu(false)
-              setCommitMenu((previous) => !previous)
+              setCommitDropdown((previous) => !previous)
             }
           },
           '▾'
@@ -570,9 +610,9 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
         ? h(
             'div',
             { className: 'dsv-scm-dropdown', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
-            h('button', { disabled: !canCommit, onClick: () => { setCommitMenu(false); void submit() } }, '提交已暂存的更改'),
-            h('button', { disabled: !hasMessage, onClick: () => { setCommitMenu(false); void submitAll() } }, '提交全部更改（先全部暂存）'),
-            h('button', { disabled: !hasMessage, onClick: () => { setCommitMenu(false); void submitAndPush() } }, '提交并推送')
+            h('button', { disabled: !canCommit, onClick: () => { setCommitDropdown(false); void submit() } }, '提交已暂存的更改'),
+            h('button', { disabled: !hasMessage, onClick: () => { setCommitDropdown(false); void submitAll() } }, '提交全部更改（先全部暂存）'),
+            h('button', { disabled: !hasMessage, onClick: () => { setCommitDropdown(false); void submitAndPush() } }, '提交并推送')
           )
         : null,
       snap.note ? h('div', { className: 'dsv-scm-note', title: snap.note }, snap.note) : null
@@ -667,7 +707,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             h(GraphRow, {
               key: commit.hash,
               commit,
-              lanes: lanes[index] ?? { dot: 0, count: 1, occupied: [true] },
+              lanes: lanes[index] ?? { dot: 0, count: 1, occupied: [true], links: [] },
               expanded: openCommit === commit.hash,
               detail: commitDetails[commit.hash],
               busy: commitBusy === commit.hash,
@@ -678,7 +718,11 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
                 const x = Math.min(event.clientX + 14, window.innerWidth - width - 12)
                 setTip({ commit: hovered, x: Math.max(8, x), y: Math.min(event.clientY + 12, window.innerHeight - 160) })
               },
-              onLeave: () => setTip(null)
+              onLeave: () => setTip(null),
+              onMenu: (event: React.MouseEvent, hovered: Commit) => {
+                event.preventDefault()
+                setCommitMenu({ x: event.clientX, y: event.clientY, commit: hovered })
+              }
             })
           )
         ),
@@ -701,6 +745,131 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             h('span', { className: 'dsv-scm-tip-hash' }, tip.commit.hash),
             refBadges(tip.commit.refs).map((badge) =>
               h('span', { key: `tip:${badge.label}`, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
+            )
+          )
+        )
+      : null,
+
+    /* 提交右键菜单 */
+    commitMenu
+      ? h(
+          'div',
+          {
+            className: 'dsv-scm-commit-menu',
+            style: { left: `${commitMenu.x}px`, top: `${commitMenu.y}px` },
+            onPointerDown: (event: React.PointerEvent) => event.stopPropagation()
+          },
+          h(
+            'button',
+            {
+              className: 'dsv-scm-commit-menu-item',
+              onClick: () => {
+                void navigator.clipboard?.writeText(commitMenu.commit.hash).catch(() => undefined)
+                setCommitMenu(null)
+              }
+            },
+            `复制短 hash（${commitMenu.commit.hash}）`
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-scm-commit-menu-item',
+              onClick: () => {
+                void navigator.clipboard?.writeText(fullRef(commitMenu.commit)).catch(() => undefined)
+                setCommitMenu(null)
+              }
+            },
+            '复制完整 hash'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-scm-commit-menu-item',
+              onClick: () => {
+                const commit = commitMenu.commit
+                setCommitMenu(null)
+                if (!window.confirm(`检出提交 ${commit.hash}？工作区会切换到该提交（detached HEAD）。`)) return
+                void runCommitAction('检出提交', () => api.gitCheckout(fullRef(commit), snap.gitRoot))
+              }
+            },
+            '检出此提交…'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-scm-commit-menu-item',
+              onClick: () => {
+                setBranchFor(commitMenu.commit)
+                setBranchName(``)
+                setCommitMenu(null)
+              }
+            },
+            '从此提交建分支…'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-scm-commit-menu-item',
+              'data-danger': 'true',
+              onClick: () => {
+                const commit = commitMenu.commit
+                setCommitMenu(null)
+                if (!window.confirm(`撤销提交 ${commit.hash}「${commit.subject}」？\n会生成一条反向提交，已推送的内容需要再推一次。`)) return
+                void runCommitAction('撤销提交', () => api.gitRevert(fullRef(commit), snap.gitRoot))
+              }
+            },
+            '撤销此提交…'
+          )
+        )
+      : null,
+
+    /* 新建分支对话框 */
+    branchFor
+      ? h(
+          'div',
+          { className: 'dsv-scm-dialog-backdrop', onPointerDown: () => setBranchFor(null) },
+          h(
+            'div',
+            { className: 'dsv-scm-dialog', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
+            h('div', { className: 'dsv-scm-dialog-title' }, `从 ${branchFor.hash} 创建分支`),
+            h('input', {
+              className: 'dsv-scm-dialog-input',
+              value: branchName,
+              autoFocus: true,
+              placeholder: '分支名，例如 feature/graph',
+              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                setBranchName((event.target as HTMLInputElement).value),
+              onKeyDown: (event: React.KeyboardEvent) => {
+                if (event.key === 'Escape') setBranchFor(null)
+                if (event.key === 'Enter' && branchName.trim()) {
+                  const commit = branchFor
+                  const name = branchName.trim()
+                  setBranchFor(null)
+                  setBranchName('')
+                  void runCommitAction('创建分支', () => api.gitCreateBranch(name, fullRef(commit), snap.gitRoot))
+                }
+              }
+            }),
+            h(
+              'div',
+              { className: 'dsv-scm-dialog-actions' },
+              h('button', { className: 'dsv-scm-dialog-btn', onClick: () => setBranchFor(null) }, '取消'),
+              h(
+                'button',
+                {
+                  className: 'dsv-scm-dialog-btn',
+                  'data-primary': 'true',
+                  disabled: !branchName.trim(),
+                  onClick: () => {
+                    const commit = branchFor
+                    const name = branchName.trim()
+                    setBranchFor(null)
+                    setBranchName('')
+                    void runCommitAction('创建分支', () => api.gitCreateBranch(name, fullRef(commit), snap.gitRoot))
+                  }
+                },
+                '创建'
+              )
             )
           )
         )

@@ -138,6 +138,10 @@ export const api = {
     ),
   gitCommitFile: (hash: string, path: string, gitDir = '') =>
     call<{ left: string; right: string; rel: string }>('git/commit-file', { hash, path, gitDir }),
+  gitCheckout: (ref: string, gitDir = '') => call<{ output: string }>('git/checkout', { ref, gitDir }),
+  gitCreateBranch: (name: string, ref: string, gitDir = '') =>
+    call<{ output: string }>('git/branch', { name, ref, gitDir }),
+  gitRevert: (ref: string, gitDir = '') => call<{ output: string }>('git/revert', { ref, gitDir }),
   gitPull: (gitDir = '') => call<{ output: string }>('git/pull', { gitDir }),
   gitFetch: (gitDir = '') => call<{ output: string }>('git/fetch', { gitDir }),
   gitPush: (gitDir = '') => call<{ output: string }>('git/push', { gitDir }),

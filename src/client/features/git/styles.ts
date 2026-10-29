@@ -615,4 +615,93 @@ export const CSS = `
   font-size: 14px;
   opacity: 0.7;
 }
+
+/* Graph 弯头、提交右键菜单与分支对话框 */
+.dsv-scm-lane-curves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dsv-scm-commit-menu {
+  position: fixed;
+  z-index: 1400;
+  min-width: 200px;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.dsv-scm-commit-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-scm-commit-menu-item:hover { background: var(--dsv-hover); }
+.dsv-scm-commit-menu-item[data-danger="true"] { color: #e06c75; }
+
+.dsv-scm-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dsv-scm-dialog {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 8px;
+  background: var(--dsv-panel);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.dsv-scm-dialog-title { font-size: 13px; font-weight: 600; }
+
+.dsv-scm-dialog-input {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: var(--dsv-bg);
+  color: var(--dsv-fg);
+  font-size: 12px;
+}
+
+.dsv-scm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.dsv-scm-dialog-btn {
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dsv-scm-dialog-btn[data-primary="true"] {
+  border-color: transparent;
+  background: var(--dsv-accent);
+  color: #fff;
+}
+
+.dsv-scm-dialog-btn:disabled { opacity: 0.5; cursor: default; }
 `
