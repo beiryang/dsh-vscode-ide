@@ -431,6 +431,15 @@ export const CSS = `
   padding: 2px 0 4px 18px;
 }
 
+/* 展开区的车道：脱离文档流铺满整块高度（父容器高度是 auto，height:100% 会塌成 0） */
+.dsv-scm-commit-files > .dsv-scm-lane-track {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  height: auto;
+}
+
 .dsv-scm-lane-line {
   position: absolute;
   top: 0;
