@@ -151,6 +151,16 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [commitMenu, setCommitMenu] = React.useState(false)
   const [rootMenu, setRootMenu] = React.useState(false)
   const [graphCollapsed, setGraphCollapsed] = React.useState(false)
+  const [graphHeight, setGraphHeight] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem('dsv:git.graph.v1')
+      const value = raw ? Number(JSON.parse(raw).height) : NaN
+      if (Number.isFinite(value) && value >= 80) return Math.min(value, 640)
+    } catch {
+      /* ignore */
+    }
+    return 220
+  })
 
   React.useEffect(() => {
     git.attach(cwd)
@@ -199,6 +209,34 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   }
 
   const toggle = (key: 'staged' | 'unstaged') => setCollapsed((previous) => ({ ...previous, [key]: !previous[key] }))
+
+  /** 拖动 Graph 顶部的手柄调整高度（向上拖变大） */
+  const beginGraphResize = (event: React.PointerEvent) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    const startY = event.clientY
+    const startHeight = graphHeight
+    const onMove = (moveEvent: PointerEvent) => {
+      const panel = (event.currentTarget as HTMLElement).closest('.dsv-panel') as HTMLElement | null
+      const maxHeight = Math.max(120, (panel?.clientHeight ?? window.innerHeight) * 0.7)
+      const next = Math.min(Math.max(startHeight + (startY - moveEvent.clientY), 80), maxHeight)
+      setGraphHeight(next)
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      setGraphHeight((current) => {
+        try {
+          localStorage.setItem('dsv:git.graph.v1', JSON.stringify({ height: current }))
+        } catch {
+          /* ignore */
+        }
+        return current
+      })
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
 
   const openMenu = (event: React.MouseEvent, change: GitChange, stagedRow: boolean) => {
     event.preventDefault()
@@ -410,7 +448,15 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
         : null
     ),
 
-    /* Graph：最近提交 + 远端操作 */
+    /* Graph：最近提交 + 远端操作（顶部可拖动调高度） */
+    graphCollapsed
+      ? null
+      : h('div', {
+          className: 'dsv-scm-graph-resize',
+          onPointerDown: beginGraphResize,
+          onDoubleClick: () => setGraphHeight(220),
+          title: '拖动调整 Graph 高度（双击恢复默认）'
+        }),
     h(
       'div',
       { className: 'dsv-scm-section-head' },
@@ -431,7 +477,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       ? null
       : h(
           'div',
-          { className: 'dsv-scm-graph' },
+          { className: 'dsv-scm-graph', style: { height: `${graphHeight}px` } },
           snap.commits.map((commit) => h(GraphRow, { key: commit.hash, commit }))
         ),
 

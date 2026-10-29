@@ -313,8 +313,21 @@ export const CSS = `
 }
 
 /* ── Graph 区块 ── */
+.dsv-scm-graph-resize {
+  flex: none;
+  height: 7px;
+  margin-top: 2px;
+  border-top: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  cursor: ns-resize;
+}
+
+.dsv-scm-graph-resize:hover {
+  border-top-color: var(--dsv-accent);
+  background: color-mix(in srgb, var(--dsv-accent) 12%, transparent);
+}
+
 .dsv-scm-graph {
-  max-height: 40vh;
+  flex: none;
   overflow: auto;
   padding-bottom: 6px;
 }

@@ -33,7 +33,8 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   the dialog (host list + form) only appears when there are several hosts or none. The `▾` button always opens it
 - Source Control **file type icons** (shared Material sprite) in change rows, and a **Graph section**: recent commits
   with author, relative time, and ref badges for the current branch, remotes and tags, plus refresh / fetch / pull /
-  push buttons. `git/pull` and `git/fetch` are new host routes (local and remote)
+  push buttons. `git/pull` and `git/fetch` are new host routes (local and remote). The Graph area has a draggable
+  top edge (double-click resets to 220px) and its height is remembered in `localStorage: dsv:git.graph.v1`
 - Source Control context menu: open diff, stage/unstage, **discard changes** (restores tracked files and deletes
   untracked ones behind a confirmation), copy relative path — backed by a new `git/discard` host route
 - Commit dropdown: commit staged / commit all (stage everything first) / commit and push
