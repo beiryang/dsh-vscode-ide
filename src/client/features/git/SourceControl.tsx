@@ -83,7 +83,10 @@ function buildLanes(commits: Commit[]): LaneRow[] {
   const lanes: Array<string | null> = []
   const rows: LaneRow[] = []
   for (const commit of commits) {
-    let lane = lanes.indexOf(commit.hash)
+    // 关键：parents 是完整 hash（%P），提交列表里是短 hash（%h），
+    // 必须用完整 hash 做车道匹配，否则线性历史会被误判成一条条新分支
+    const key = commit.full ?? commit.hash
+    let lane = lanes.indexOf(key)
     if (lane < 0) {
       lane = lanes.findIndex((value) => value === null)
       if (lane < 0) {
@@ -91,7 +94,7 @@ function buildLanes(commits: Commit[]): LaneRow[] {
         lanes.push(null)
       }
     }
-    lanes[lane] = commit.hash
+    lanes[lane] = key
     const parents = (commit.parents ?? []).filter(Boolean)
     lanes[lane] = parents[0] ?? null
     for (const parent of parents.slice(1)) {
