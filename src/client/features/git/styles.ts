@@ -68,7 +68,51 @@ export const CSS = `
 
 .dsv-scm-message:focus { border-color: var(--dsv-accent); }
 
+.dsv-scm-commit-row { display: flex; gap: 4px; }
+
+.dsv-scm-commit-caret {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.dsv-scm-commit-caret:hover:not(:disabled) { background: var(--dsv-hover); color: var(--dsv-fg); }
+.dsv-scm-commit-caret:disabled { opacity: 0.4; cursor: default; }
+
+.dsv-scm-dropdown {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+.dsv-scm-dropdown button {
+  height: 24px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-scm-dropdown button:hover:not(:disabled) { background: var(--dsv-hover); }
+.dsv-scm-dropdown button:disabled { opacity: 0.4; cursor: default; }
+
 .dsv-scm-commit-btn {
+  flex: 1;
   height: 26px;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -214,6 +258,34 @@ export const CSS = `
 .dsv-scm-row:hover .dsv-scm-row-action { opacity: 0.95; }
 .dsv-scm-row-action:hover:not(:disabled) { background: var(--dsv-hover); color: var(--dsv-fg); }
 .dsv-scm-row-action:disabled { opacity: 0.2; cursor: default; }
+
+/* ── 右键菜单 ── */
+.dsv-scm-menu {
+  position: fixed;
+  z-index: 1200;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+.dsv-scm-menu button {
+  height: 24px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-scm-menu button:hover { background: var(--dsv-hover); }
 
 /* ── 空状态 ── */
 .dsv-scm-empty {

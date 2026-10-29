@@ -5,13 +5,14 @@
  *   ┌──────────────────────────────────────────────┐
  *   │ 提交信息（Ctrl+Enter 提交）                    │
  *   └──────────────────────────────────────────────┘
- *   [ ✓ 提交 ]
- *   ▾ 已暂存的更改 (1)                        [− 全部]
- *      M  Bidding.py        Bidding           [−]
- *   ▾ 更改 (9999)                            [+ 全部]
- *      U  ahp.html          AHP               [+]
+ *   [     ✓ 提交 (1)     ][▾]
+ *   ▾ 已暂存的更改 (1)                        [ − ]
+ *      M  Bidding.py        Bidding           [ −]
+ *   ▾ 更改 (9999)                            [ ＋ ]
+ *      U  ahp.html          AHP               [ ＋ ]
  *
- * 点一条变更看 HEAD ⇄ 工作区的 diff；行尾 ＋/− 暂存或取消暂存。
+ * 右键单行：打开对比 / 暂存 / 放弃更改 / 复制路径。
+ * 提交按钮右侧 ▾：提交 / 提交全部 / 提交并推送。
  * 所有写操作都在宿主侧用固定参数的 git 命令完成（不经 shell）。
  */
 
@@ -29,22 +30,37 @@ function baseOf(path: string): string {
   return path.split('/').pop() ?? path
 }
 
-/** git 状态字母 → 中文提示 */
 function codeHint(code: string): string {
   if (code === 'M') return '已修改'
   if (code === 'A') return '已新增'
   if (code === 'D') return '已删除'
   if (code === 'R') return '已重命名'
   if (code === 'C') return '已复制'
-  if (code === '?') return '未跟踪'
-  if (code === 'U') return '已更新'
+  if (code === 'U') return '未跟踪'
   return code
 }
 
-function Row({ change, busy, staged }: { change: GitChange; busy: boolean; staged: boolean }) {
+type MenuState = { x: number; y: number; change: GitChange; staged: boolean }
+
+function Row({
+  change,
+  busy,
+  staged,
+  onMenu
+}: {
+  change: GitChange
+  busy: boolean
+  staged: boolean
+  onMenu: (event: React.MouseEvent, change: GitChange, staged: boolean) => void
+}) {
   return h(
     'div',
-    { className: 'dsv-scm-row', title: `${change.path}\n${codeHint(change.code)}`, onClick: () => void git.openChange(change) },
+    {
+      className: 'dsv-scm-row',
+      title: `${change.path}\n${codeHint(change.code)}（右键更多操作）`,
+      onClick: () => void git.openChange(change),
+      onContextMenu: (event: React.MouseEvent) => onMenu(event, change, staged)
+    },
     h('span', { className: 'dsv-scm-status', 'data-code': change.code }, change.code),
     h('span', { className: 'dsv-scm-name' }, baseOf(change.path)),
     h('span', { className: 'dsv-scm-dir' }, dirOf(change.path)),
@@ -92,11 +108,7 @@ function Section({
     h('span', { className: 'dsv-scm-section-title', onClick: onToggle }, title),
     h('span', { className: 'dsv-scm-count' }, String(count)),
     h('span', { className: 'dsv-scm-spacer' }),
-    h(
-      'button',
-      { className: 'dsv-scm-section-action', title: actionTitle, disabled, onClick: onAction },
-      actionLabel
-    )
+    h('button', { className: 'dsv-scm-section-action', title: actionTitle, disabled, onClick: onAction }, actionLabel)
   )
 }
 
@@ -104,14 +116,35 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const snap = React.useSyncExternalStore(git.subscribe, git.getSnapshot)
   const [message, setMessage] = React.useState('')
   const [collapsed, setCollapsed] = React.useState({ staged: false, unstaged: false })
+  const [menu, setMenu] = React.useState<MenuState | null>(null)
+  const [commitMenu, setCommitMenu] = React.useState(false)
 
   React.useEffect(() => {
     if (cwd && !remote) void git.refresh()
   }, [cwd, remote])
 
+  // 点别处关掉右键菜单 / 提交下拉
+  React.useEffect(() => {
+    if (!menu && !commitMenu) return
+    const close = () => {
+      setMenu(null)
+      setCommitMenu(false)
+    }
+    const timer = window.setTimeout(() => {
+      window.addEventListener('pointerdown', close)
+      window.addEventListener('blur', close)
+    }, 0)
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('pointerdown', close)
+      window.removeEventListener('blur', close)
+    }
+  }, [menu, commitMenu])
+
   const staged = snap.changes.filter((change) => change.staged)
   const unstaged = snap.changes.filter((change) => !change.staged)
   const canCommit = staged.length > 0 && message.trim().length > 0 && !snap.busy
+  const hasMessage = message.trim().length > 0 && !snap.busy
 
   const submit = async () => {
     if (!canCommit) return
@@ -119,21 +152,48 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
     setMessage('')
   }
 
-  const toggle = (key: 'staged' | 'unstaged') =>
-    setCollapsed((previous) => ({ ...previous, [key]: !previous[key] }))
+  const submitAll = async () => {
+    if (!hasMessage) return
+    await git.commitAll(message.trim())
+    setMessage('')
+  }
+
+  const submitAndPush = async () => {
+    if (!hasMessage) return
+    await git.commitAndPush(message.trim())
+    setMessage('')
+  }
+
+  const toggle = (key: 'staged' | 'unstaged') => setCollapsed((previous) => ({ ...previous, [key]: !previous[key] }))
+
+  const openMenu = (event: React.MouseEvent, change: GitChange, stagedRow: boolean) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setCommitMenu(false)
+    setMenu({ x: event.clientX, y: event.clientY, change, staged: stagedRow })
+  }
+
+  const discard = (change: GitChange) => {
+    const untracked = change.code === 'U'
+    const what = untracked ? '删除未跟踪文件' : '放弃这条更改（还原到上次提交的版本）'
+    if (!window.confirm(`确定要${what}？\n\n${change.path}\n\n此操作不可撤销。`)) return
+    void git.discard(untracked ? [] : [change.absPath], untracked ? [change.path] : [])
+  }
+
+  const copyPath = (change: GitChange) => {
+    void navigator.clipboard?.writeText(change.path).catch(() => undefined)
+  }
 
   return h(
     'div',
     { className: 'dsv-panel' },
 
-    /* 分支条：VS Code 的「Graph / branch」那一行 */
+    /* 分支条 */
     h(
       'div',
       { className: 'dsv-scm-branch' },
       h('span', { className: 'dsv-scm-branch-name', title: snap.branch || '未知分支' }, snap.branch ? `⎇ ${snap.branch}` : '源代码管理'),
-      snap.ahead || snap.behind
-        ? h('span', { className: 'dsv-scm-sync', title: '本地领先 / 落后远端' }, `↑${snap.ahead} ↓${snap.behind}`)
-        : null,
+      snap.ahead || snap.behind ? h('span', { className: 'dsv-scm-sync', title: '本地领先 / 落后远端' }, `↑${snap.ahead} ↓${snap.behind}`) : null,
       h('span', { className: 'dsv-scm-spacer' }),
       h(
         'button',
@@ -176,15 +236,42 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
         }
       }),
       h(
-        'button',
-        {
-          className: 'dsv-scm-commit-btn',
-          disabled: !canCommit,
-          title: staged.length === 0 ? '先暂存要提交的文件' : message.trim() ? '提交已暂存的更改（Ctrl+Enter）' : '先写提交信息',
-          onClick: () => void submit()
-        },
-        snap.busy ? '处理中…' : `✓ 提交${staged.length > 0 ? ` (${staged.length})` : ''}`
+        'div',
+        { className: 'dsv-scm-commit-row' },
+        h(
+          'button',
+          {
+            className: 'dsv-scm-commit-btn',
+            disabled: !canCommit,
+            title: staged.length === 0 ? '先暂存要提交的文件' : message.trim() ? '提交已暂存的更改（Ctrl+Enter）' : '先写提交信息',
+            onClick: () => void submit()
+          },
+          snap.busy ? '处理中…' : `✓ 提交${staged.length > 0 ? ` (${staged.length})` : ''}`
+        ),
+        h(
+          'button',
+          {
+            className: 'dsv-scm-commit-caret',
+            title: '更多提交方式',
+            disabled: snap.busy,
+            onClick: (event: React.MouseEvent) => {
+              event.stopPropagation()
+              setMenu(null)
+              setCommitMenu((previous) => !previous)
+            }
+          },
+          '▾'
+        )
       ),
+      commitMenu
+        ? h(
+            'div',
+            { className: 'dsv-scm-dropdown', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
+            h('button', { disabled: !canCommit, onClick: () => { setCommitMenu(false); void submit() } }, '提交已暂存的更改'),
+            h('button', { disabled: !hasMessage, onClick: () => { setCommitMenu(false); void submitAll() } }, '提交全部更改（先全部暂存）'),
+            h('button', { disabled: !hasMessage, onClick: () => { setCommitMenu(false); void submitAndPush() } }, '提交并推送')
+          )
+        : null,
       snap.note ? h('div', { className: 'dsv-scm-note', title: snap.note }, snap.note) : null
     ),
 
@@ -213,7 +300,9 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             staged.length > 500 ? h('div', { className: 'dsv-tree-note' }, `仅显示前 500 条（共 ${staged.length} 条）`) : null,
             collapsed.staged
               ? null
-              : staged.slice(0, 500).map((change) => h(Row, { key: `s:${change.path}`, change, busy: snap.busy, staged: true }))
+              : staged
+                  .slice(0, 500)
+                  .map((change) => h(Row, { key: `s:${change.path}`, change, busy: snap.busy, staged: true, onMenu: openMenu }))
           )
         : null,
 
@@ -234,9 +323,37 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             unstaged.length > 500 ? h('div', { className: 'dsv-tree-note' }, `仅显示前 500 条（共 ${unstaged.length} 条）`) : null,
             collapsed.unstaged
               ? null
-              : unstaged.slice(0, 500).map((change) => h(Row, { key: `u:${change.path}`, change, busy: snap.busy, staged: false }))
+              : unstaged
+                  .slice(0, 500)
+                  .map((change) => h(Row, { key: `u:${change.path}`, change, busy: snap.busy, staged: false, onMenu: openMenu }))
           )
         : null
-    )
+    ),
+
+    /* 右键菜单 */
+    menu
+      ? h(
+          'div',
+          {
+            className: 'dsv-scm-menu',
+            style: { left: `${menu.x}px`, top: `${menu.y}px` },
+            onPointerDown: (event: React.PointerEvent) => event.stopPropagation()
+          },
+          h('button', { onClick: () => { setMenu(null); void git.openChange(menu.change) } }, '打开对比'),
+          h(
+            'button',
+            {
+              onClick: () => {
+                setMenu(null)
+                if (menu.staged) void git.unstage([menu.change.absPath])
+                else void git.stage([menu.change.absPath])
+              }
+            },
+            menu.staged ? '取消暂存' : '暂存更改'
+          ),
+          h('button', { onClick: () => { setMenu(null); discard(menu.change) } }, '放弃更改…'),
+          h('button', { onClick: () => { setMenu(null); copyPath(menu.change) } }, '复制相对路径')
+        )
+      : null
   )
 }

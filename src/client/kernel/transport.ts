@@ -112,6 +112,8 @@ export const api = {
   gitUnstage: (paths: string[]) => call<{ unstaged: number }>('git/unstage', { paths }),
   gitStageAll: () => call<{ ok: boolean }>('git/stageAll', {}),
   gitUnstageAll: () => call<{ ok: boolean }>('git/unstageAll', {}),
+  gitDiscard: (paths: string[], untracked: string[] = []) =>
+    call<{ restored: number; removed: number }>('git/discard', { paths, untracked }),
   gitCommit: (message: string) => call<{ output: string }>('git/commit', { message }),
   gitPush: () => call<{ output: string }>('git/push', {}),
   /** 新建 SSH 终端；ssh 省略时用当前远程工作区的元数据 */

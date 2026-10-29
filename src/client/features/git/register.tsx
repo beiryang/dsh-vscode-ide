@@ -17,6 +17,7 @@ export function registerGitFeature(): () => void {
       apiVersion: 1,
       id: 'scm',
       title: '源代码管理',
+      icon: '⎇',
       region: 'sidebar',
       order: 20,
       component: GitView

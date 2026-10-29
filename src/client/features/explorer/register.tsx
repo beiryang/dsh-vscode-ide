@@ -31,6 +31,7 @@ export function registerExplorerFeature(): () => void {
       apiVersion: 1,
       id: 'explorer',
       title: '资源管理器',
+      icon: '▤',
       region: 'sidebar',
       order: 10,
       component: ExplorerView

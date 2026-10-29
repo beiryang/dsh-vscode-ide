@@ -50,6 +50,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
                 'data-active': view.id === active?.id ? 'true' : 'false',
                 onClick: () => sidebar.setActive(view.id)
               },
+              view.icon ? h('span', { className: 'dsv-sidebar-tab-icon' }, view.icon) : null,
               view.title
             )
           )

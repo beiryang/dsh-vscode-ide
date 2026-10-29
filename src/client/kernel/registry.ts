@@ -34,6 +34,8 @@ export type ViewContribution = {
   apiVersion?: number
   id: string
   title: string
+  /** 页签前的小图标（可选，单字符/符号即可） */
+  icon?: string
   region: Region
   order?: number
   /** 不在页签栏里列出来，只能被程序激活（比如设置页） */

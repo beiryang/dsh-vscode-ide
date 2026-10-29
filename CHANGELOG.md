@@ -31,6 +31,13 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   paths and per-row stage/unstage actions
 - Smart “＋SSH”: connects straight away when the session is a remote workspace or exactly one host is remembered;
   the dialog (host list + form) only appears when there are several hosts or none. The `▾` button always opens it
+- Source Control context menu: open diff, stage/unstage, **discard changes** (restores tracked files and deletes
+  untracked ones behind a confirmation), copy relative path — backed by a new `git/discard` host route
+- Commit dropdown: commit staged / commit all (stage everything first) / commit and push
+- Sidebar view tabs can carry an icon; Explorer (`▤`) and Source Control (`⎇`) now show one
+- Window: **minimize button in the title bar** (same behaviour as peek — hides the window, `Ctrl+Alt+Q` returns).
+  The status-bar “✕ 关闭” button was removed; closing stays available via the title-bar ✕, `Esc`, and the
+  sidebar launcher
 
 ### Changed
 

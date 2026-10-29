@@ -339,6 +339,8 @@ export const CSS = `
 }
 .dsv-sidebar-floating-title { font-size: 11px; letter-spacing: .4px; color: var(--dsv-fg-faint); }
 
+.dsv-sidebar-tab-icon { margin-right: 5px; font-size: 11px; opacity: 0.75; }
+
 .dsv-sidebar-tab {
   flex: 1;
   height: 26px;

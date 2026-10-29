@@ -159,6 +159,27 @@ export const git = {
   commit(message: string) {
     return git.run('提交', () => api.gitCommit(message))
   },
+  /** 暂存全部后提交（提交下拉里的「提交全部」） */
+  async commitAll(message: string) {
+    if (state.busy) return
+    await git.run('提交全部', async () => {
+      await api.gitStageAll()
+      return api.gitCommit(message)
+    })
+  },
+  /** 提交并推送（提交下拉里的「提交并推送」） */
+  async commitAndPush(message: string) {
+    if (state.busy) return
+    await git.run('提交并推送', async () => {
+      const result = await api.gitCommit(message)
+      const pushed = await api.gitPush()
+      return { output: `${result.output} · ${pushed.output}` }
+    })
+  },
+  /** 放弃更改：已跟踪的还原，未跟踪的删除 */
+  discard(paths: string[], untracked: string[] = []) {
+    return git.run('放弃更改', () => api.gitDiscard(paths, untracked))
+  },
   push() {
     return git.run('推送', () => api.gitPush())
   }

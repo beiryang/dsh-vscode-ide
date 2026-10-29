@@ -100,7 +100,8 @@ Removing the plugin keeps its `localStorage` data (window geometry, theme, tabs)
 - Click **Code Space** in the left sidebar to open/close the workbench (works even if the window was dragged off-screen)
 - `Ctrl+Alt+I` toggles the workbench; `Ctrl+Alt+Q` peeks at the conversation; `Ctrl+Alt+Shift+F` opens content search
 - Floating button: same as `Ctrl+Alt+Q`, draggable, position remembered
-- Title bar: `⌕` quick open, `>` command palette, `↻` refresh workspace, `⤢` maximize, `✕` close
+- Title bar: `⌕` quick open, `>` command palette, `↻` refresh workspace, `–` minimize to the conversation
+  (same as `Ctrl+Alt+Q`), `⤢` maximize, `✕` close
 - Settings live in **DSH Settings → Code Space**
 
 Console helpers:

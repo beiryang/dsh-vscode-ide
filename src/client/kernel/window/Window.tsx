@@ -192,6 +192,11 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         h('button', { title: '转到文件（Ctrl+Alt+P）', onClick: () => palette.open('files') }, '⌕'),
         h('button', { title: '命令面板（Ctrl+Alt+Shift+P）', onClick: () => palette.open('commands') }, '>'),
         h('button', { title: '刷新工作区', onClick: () => void loadRoot() }, '↻'),
+        h(
+          'button',
+          { title: '最小化到对话（Ctrl+Alt+Q，再次点击或按快捷键返回）', onClick: () => layout.togglePeek() },
+          '–'
+        ),
         h('button', { title: state.max ? '还原' : '最大化', onClick: () => layout.setMax(!state.max) }, state.max ? '⤡' : '⤢'),
         h('button', { title: '关闭（几何会记住）', onClick: () => layout.close() }, '✕')
       )
@@ -231,11 +236,10 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         },
         '对话'
       ),
-      // 状态栏永远在最底下、不会被系统窗口按钮盖住：这里是最后的逃生出口
+      // 状态栏永远在最底下、不会被系统窗口按钮盖住：最大化时这里是退出出口
       state.max
         ? h('button', { className: 'dsv-status-btn', title: '退出最大化', onClick: () => layout.setMax(false) }, '⤡ 还原')
         : null,
-      h('button', { className: 'dsv-status-btn', title: '关闭工作台（Esc）', onClick: () => layout.close() }, '✕ 关闭'),
       h('span', null, `v${(window as unknown as { __dsv?: { version?: string } }).__dsv?.version ?? '?'}`)
     )
   )
