@@ -20,6 +20,7 @@ export function TerminalPanel() {
   const [busy, setBusy] = React.useState(false)
   const lastHeight = React.useRef(260)
   const rootRef = React.useRef<HTMLDivElement | null>(null)
+  const draggedRef = React.useRef(false)
   const collapsed = dock === 'bottom' && snap.height <= 48
 
   if (!snap.open) return null
@@ -45,13 +46,18 @@ export function TerminalPanel() {
     const startY = event.clientY
     const startHeight = snap.height
     const startWidth = snap.width
+    draggedRef.current = false
     const onMove = (moveEvent: PointerEvent) => {
+      if (Math.abs(moveEvent.clientY - startY) > 3 || Math.abs(moveEvent.clientX - startX) > 3) {
+        draggedRef.current = true
+      }
       if (dock === 'right') {
         terminal.setWidth(startWidth + (startX - moveEvent.clientX))
         return
       }
-      // 上限用「编辑器列的真实高度」，这样能一路顶到最上面，让编辑器收成一条线
-      const columnHeight = rootRef.current?.parentElement?.clientHeight ?? window.innerHeight
+      // 上限取「编辑器列」的高度（不是终端自己的父容器，否则会把自己锁死）
+      const column = rootRef.current?.closest('.dsv-main') as HTMLElement | null
+      const columnHeight = column?.clientHeight ?? window.innerHeight
       const next = Math.min(startHeight + (startY - moveEvent.clientY), columnHeight - 4)
       terminal.setHeight(next)
     }
@@ -60,9 +66,9 @@ export function TerminalPanel() {
       window.removeEventListener('pointerup', onUp)
       if (dock !== 'bottom') return
       const next = terminal.getSnapshot().height
-      if (next < 120) {
-        // 拖到很薄：吸附成一条线，靠手柄或点击恢复
-        terminal.setHeight(26)
+      if (next < 44) {
+        // 拖到几乎贴底才吸附成一条线；稍微拖起来就保持当前高度，不再弹回去
+        terminal.setHeight(10)
       } else {
         lastHeight.current = next
       }
@@ -87,7 +93,7 @@ export function TerminalPanel() {
       'data-collapsed': collapsed ? 'true' : 'false',
       onPointerDown: beginResize,
       onClick: () => {
-        if (!collapsed) return
+        if (!collapsed || draggedRef.current) return
         terminal.setHeight(Math.max(lastHeight.current, 240))
       },
       onDoubleClick: () => {
@@ -95,7 +101,7 @@ export function TerminalPanel() {
         const current = terminal.getSnapshot().height
         if (current > 100) {
           lastHeight.current = current
-          terminal.setHeight(26)
+          terminal.setHeight(10)
         } else {
           terminal.setHeight(Math.max(lastHeight.current, 240))
         }

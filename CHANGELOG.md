@@ -40,7 +40,7 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   sidebar launcher
 - **Terminal panel position**: the panel now sits **under the editor inside the editor column** (VS Code style — the
   file tree keeps full height). Drag the divider to resize; drag it all the way down and the panel snaps to a single
-  strip (header included), which can be clicked, double-clicked or dragged back up. Dragging up is capped by the
+  thin strip of ~10px (header included), which can be clicked, double-clicked or dragged back up; Dragging up is capped by the
   editor column height, so the terminal can cover the whole column and the editor shrinks to a strip. A header button
   switches to a right-side dock when preferred; height and width are remembered per dock
 - **Replace all** in the search panel (`⇄` toggles the replace box, confirmation shows the match/file counts);

@@ -130,12 +130,12 @@ export const CSS = `
   background: var(--dsv-bg);
 }
 
-.dsv-term-resize { position: absolute; top: -3px; left: 0; right: 0; height: 6px; cursor: ns-resize; z-index: 3; }
+.dsv-term-resize { position: absolute; top: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; z-index: 3; }
 
 /* 折叠成一条线：只留可拖拽的横条，头部和内容都隐藏 */
 .dsv-term[data-collapsed="true"] {
   overflow: hidden;
-  background: var(--dsv-panel);
+  background: transparent;
   border-top: 1px solid var(--dsv-accent);
 }
 
@@ -143,8 +143,8 @@ export const CSS = `
 .dsv-term[data-collapsed="true"] .dsv-term-body { display: none; }
 
 .dsv-term[data-collapsed="true"] .dsv-term-resize {
-  top: 0;
-  height: 100%;
+  top: -4px;
+  height: 18px;
   background: transparent;
 }
 
