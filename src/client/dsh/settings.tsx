@@ -11,15 +11,26 @@ import { h } from '../h'
 import { customIcons } from '../kernel/custom-icons'
 import { api, health } from '../kernel/transport'
 import { layout } from '../kernel/layout'
-import { prefs, EDITOR_FONT_CANDIDATES, TERMINAL_FONT_MAX, TERMINAL_FONT_MIN } from '../kernel/prefs'
+import {
+  EDITOR_FONT_CANDIDATES,
+  EDITOR_FONT_MAX,
+  EDITOR_FONT_MIN,
+  EDITOR_TAB_MAX,
+  EDITOR_TAB_MIN,
+  prefs,
+  TERMINAL_FONT_MAX,
+  TERMINAL_FONT_MIN
+} from '../kernel/prefs'
 import { runProbe } from '../kernel/probe'
 import { themeStore } from '../kernel/themes'
 
 export function SettingsSection() {
   const themeId = React.useSyncExternalStore(themeStore.subscribe, themeStore.getSnapshot)
   const prefsVersion = React.useSyncExternalStore(prefs.subscribe, () => prefs.version)
-  const fontSize = prefs.getSnapshot().terminalFontSize
   void prefsVersion
+  const snapshot = prefs.getSnapshot()
+  const fontSize = snapshot.terminalFontSize
+  const editorFontSize = snapshot.editorFontSize
   const [info, setInfo] = React.useState<Record<string, unknown> | null>(null)
   const [probe, setProbe] = React.useState<Record<string, unknown> | null>(null)
   const [busy, setBusy] = React.useState(false)
@@ -170,6 +181,68 @@ export function SettingsSection() {
           )
         ),
         h('div', { className: 'dsv-settings-hint' }, '默认 Maple Mono NF CN Light（中英文同一字体）；改动立即生效')
+      ),
+
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '编辑器字号'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h(
+            'button',
+            {
+              disabled: editorFontSize <= EDITOR_FONT_MIN,
+              onClick: () => prefs.setEditorFontSize(editorFontSize - 1)
+            },
+            '−'
+          ),
+          h('span', { className: 'dsv-settings-value' }, `${editorFontSize}px`),
+          h(
+            'button',
+            {
+              disabled: editorFontSize >= EDITOR_FONT_MAX,
+              onClick: () => prefs.setEditorFontSize(editorFontSize + 1)
+            },
+            '＋'
+          ),
+          h('span', { className: 'dsv-settings-hint' }, `${EDITOR_FONT_MIN}–${EDITOR_FONT_MAX}px`)
+        )
+      ),
+
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '换行与缩进'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h('span', { className: 'dsv-settings-hint' }, '自动换行'),
+          h(
+            'button',
+            { 'data-active': prefs.getSnapshot().editorWordWrap ? 'true' : 'false', onClick: () => prefs.setEditorWordWrap(!prefs.getSnapshot().editorWordWrap) },
+            prefs.getSnapshot().editorWordWrap ? '开' : '关'
+          ),
+          h('span', { className: 'dsv-settings-hint', style: { marginLeft: '10px' } }, '行号'),
+          h(
+            'button',
+            { 'data-active': prefs.getSnapshot().editorLineNumbers ? 'true' : 'false', onClick: () => prefs.setEditorLineNumbers(!prefs.getSnapshot().editorLineNumbers) },
+            prefs.getSnapshot().editorLineNumbers ? '显示' : '隐藏'
+          ),
+          h('span', { className: 'dsv-settings-hint', style: { marginLeft: '10px' } }, 'Tab'),
+          h(
+            'button',
+            { disabled: prefs.getSnapshot().editorTabSize <= EDITOR_TAB_MIN, onClick: () => prefs.setEditorTabSize(prefs.getSnapshot().editorTabSize - 1) },
+            '−'
+          ),
+          h('span', { className: 'dsv-settings-value' }, String(prefs.getSnapshot().editorTabSize)),
+          h(
+            'button',
+            { disabled: prefs.getSnapshot().editorTabSize >= EDITOR_TAB_MAX, onClick: () => prefs.setEditorTabSize(prefs.getSnapshot().editorTabSize + 1) },
+            '＋'
+          )
+        )
       ),
 
       h(

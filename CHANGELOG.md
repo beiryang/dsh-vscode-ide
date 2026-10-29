@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## 1.2.0
+
+### Added
+
+- Editor appearance settings, applied live without reopening tabs:
+  - font size (10–24 px)
+  - word wrap on/off
+  - line numbers on/off
+  - tab width (1–8)
+- Monaco indentation detection is disabled so the chosen tab width actually takes effect
+
 ## 1.1.2
 
 ### Changed

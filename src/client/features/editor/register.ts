@@ -71,8 +71,8 @@ export function registerEditorFeature(): () => void {
 
   disposers.push(registry.subscribeTheme(() => workspace.syncTheme()))
 
-  // 设置里改编辑器字体时，已打开的编辑器就地更新
-  disposers.push(prefs.subscribe(() => workspace.syncFont()))
+  // 设置里改编辑器外观（字体/字号/换行/Tab/行号）时，已打开的编辑器就地更新
+  disposers.push(prefs.subscribe(() => workspace.syncEditorOptions()))
 
   disposers.push(registry.registerProbe('monaco', monacoProbe))
 

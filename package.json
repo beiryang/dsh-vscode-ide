@@ -1,6 +1,6 @@
 {
   "name": "dsh-vscode-ide",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "A lightweight VS Code-like workbench for DeepSeek Harness Web: Monaco editor core, an independent floating workbench window, and opt-in feature modules (SSH, terminals, git, diff).",
   "type": "module",
   "license": "MIT",

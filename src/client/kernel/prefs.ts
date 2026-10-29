@@ -12,6 +12,14 @@ export type Prefs = {
   terminalFontSize: number
   /** 编辑器（Monaco）字体族，CSS font-family 写法 */
   editorFontFamily: string
+  /** 编辑器字号，px */
+  editorFontSize: number
+  /** 编辑器自动换行 */
+  editorWordWrap: boolean
+  /** Tab 宽度（空格数） */
+  editorTabSize: number
+  /** 显示行号 */
+  editorLineNumbers: boolean
 }
 
 /**
@@ -37,11 +45,19 @@ export const EDITOR_FONT_CANDIDATES = [
 
 export const DEFAULT_PREFS: Prefs = {
   terminalFontSize: 12,
-  editorFontFamily: DEFAULT_EDITOR_FONT
+  editorFontFamily: DEFAULT_EDITOR_FONT,
+  editorFontSize: 13,
+  editorWordWrap: false,
+  editorTabSize: 2,
+  editorLineNumbers: true
 }
 
 export const TERMINAL_FONT_MIN = 10
 export const TERMINAL_FONT_MAX = 20
+export const EDITOR_FONT_MIN = 10
+export const EDITOR_FONT_MAX = 24
+export const EDITOR_TAB_MIN = 1
+export const EDITOR_TAB_MAX = 8
 const MAX_FONT_LENGTH = 300
 
 const KEY = 'dsv:prefs.v1'
@@ -51,6 +67,16 @@ function clampFontSize(value: unknown): number {
   const size = Math.round(Number(value))
   if (!Number.isFinite(size)) return DEFAULT_PREFS.terminalFontSize
   return Math.min(TERMINAL_FONT_MAX, Math.max(TERMINAL_FONT_MIN, size))
+}
+
+function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
+  const size = Math.round(Number(value))
+  if (!Number.isFinite(size)) return fallback
+  return Math.min(max, Math.max(min, size))
+}
+
+function asBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback
 }
 
 function normalizeFontFamily(value: unknown): string {
@@ -69,7 +95,11 @@ function load(): Prefs {
     const parsed = JSON.parse(raw) as Partial<Prefs>
     return {
       terminalFontSize: clampFontSize(parsed.terminalFontSize ?? DEFAULT_PREFS.terminalFontSize),
-      editorFontFamily: migrateFontFamily(parsed.editorFontFamily)
+      editorFontFamily: migrateFontFamily(parsed.editorFontFamily),
+      editorFontSize: clampNumber(parsed.editorFontSize, EDITOR_FONT_MIN, EDITOR_FONT_MAX, DEFAULT_PREFS.editorFontSize),
+      editorWordWrap: asBoolean(parsed.editorWordWrap, DEFAULT_PREFS.editorWordWrap),
+      editorTabSize: clampNumber(parsed.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, DEFAULT_PREFS.editorTabSize),
+      editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers)
     }
   } catch {
     return { ...DEFAULT_PREFS }
@@ -119,7 +149,11 @@ export const prefs = {
       ...state,
       ...patch,
       terminalFontSize: clampFontSize(patch.terminalFontSize ?? state.terminalFontSize),
-      editorFontFamily: normalizeFontFamily(patch.editorFontFamily ?? state.editorFontFamily)
+      editorFontFamily: normalizeFontFamily(patch.editorFontFamily ?? state.editorFontFamily),
+      editorFontSize: clampNumber(patch.editorFontSize ?? state.editorFontSize, EDITOR_FONT_MIN, EDITOR_FONT_MAX, state.editorFontSize),
+      editorWordWrap: asBoolean(patch.editorWordWrap ?? state.editorWordWrap, state.editorWordWrap),
+      editorTabSize: clampNumber(patch.editorTabSize ?? state.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, state.editorTabSize),
+      editorLineNumbers: asBoolean(patch.editorLineNumbers ?? state.editorLineNumbers, state.editorLineNumbers)
     })
   },
   setTerminalFontSize(size: number) {
@@ -127,6 +161,18 @@ export const prefs = {
   },
   setEditorFontFamily(family: string) {
     publish({ ...state, editorFontFamily: normalizeFontFamily(family) })
+  },
+  setEditorFontSize(size: number) {
+    publish({ ...state, editorFontSize: clampNumber(size, EDITOR_FONT_MIN, EDITOR_FONT_MAX, state.editorFontSize) })
+  },
+  setEditorTabSize(size: number) {
+    publish({ ...state, editorTabSize: clampNumber(size, EDITOR_TAB_MIN, EDITOR_TAB_MAX, state.editorTabSize) })
+  },
+  setEditorWordWrap(value: boolean) {
+    publish({ ...state, editorWordWrap: value })
+  },
+  setEditorLineNumbers(value: boolean) {
+    publish({ ...state, editorLineNumbers: value })
   },
   resetEditorFontFamily() {
     publish({ ...state, editorFontFamily: DEFAULT_EDITOR_FONT })

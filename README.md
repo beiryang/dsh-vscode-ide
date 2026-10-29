@@ -46,7 +46,8 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Local PowerShell console** — output pane + input line (no PTY, so no `vim`/`top`)
 - **Themes** — follow DSH, built-in One Dark Pro, or **import any VS Code theme JSON** (editor and shell change together)
 - **Icons** — built-in Material Icon Theme, or **import any VS Code icon theme** (sprites are generated at build time and lazily loaded)
-- **Settings** — editor font, terminal font size, theme/icon import, host diagnostics; all persisted
+- **Settings** — editor font, editor font size, word wrap, line numbers, tab width, terminal font size,
+  theme/icon import, host diagnostics; all persisted and applied without reopening tabs
 - **Environment probe** — `await __dsv.probe()` (`probe(true)` writes the result to a file)
 
 ## Install

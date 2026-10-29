@@ -58,7 +58,7 @@ dsh/      DSH 插槽适配：左侧栏入口、设置页分区
 - ✅ 本地 PowerShell 命令控制台（非 PTY，不支持 vim/top 等全屏程序）
 - ✅ 主题：跟随 DSH / One Dark Pro / **导入任意 VS Code 主题 JSON**（编辑器与外壳一起换皮）
 - ✅ 图标：内置 Material Icon Theme，**可导入任意 VS Code 图标主题**（构建期合成 sprite，懒加载）
-- ✅ 设置：编辑器字体、终端字号、主题与图标导入、宿主诊断，全部带持久化
+- ✅ 设置：编辑器字体/字号、自动换行、行号、Tab 宽度、终端字号、主题与图标导入、宿主诊断，全部持久化且改完即时生效
 - ✅ 环境探针：`await __dsv.probe()`，`probe(true)` 落盘
 
 ## 安装

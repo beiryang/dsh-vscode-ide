@@ -86,6 +86,8 @@ function readCss(name: string, fallback: string): string {
 }
 
 function editorFontSize(): number {
+  const size = prefs.getSnapshot().editorFontSize
+  if (Number.isFinite(size) && size >= 8 && size <= 32) return size
   const raw = readCss('--dsf-editor-font-size', '')
   const value = Number.parseFloat(raw)
   return Number.isFinite(value) && value >= 8 && value <= 32 ? value : 13
@@ -96,6 +98,18 @@ function editorFontFamily(): string {
   const chosen = prefs.getSnapshot().editorFontFamily
   if (chosen && chosen.trim()) return chosen
   return readCss('--dsv-mono', DEFAULT_EDITOR_FONT)
+}
+
+/** 与「编辑器细节设置」相关的 Monaco 选项（创建与改动时共用同一份） */
+function editorPrefOptions() {
+  const snapshot = prefs.getSnapshot()
+  return {
+    fontSize: editorFontSize(),
+    fontFamily: editorFontFamily(),
+    wordWrap: snapshot.editorWordWrap ? ('on' as const) : ('off' as const),
+    tabSize: snapshot.editorTabSize,
+    lineNumbers: snapshot.editorLineNumbers ? ('on' as const) : ('off' as const)
+  }
 }
 
 let monacoRef: any = null
@@ -266,8 +280,7 @@ function ensureDiffEditor() {
     enableSplitViewResizing: true,
     renderOverviewRuler: false,
     scrollBeyondLastLine: false,
-    fontSize: editorFontSize(),
-    fontFamily: editorFontFamily(),
+    ...editorPrefOptions(),
     minimap: { enabled: false },
     scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false }
   })
@@ -330,16 +343,14 @@ export const workspace = {
     editor = monaco.editor.create(element, {
       theme: themeName(),
       automaticLayout: true,
-      fontFamily: editorFontFamily(),
-      fontSize: editorFontSize(),
+      ...editorPrefOptions(),
       minimap: { enabled: true, maxColumn: 90, renderCharacters: false },
       scrollBeyondLastLine: false,
       smoothScrolling: true,
       cursorBlinking: 'smooth',
       cursorSmoothCaretAnimation: 'on',
       renderWhitespace: 'selection',
-      tabSize: 2,
-      detectIndentation: true,
+      detectIndentation: false,
       bracketPairColorization: { enabled: true },
       guides: { bracketPairs: true, indentation: true },
       padding: { top: 8, bottom: 8 },
@@ -394,19 +405,29 @@ export const workspace = {
     publish()
   },
 
-  /** 设置里改了编辑器字体：就地更新，不用重开标签 */
-  syncFont() {
-    const family = editorFontFamily()
+  /** 设置里改了编辑器外观（字体 / 字号 / 换行 / Tab / 行号）：就地更新，不用重开标签 */
+  syncEditorOptions() {
+    const options = editorPrefOptions()
     try {
-      editor?.updateOptions?.({ fontFamily: family })
+      editor?.updateOptions?.(options)
     } catch {
       /* ignore */
     }
     try {
-      diffEditor?.getOriginalEditor?.()?.updateOptions?.({ fontFamily: family })
-      diffEditor?.getModifiedEditor?.()?.updateOptions?.({ fontFamily: family })
+      diffEditor?.getOriginalEditor?.()?.updateOptions?.(options)
+      diffEditor?.getModifiedEditor?.()?.updateOptions?.(options)
     } catch {
       /* ignore */
+    }
+    const target = editor
+    if (target) {
+      requestAnimationFrame(() => {
+        try {
+          target.layout()
+        } catch {
+          /* ignore */
+        }
+      })
     }
   },
 
