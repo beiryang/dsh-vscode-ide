@@ -416,9 +416,8 @@ export const CSS = `
 .dsv-scm-lane-line {
   position: absolute;
   top: 0;
-  bottom: 0;
-  width: 2px;
-  border-radius: 1px;
+  left: 4px;
+  height: 100%;
   pointer-events: none;
 }
 

@@ -153,7 +153,8 @@ function GraphRow({
           width: lanes.count * 10 + 2,
           height: '100%',
           viewBox: `0 0 ${lanes.count * 10 + 2} 26`,
-          preserveAspectRatio: 'none'
+          preserveAspectRatio: 'none',
+          'shape-rendering': 'crispEdges'
         },
         lanes.occupied.map((active, index) =>
           active
@@ -188,13 +189,25 @@ function GraphRow({
       ? h(
           'div',
           { className: 'dsv-scm-commit-files' },
-          h('div', {
-            className: 'dsv-scm-lane-line',
-            style: {
-              left: `${lanes.dot * 10 + 9}px`,
-              background: LANE_COLORS[lanes.dot % LANE_COLORS.length]
-            }
-          }),
+          h(
+            'svg',
+            {
+              className: 'dsv-scm-lane-line',
+              width: lanes.count * 10 + 2,
+              height: '100%',
+              viewBox: `0 0 ${lanes.count * 10 + 2} 26`,
+              preserveAspectRatio: 'none',
+              'shape-rendering': 'crispEdges'
+            },
+            h('line', {
+              x1: lanes.dot * 10 + 6,
+              y1: 0,
+              x2: lanes.dot * 10 + 6,
+              y2: 26,
+              stroke: LANE_COLORS[lanes.dot % LANE_COLORS.length],
+              'stroke-width': 2
+            })
+          ),
           busy
             ? h('div', { className: 'dsv-scm-hint' }, '读取提交内容…')
             : detail?.error
