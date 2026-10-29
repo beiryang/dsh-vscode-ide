@@ -127,6 +127,13 @@ export const api = {
   gitDiscard: (paths: string[], untracked: string[] = [], gitDir = '') =>
     call<{ restored: number; removed: number }>('git/discard', { paths, untracked, gitDir }),
   gitCommit: (message: string, gitDir = '') => call<{ output: string }>('git/commit', { message, gitDir }),
+  gitCommitInfo: (hash: string, gitDir = '') =>
+    call<{ hash: string; author: string; when: string; subject: string; refs: string; files: Array<{ status: string; path: string }> }>(
+      'git/commit-info',
+      { hash, gitDir }
+    ),
+  gitCommitFile: (hash: string, path: string, gitDir = '') =>
+    call<{ left: string; right: string; rel: string }>('git/commit-file', { hash, path, gitDir }),
   gitPull: (gitDir = '') => call<{ output: string }>('git/pull', { gitDir }),
   gitFetch: (gitDir = '') => call<{ output: string }>('git/fetch', { gitDir }),
   gitPush: (gitDir = '') => call<{ output: string }>('git/push', { gitDir }),

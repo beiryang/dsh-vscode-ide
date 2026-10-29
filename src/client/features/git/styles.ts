@@ -383,6 +383,53 @@ export const CSS = `
 .dsv-scm-ref[data-kind="tag"] { background: rgba(215, 186, 125, 0.3); color: #f0dfb4; }
 .dsv-scm-ref[data-kind="ref"] { background: var(--dsv-hover); color: var(--dsv-fg-dim); }
 
+/* ── 提交行交互与悬停卡 ── */
+.dsv-scm-graph-row { cursor: pointer; }
+
+.dsv-scm-graph-row[data-active="true"] { background: var(--dsv-hover, rgba(127, 127, 127, 0.16)); }
+
+.dsv-scm-commit-caret { flex: none; font-size: 9px; color: var(--dsv-fg-dim); margin-left: 2px; }
+
+.dsv-scm-commit-files {
+  padding: 2px 0 4px 26px;
+  border-left: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  margin-left: 22px;
+}
+
+.dsv-scm-commit-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px 0 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dsv-scm-commit-file:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.14)); }
+.dsv-scm-commit-file .dsv-file-icon { width: 15px; height: 15px; flex: none; }
+
+.dsv-scm-tip {
+  position: fixed;
+  z-index: 1300;
+  width: 320px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  background: var(--dsv-panel, var(--dsv-bg));
+  border: 1px solid var(--dsv-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  font-size: 12px;
+}
+
+.dsv-scm-tip-head { display: flex; gap: 6px; align-items: center; color: var(--dsv-fg-dim); font-size: 11px; }
+.dsv-scm-tip-author { color: var(--dsv-fg); font-weight: 600; }
+.dsv-scm-tip-subject { margin: 6px 0 8px; line-height: 1.5; }
+.dsv-scm-tip-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dsv-scm-tip-hash { font-family: var(--dsv-mono, monospace); font-size: 11px; color: var(--dsv-fg-dim); }
+
 /* ── 空状态 ── */
 .dsv-scm-empty {
   display: flex;

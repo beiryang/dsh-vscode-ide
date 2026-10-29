@@ -20,6 +20,8 @@ import * as React from 'react'
 
 import { h } from '../../h'
 import { FileIcon } from '../explorer/FileIcon'
+import { registry } from '../../kernel/registry'
+import { api } from '../../kernel/transport'
 import { git, type GitChange } from './git'
 import { gitRootDialog } from './rootDialog'
 
@@ -59,16 +61,82 @@ function refBadges(refs: string): Array<{ label: string; kind: 'branch' | 'remot
     })
 }
 
-function GraphRow({ commit }: { commit: Commit }) {
+type CommitDetail = {
+  files: Array<{ status: string; path: string }>
+  error?: string
+}
+
+function GraphRow({
+  commit,
+  expanded,
+  detail,
+  busy,
+  onToggle,
+  onOpenFile,
+  onHover,
+  onLeave
+}: {
+  commit: Commit
+  expanded: boolean
+  detail?: CommitDetail
+  busy: boolean
+  onToggle: () => void
+  onOpenFile: (path: string) => void
+  onHover: (event: React.MouseEvent, commit: Commit) => void
+  onLeave: () => void
+}) {
   return h(
     'div',
-    { className: 'dsv-scm-graph-row', title: `${commit.hash} · ${commit.author} · ${commit.when}` },
-    h('span', { className: 'dsv-scm-graph-dot' }),
-    h('span', { className: 'dsv-scm-graph-subject' }, commit.subject),
-    h('span', { className: 'dsv-scm-graph-author' }, commit.author),
-    refBadges(commit.refs).map((badge) =>
-      h('span', { key: `${commit.hash}:${badge.label}`, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
-    )
+    { className: 'dsv-scm-commit' },
+    h(
+      'div',
+      {
+        className: 'dsv-scm-graph-row',
+        'data-active': expanded ? 'true' : 'false',
+        onClick: onToggle,
+        onMouseEnter: (event: React.MouseEvent) => onHover(event, commit),
+        onMouseLeave: onLeave,
+        title: '点击查看这次提交改了哪些文件'
+      },
+      h('span', { className: 'dsv-scm-graph-dot' }),
+      h('span', { className: 'dsv-scm-graph-subject' }, commit.subject),
+      h('span', { className: 'dsv-scm-graph-author' }, commit.author),
+      refBadges(commit.refs).map((badge) =>
+        h('span', { key: badge.label, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
+      ),
+      h('span', { className: 'dsv-scm-commit-caret' }, expanded ? '▾' : '▸')
+    ),
+    expanded
+      ? h(
+          'div',
+          { className: 'dsv-scm-commit-files' },
+          busy
+            ? h('div', { className: 'dsv-scm-hint' }, '读取提交内容…')
+            : detail?.error
+              ? h('div', { className: 'dsv-scm-hint' }, detail.error)
+              : (detail?.files ?? []).length === 0
+                ? h('div', { className: 'dsv-scm-hint' }, '这次提交没有文件变更（或尚未加载）')
+                : detail!.files.map((file) =>
+                    h(
+                      'div',
+                      {
+                        key: file.path,
+                        className: 'dsv-scm-commit-file',
+                        onClick: (event: React.MouseEvent) => {
+                          event.stopPropagation()
+                          onOpenFile(file.path)
+                        },
+                        title: `${file.path}（点击查看这次提交的改动）`
+                      },
+                      h(FileIcon, { name: baseOf(file.path), dir: false, expanded: false }),
+                      h('span', { className: 'dsv-scm-name' }, baseOf(file.path)),
+                      h('span', { className: 'dsv-scm-dir' }, dirOf(file.path)),
+                      h('span', { className: 'dsv-scm-spacer' }),
+                      h('span', { className: 'dsv-scm-status', 'data-code': file.status }, file.status)
+                    )
+                  )
+        )
+      : null
   )
 }
 
@@ -151,6 +219,10 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [commitMenu, setCommitMenu] = React.useState(false)
   const [rootMenu, setRootMenu] = React.useState(false)
   const [graphCollapsed, setGraphCollapsed] = React.useState(false)
+  const [tip, setTip] = React.useState<{ commit: Commit; x: number; y: number } | null>(null)
+  const [openCommit, setOpenCommit] = React.useState<string | null>(null)
+  const [commitDetails, setCommitDetails] = React.useState<Record<string, CommitDetail>>({})
+  const [commitBusy, setCommitBusy] = React.useState<string | null>(null)
   const [graphHeight, setGraphHeight] = React.useState(() => {
     try {
       const raw = localStorage.getItem('dsv:git.graph.v1')
@@ -211,6 +283,43 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const toggle = (key: 'staged' | 'unstaged') => setCollapsed((previous) => ({ ...previous, [key]: !previous[key] }))
 
   /** 拖动 Graph 顶部的手柄调整高度（向上拖变大） */
+  const toggleCommit = async (hash: string) => {
+    if (openCommit === hash) {
+      setOpenCommit(null)
+      return
+    }
+    setOpenCommit(hash)
+    if (commitDetails[hash]) return
+    setCommitBusy(hash)
+    try {
+      const info = await api.gitCommitInfo(hash, snap.gitRoot)
+      setCommitDetails((previous) => ({ ...previous, [hash]: { files: info.files ?? [] } }))
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : String(cause)
+      setCommitDetails((previous) => ({ ...previous, [hash]: { files: [], error: message } }))
+    } finally {
+      setCommitBusy(null)
+    }
+  }
+
+  const openCommitFile = async (hash: string, filePath: string) => {
+    try {
+      const result = await api.gitCommitFile(hash, filePath, snap.gitRoot)
+      const name = baseOf(filePath)
+      registry.openDiff(
+        { path: filePath, name: `${name} · ${hash}^`, text: result.left },
+        { path: filePath, name: `${name} · ${hash}`, text: result.right }
+      )
+    } catch (cause) {
+      publishCommitError(cause)
+    }
+  }
+
+  const publishCommitError = (cause: unknown) => {
+    const message = cause instanceof Error ? cause.message : String(cause)
+    window.alert(`打开提交对比失败：${message}`)
+  }
+
   const beginGraphResize = (event: React.PointerEvent) => {
     if (event.button !== 0) return
     event.preventDefault()
@@ -481,8 +590,47 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       : h(
           'div',
           { className: 'dsv-scm-graph', style: { height: `${graphHeight}px` } },
-          snap.commits.map((commit) => h(GraphRow, { key: commit.hash, commit }))
+          snap.commits.map((commit) =>
+            h(GraphRow, {
+              key: commit.hash,
+              commit,
+              expanded: openCommit === commit.hash,
+              detail: commitDetails[commit.hash],
+              busy: commitBusy === commit.hash,
+              onToggle: () => void toggleCommit(commit.hash),
+              onOpenFile: (filePath: string) => void openCommitFile(commit.hash, filePath),
+              onHover: (event: React.MouseEvent, hovered: Commit) => {
+                const width = 320
+                const x = Math.min(event.clientX + 14, window.innerWidth - width - 12)
+                setTip({ commit: hovered, x: Math.max(8, x), y: Math.min(event.clientY + 12, window.innerHeight - 160) })
+              },
+              onLeave: () => setTip(null)
+            })
+          )
         ),
+
+    /* 提交悬停信息卡 */
+    tip
+      ? h(
+          'div',
+          { className: 'dsv-scm-tip', style: { left: `${tip.x}px`, top: `${tip.y}px` } },
+          h(
+            'div',
+            { className: 'dsv-scm-tip-head' },
+            h('span', { className: 'dsv-scm-tip-author' }, `👤 ${tip.commit.author}`),
+            h('span', { className: 'dsv-scm-tip-when' }, `· ${tip.commit.when}`)
+          ),
+          h('div', { className: 'dsv-scm-tip-subject' }, tip.commit.subject),
+          h(
+            'div',
+            { className: 'dsv-scm-tip-meta' },
+            h('span', { className: 'dsv-scm-tip-hash' }, tip.commit.hash),
+            refBadges(tip.commit.refs).map((badge) =>
+              h('span', { key: `tip:${badge.label}`, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
+            )
+          )
+        )
+      : null,
 
     /* 右键菜单 */
     menu
