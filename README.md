@@ -28,7 +28,7 @@ Not a VS Code port, and it does not load `.vsix` extensions. It brings the part 
 
 The trade-off: **keep the editing feel (Monaco), drop the weight (extension host / LSP / SVN)** — and never steal width from the conversation panel.
 
-## Features (1.0.0)
+## Features (1.1)
 
 - **Floating workbench** — drag, 8-way resize, maximize with a 44px top safety strip (so you can always reach DSH's own window buttons), geometry remembered
 - **Peek mode** — `Ctrl+Alt+Q` hides the workbench so you can read the conversation, press again to return with editor state, scroll position and cursor intact; a draggable floating button does the same with the mouse

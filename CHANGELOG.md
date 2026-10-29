@@ -6,7 +6,10 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions
 Per-release cadence: feature work lands on `main` without version bumps; the version and the git tag are created
 only when a release is actually published. Intermediate iterations are collapsed into the release they belong to.
 
-## 1.1.0 — unreleased
+Version format: `MAJOR.MINOR.PATCH` where **PATCH starts at 10** (10, 11, 12 … 99) and always has two digits.
+When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` → `1.2.10`).
+
+## 1.1.10 — unreleased
 
 ### Added
 

@@ -40,7 +40,7 @@ dsh/      DSH 插槽适配：左侧栏入口、设置页分区
 第三方插件的接入点已经以契约 v1 的形式暴露为 `ctx.vscodeIde`（视图 / 状态项 / 命令 / 打开文件），
 所有贡献都带 `apiVersion`，内核只接受 `1`。
 
-## 当前状态：1.0.0
+## 当前状态：1.1
 
 - ✅ 独立浮窗壳：拖动、八向缩放、最大化、几何记忆（`localStorage: dsv:layout.v1`）；最大化时顶部让出 44px，永远退得出来
 - ✅ 左侧栏「Code Space」入口（点击开/关工作台）+ DSH 设置页分区（走 `sidebar.panellist` / `settings.section` 插槽）
@@ -165,7 +165,8 @@ node B:\Coding\workbench\dsh-float\profile-guard.mjs snapshot
 | 0.7 – 0.9 | 本地 PowerShell 控制台、Git 写操作、远程工作区 SFTP |
 | 0.10 – 0.16 | 内核与 feature 分层、One Dark 主题、Material 图标、主题与图标导入 |
 | 0.17 – 0.19 | 编辑器字体设置、速览与浮钮、高对比描边、设置页重排 |
-| **1.0.0** | 首个公开发布版（本文档） |
+| **1.0.0** | 首个公开发布版 |
+| **1.1.10** | 内容搜索（浮动面板）、编辑器外观设置（字号/换行/行号/Tab） |
 | 之后 | 全局内容搜索、远程 Git、编辑器细节设置（字号 / 换行 / 缩进）、TextMate 与 LSP（按需、带体积预算） |
 
 ## License
