@@ -44,6 +44,11 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   commit / push / discard` run on the server over the existing SSH connection (`lib/host/remote-git.js`),
   paths are mapped back to the local mirror so diffs still open in Monaco
 
+### Fixed
+
+- Source Control now shows the real reason (including the remote case) instead of a generic
+  “当前工作区不是 Git 仓库”, and offers a hint on how to fix it
+
 ### Changed
 
 - `openFile` accepts an optional `line`, so any feature can jump to a position

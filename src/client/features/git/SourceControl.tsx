@@ -209,7 +209,22 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       h('button', { className: 'dsv-scm-icon-btn', title: '刷新 Git 状态', onClick: () => void git.refresh() }, '↻')
     ),
 
-    snap.phase === 'error' ? h('div', { className: 'dsv-tree-note' }, snap.message) : null,
+    snap.phase === 'error'
+      ? h(
+          'div',
+          { className: 'dsv-scm-empty' },
+          h('span', { className: 'dsv-scm-empty-icon' }, '⎇'),
+          h('div', null, remote ? '当前远程目录不是 Git 仓库' : '当前目录不是 Git 仓库'),
+          h(
+            'div',
+            { className: 'dsv-scm-hint' },
+            remote
+              ? 'Git 命令会在服务器上执行。请把工作区指到仓库根目录，或在服务器上执行 git init。'
+              : '把工作区切到仓库根目录，或在这个目录里执行 git init。'
+          ),
+          snap.message && !/不是 Git 仓库/.test(snap.message) ? h('div', { className: 'dsv-scm-hint' }, snap.message) : null
+        )
+      : null,
 
     /* 提交区 */
     h(

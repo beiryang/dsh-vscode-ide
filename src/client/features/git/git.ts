@@ -83,10 +83,13 @@ export const git = {
         })
       })
       .catch((error) => {
-        const message = error instanceof Error ? error.message : String(error)
+        const raw = error instanceof Error ? error.message : String(error)
+        const message = /not a git repository/i.test(raw)
+          ? '当前目录不是 Git 仓库'
+          : raw.replace(/^fatal:\s*/i, '').trim() || 'Git 状态读取失败'
         publish({
           phase: 'error',
-          message: /not a git repository|不是 Git 仓库/i.test(message) ? '当前工作区不是 Git 仓库' : message,
+          message,
           root: null,
           branch: null,
           changes: []

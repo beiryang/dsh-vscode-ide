@@ -298,6 +298,14 @@ export const CSS = `
   font-size: 12px;
 }
 
+.dsv-scm-hint {
+  max-width: 260px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--dsv-fg-faint);
+  line-height: 1.6;
+}
+
 .dsv-scm-empty-icon {
   width: 28px;
   height: 28px;
