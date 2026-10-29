@@ -214,10 +214,13 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const beginGraphResize = (event: React.PointerEvent) => {
     if (event.button !== 0) return
     event.preventDefault()
+    // 注意：React 合成事件的 currentTarget 在回调结束后会变成 null，
+    // 必须在这里先抓住 DOM 节点，不能在 onMove 里再读
+    const handle = event.currentTarget as HTMLElement
     const startY = event.clientY
     const startHeight = graphHeight
     const onMove = (moveEvent: PointerEvent) => {
-      const panel = (event.currentTarget as HTMLElement).closest('.dsv-panel') as HTMLElement | null
+      const panel = handle.closest('.dsv-panel') as HTMLElement | null
       const maxHeight = Math.max(120, (panel?.clientHeight ?? window.innerHeight) * 0.7)
       const next = Math.min(Math.max(startHeight + (startY - moveEvent.clientY), 80), maxHeight)
       setGraphHeight(next)

@@ -315,7 +315,9 @@ export const CSS = `
 /* ── Graph 区块 ── */
 .dsv-scm-graph-resize {
   flex: none;
-  height: 7px;
+  height: 9px;
+  touch-action: none;
+  user-select: none;
   margin-top: 2px;
   border-top: 1px solid var(--dsv-border-soft, var(--dsv-border));
   cursor: ns-resize;
