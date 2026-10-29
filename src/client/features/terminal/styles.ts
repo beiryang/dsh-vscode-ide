@@ -233,9 +233,9 @@ export const CSS = `
 
 .dsv-term-tab-close:hover { opacity: 1; background: var(--dsv-hover); }
 
-.dsv-term-body { flex: 1; min-height: 0; position: relative; }
+.dsv-term-body { flex: 1; min-height: 0; position: relative; overflow: hidden; }
 
-.dsv-term-view { position: absolute; inset: 0; padding: 4px 6px; display: none; background: var(--dsv-bg); }
+.dsv-term-view { position: absolute; inset: 0; padding: 4px 6px; box-sizing: border-box; overflow: hidden; display: none; background: var(--dsv-bg); }
 
 .dsv-term-view[data-active="true"] { display: block; }
 
