@@ -35,6 +35,4 @@ export const CSS = `
 .dsv-tree-note { padding: 4px 12px; font-size: 11px; color: var(--dsv-fg-faint); }
 
 .dsv-tree-error { padding: 8px 12px; font-size: 11px; color: #e06c75; white-space: pre-wrap; }
-
-.dsv-tree-row:hover .dsv-git-row-btn { opacity: 1; border-color: var(--dsv-border); }
 `
