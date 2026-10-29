@@ -23,10 +23,15 @@ export function registerSearchFeature(): () => void {
       run: () => {
         layout.open()
         searchPanel.open()
-  ;(window as unknown as { __dsvOpenSearch?: () => void }).__dsvOpenSearch = () => searchPanel.open()
       }
     })
   ]
+
+  // 活动栏等外部入口：提前挂好，不依赖用户先按过快捷键
+  ;(window as unknown as { __dsvOpenSearch?: () => void }).__dsvOpenSearch = () => {
+    layout.open()
+    searchPanel.open()
+  }
 
   return () => {
     for (const dispose of disposers) {
