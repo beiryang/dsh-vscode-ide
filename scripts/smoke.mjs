@@ -56,6 +56,13 @@ const createElement = () => ({})
 const React = {
   createElement,
   Fragment: Symbol.for('react.fragment'),
+  Component: class Component {
+    constructor(props) {
+      this.props = props
+      this.state = {}
+    }
+    setState() {}
+  },
   useState: () => [undefined, () => {}],
   useRef: () => ({ current: null }),
   useEffect: () => {},
