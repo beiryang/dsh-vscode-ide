@@ -207,15 +207,14 @@ export const CSS = `
 .dsv-activity-icon { font-size: 16px; line-height: 1; }
 .dsv-activity-label { display: none; }
 
-.dsv-sidebar { flex-direction: row; overflow: hidden; }
-
-.dsv-sidebar-orig {
+.dsv-sidebar {
   flex: none;
   width: 264px;
-  min-width: 180px;
+  min-width: 210px;
   max-width: 46%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  overflow: hidden;
   background: var(--dsv-panel);
   border-right: 1px solid var(--dsv-border);
   overflow: hidden;
