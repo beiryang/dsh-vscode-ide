@@ -162,6 +162,51 @@ export const CSS = `
 
 .dsv-body { flex: 1; min-height: 0; display: flex; }
 
+.dsv-activitybar {
+  flex: none;
+  width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: var(--dsv-panel);
+  border-right: 1px solid var(--dsv-border);
+}
+
+.dsv-activity-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dsv-activity-btn:hover { background: var(--dsv-hover); color: var(--dsv-fg); }
+
+.dsv-activity-btn[data-active="true"] { color: var(--dsv-fg); background: var(--dsv-hover); }
+
+.dsv-activity-btn[data-active="true"]::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--dsv-accent);
+}
+
+.dsv-activity-icon { font-size: 16px; line-height: 1; }
+.dsv-activity-label { display: none; }
+
 .dsv-sidebar {
   flex: none;
   width: 264px;
@@ -350,6 +395,27 @@ export const CSS = `
   font-size: 11px;
   letter-spacing: .4px;
   color: var(--dsv-fg-faint);
+}
+
+.dsv-sidebar-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dsv-sidebar-head {
+  flex: none;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--dsv-fg-dim);
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
 }
 
 .dsv-sidebar-tabs { flex: none; display: flex; gap: 2px; padding: 4px 6px 0; }
