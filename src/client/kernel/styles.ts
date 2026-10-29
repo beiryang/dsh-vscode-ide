@@ -185,16 +185,28 @@ export const CSS = `
 
 .dsv-sidebar-resize {
   flex: none;
-  width: 6px;
-  margin-left: -3px;
+  position: relative;
+  width: 5px;
+  margin-left: -2px;
   cursor: ew-resize;
   background: transparent;
   z-index: 5;
   touch-action: none;
 }
 
-.dsv-sidebar-resize:hover {
-  background: color-mix(in srgb, var(--dsv-accent) 45%, transparent);
+/* 只在悬停时显示 1px 细线，静止时就是侧栏原有边框 */
+.dsv-sidebar-resize::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  background: transparent;
+}
+
+.dsv-sidebar-resize:hover::after {
+  background: var(--dsv-accent);
 }
 
 .dsv-activitybar {
