@@ -12,6 +12,7 @@ import { h } from '../../h'
 import { WINDOW_TITLE } from '../brand'
 import { layout, MIN_H, MIN_W, SAFE_TOP, type Rect } from '../layout'
 import { palette } from '../palette'
+import { ErrorBoundary } from '../ErrorBoundary'
 import { prefs } from '../prefs'
 import { api, health } from '../transport'
 import { registry, type WorkbenchContext } from '../registry'
@@ -266,14 +267,22 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         { className: 'dsv-main' },
         mainViews.map((view) => h(view.component, { key: view.id, ctx })),
         panelDock === 'bottom'
-          ? h('div', { className: 'dsv-panel-bottom' }, panelViews.map((view) => h(view.component, { key: view.id, ctx })))
+          ? h(
+            'div',
+            { className: 'dsv-panel-bottom' },
+            panelViews.map((view) =>
+              h(ErrorBoundary, { key: view.id, label: view.title }, h(view.component, { ctx }))
+            )
+          )
           : null
       ),
       panelDock === 'right'
         ? h(
             'div',
             { className: 'dsv-panel-dock' },
-            panelViews.map((view) => h(view.component, { key: view.id, ctx }))
+            panelViews.map((view) =>
+              h(ErrorBoundary, { key: view.id, label: view.title }, h(view.component, { ctx }))
+            )
           )
         : null
     ),

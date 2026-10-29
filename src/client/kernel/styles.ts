@@ -44,6 +44,33 @@ export const CSS = `
 
 .dsv-window ::-webkit-scrollbar-corner { background: transparent; }
 
+.dsv-boundary {
+  margin: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e06c75;
+  border-radius: 6px;
+  background: color-mix(in srgb, #e06c75 12%, var(--dsv-panel));
+  color: var(--dsv-fg);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsv-boundary-title { font-weight: 600; color: #e06c75; }
+.dsv-boundary-message { color: var(--dsv-fg-dim); white-space: pre-wrap; word-break: break-word; }
+.dsv-boundary-retry {
+  align-self: flex-start;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  cursor: pointer;
+  font-size: 12px;
+}
+
 .dsv-root {
   position: fixed;
   inset: 0;

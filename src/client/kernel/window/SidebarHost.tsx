@@ -5,6 +5,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { ErrorBoundary } from '../ErrorBoundary'
 import { registry, type ViewContribution, type WorkbenchContext } from '../registry'
 import { sidebar } from '../sidebar'
 
@@ -103,7 +104,7 @@ export function SidebarHost({ ctx, width }: { ctx: WorkbenchContext; width?: num
             h('span', { className: 'dsv-sidebar-floating-title' }, active.title)
           )
         : null,
-      active ? h(active.component, { key: active.id, ctx }) : null
+      active ? h(ErrorBoundary, { key: active.id, label: active.title }, h(active.component, { ctx })) : null
     )
   )
 }

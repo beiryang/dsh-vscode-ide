@@ -14,6 +14,7 @@ import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './kernel/app'
+import { ErrorBoundary } from './kernel/ErrorBoundary'
 import { api } from './kernel/transport'
 import { registerCommand, listCommands, runCommand } from './kernel/commands'
 import { registerKernelCommands } from './kernel/core-commands'
@@ -91,7 +92,9 @@ function applyUnsafe(ctx: AnyCtx) {
   ]
 
   const root = createRoot(host)
-  root.render(React.createElement(App, { ctx }))
+  root.render(
+    React.createElement(ErrorBoundary, { label: '工作台' }, React.createElement(App, { ctx }))
+  )
 
   const service = {
     version: typeof __DSV_VERSION__ === 'string' ? __DSV_VERSION__ : '0.0.0',
