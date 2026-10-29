@@ -42,7 +42,8 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files
 - **Git** — branch and changes list, per-file stage/unstage, commit (dropdown: staged / all / commit-and-push), discard, push;
-  works on remote workspaces too — the commands run on the server over SSH
+  works on remote workspaces too — the commands run on the server over SSH. If the workspace root is not a repo,
+  “select repository folder…” lets you point Git at a subdirectory (local and remote)
 - **SSH terminal** — xterm.js, multiple sessions, resizable panel. Connection details are reused from
   `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
   first use needs no pre-configured remote workspace. With exactly one remembered host (or a remote workspace)

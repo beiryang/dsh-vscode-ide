@@ -20,6 +20,7 @@ import * as React from 'react'
 
 import { h } from '../../h'
 import { git, type GitChange } from './git'
+import { gitRootDialog } from './rootDialog'
 
 function dirOf(path: string): string {
   const at = path.lastIndexOf('/')
@@ -120,7 +121,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [commitMenu, setCommitMenu] = React.useState(false)
 
   React.useEffect(() => {
-    if (cwd) void git.refresh()
+    git.attach(cwd)
   }, [cwd, remote])
 
   // 点别处关掉右键菜单 / 提交下拉
@@ -193,6 +194,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       'div',
       { className: 'dsv-scm-branch' },
       h('span', { className: 'dsv-scm-branch-name', title: snap.branch || '未知分支' }, snap.branch ? `⎇ ${snap.branch}` : '源代码管理'),
+      snap.gitRoot ? h('span', { className: 'dsv-scm-root', title: `Git 目录：${snap.gitRoot}` }, ` · ${snap.gitRoot}`) : null,
       snap.ahead || snap.behind ? h('span', { className: 'dsv-scm-sync', title: '本地领先 / 落后远端' }, `↑${snap.ahead} ↓${snap.behind}`) : null,
       remote ? h('span', { className: 'dsv-scm-sync', title: '命令在服务器上执行' }, '远程') : null,
       h('span', { className: 'dsv-scm-spacer' }),
@@ -219,9 +221,10 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             'div',
             { className: 'dsv-scm-hint' },
             remote
-              ? 'Git 命令会在服务器上执行。请把工作区指到仓库根目录，或在服务器上执行 git init。'
-              : '把工作区切到仓库根目录，或在这个目录里执行 git init。'
+              ? 'Git 命令会在服务器上执行。可以指定一个子目录作为仓库，或把工作区指到仓库根目录。'
+              : '可以指定一个子目录作为仓库，或把工作区切到仓库根目录。'
           ),
+          h('button', { className: 'dsv-scm-root-btn', onClick: () => gitRootDialog.open() }, '选择仓库目录…'),
           snap.message && !/不是 Git 仓库/.test(snap.message) ? h('div', { className: 'dsv-scm-hint' }, snap.message) : null
         )
       : null,

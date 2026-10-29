@@ -103,25 +103,28 @@ export const api = {
       matches: Array<{ path: string; rel: string; line: number; text: string }>
     }>('search/content', options),
   write: (path: string, text: string, bom = false) => call<{ path: string; size: number; mtimeMs: number }>('write', { path, text, bom }),
-  gitStatus: () =>
+  /** 在工作区里扫描 Git 仓库目录（相对路径，'' 表示工作区根） */
+  gitCandidates: (gitDir = '') => call<{ repos: string[]; remote: boolean }>('git/candidates', { gitDir }),
+  gitStatus: (gitDir = '') =>
     call<{
       root: string
       branch: string
       ahead: number
       behind: number
       changes: Array<{ path: string; absPath: string; code: string; staged: boolean; from?: string }>
-    }>('git/status'),
-  gitLog: (limit = 20) =>
-    call<{ root: string; commits: Array<{ hash: string; author: string; when: string; subject: string }> }>('git/log', { limit }),
-  gitHead: (path: string) => call<{ root: string; rel: string; text: string; exists: boolean }>('git/head', { path }),
-  gitStage: (paths: string[]) => call<{ staged: number }>('git/stage', { paths }),
-  gitUnstage: (paths: string[]) => call<{ unstaged: number }>('git/unstage', { paths }),
-  gitStageAll: () => call<{ ok: boolean }>('git/stageAll', {}),
-  gitUnstageAll: () => call<{ ok: boolean }>('git/unstageAll', {}),
-  gitDiscard: (paths: string[], untracked: string[] = []) =>
-    call<{ restored: number; removed: number }>('git/discard', { paths, untracked }),
-  gitCommit: (message: string) => call<{ output: string }>('git/commit', { message }),
-  gitPush: () => call<{ output: string }>('git/push', {}),
+    }>('git/status', { gitDir }),
+  gitLog: (limit = 20, gitDir = '') =>
+    call<{ root: string; commits: Array<{ hash: string; author: string; when: string; subject: string }> }>('git/log', { limit, gitDir }),
+  gitHead: (path: string, gitDir = '') =>
+    call<{ root: string; rel: string; text: string; exists: boolean }>('git/head', { path, gitDir }),
+  gitStage: (paths: string[], gitDir = '') => call<{ staged: number }>('git/stage', { paths, gitDir }),
+  gitUnstage: (paths: string[], gitDir = '') => call<{ unstaged: number }>('git/unstage', { paths, gitDir }),
+  gitStageAll: (gitDir = '') => call<{ ok: boolean }>('git/stageAll', { gitDir }),
+  gitUnstageAll: (gitDir = '') => call<{ ok: boolean }>('git/unstageAll', { gitDir }),
+  gitDiscard: (paths: string[], untracked: string[] = [], gitDir = '') =>
+    call<{ restored: number; removed: number }>('git/discard', { paths, untracked, gitDir }),
+  gitCommit: (message: string, gitDir = '') => call<{ output: string }>('git/commit', { message, gitDir }),
+  gitPush: (gitDir = '') => call<{ output: string }>('git/push', { gitDir }),
   /** 新建 SSH 终端；ssh 省略时用当前远程工作区的元数据 */
   termOpen: (
     cols: number,

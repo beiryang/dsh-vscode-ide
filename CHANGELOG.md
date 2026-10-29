@@ -40,6 +40,9 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   sidebar launcher
 - **Replace all** in the search panel (`⇄` toggles the replace box, confirmation shows the match/file counts);
   backing host route `replace/content` reuses the search index and writes each file atomically
+- **Per-workspace Git root**: when the workspace root is not a repository, “选择仓库目录…” scans for `.git`
+  folders (depth ≤ 3) and lets you pick one, or type a relative path; the choice is remembered per workspace in
+  `localStorage: dsv:git.root.v1`. Works for local and remote workspaces (remote scan uses `find` over SSH)
 - **Remote Git**: on SFTP workspaces the Git panel now works — `status / log / show / stage / unstage /
   commit / push / discard` run on the server over the existing SSH connection (`lib/host/remote-git.js`),
   paths are mapped back to the local mirror so diffs still open in Monaco

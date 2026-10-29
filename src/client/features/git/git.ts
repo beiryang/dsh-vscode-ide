@@ -29,6 +29,8 @@ export type GitState = {
   busy: boolean
   /** 上一轮写操作的结果提示 */
   note: string | null
+  /** 当前使用的 Git 目录（相对工作区根，'' = 工作区根） */
+  gitRoot: string
 }
 
 let state: GitState = {
@@ -41,10 +43,35 @@ let state: GitState = {
   changes: [],
   updatedAt: 0,
   busy: false,
-  note: null
+  note: null,
+  gitRoot: ''
 }
 
 const listeners = new Set<() => void>()
+
+const ROOTS_KEY = 'dsv:git.root.v1'
+let workspaceCwd: string | null = null
+
+function loadRoots(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(ROOTS_KEY)
+    const parsed = raw ? (JSON.parse(raw) as Record<string, string>) : {}
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveRoot(cwd: string, root: string) {
+  const roots = loadRoots()
+  if (root) roots[cwd] = root
+  else delete roots[cwd]
+  try {
+    localStorage.setItem(ROOTS_KEY, JSON.stringify(roots))
+  } catch {
+    /* ignore */
+  }
+}
 
 function publish(next: Partial<GitState>) {
   state = { ...state, ...next }
@@ -65,11 +92,27 @@ export const git = {
     return state
   },
 
+  /** 绑定到工作区（切换工作区时调用），恢复该工作区上次选的 Git 目录 */
+  attach(cwd: string | null): void {
+    workspaceCwd = cwd
+    const root = cwd ? loadRoots()[cwd] ?? '' : ''
+    if (root !== state.gitRoot) publish({ gitRoot: root, phase: 'idle', changes: [], branch: null, note: null })
+    if (cwd) void git.refresh()
+  },
+
+  /** 手动指定 Git 目录（相对工作区根，'' = 工作区根） */
+  setRoot(root: string): void {
+    const clean = root.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')
+    if (workspaceCwd) saveRoot(workspaceCwd, clean)
+    publish({ gitRoot: clean, note: null })
+    void git.refresh()
+  },
+
   async refresh(): Promise<void> {
     if (inflight) return inflight
     publish({ phase: 'loading', message: null })
     inflight = api
-      .gitStatus()
+      .gitStatus(state.gitRoot)
       .then((result) => {
         publish({
           phase: 'ready',
@@ -105,7 +148,7 @@ export const git = {
   async openChange(change: GitChange): Promise<void> {
     const name = change.path.split('/').pop() ?? change.path
     try {
-      const head = await api.gitHead(change.absPath)
+      const head = await api.gitHead(change.absPath, state.gitRoot)
       let current = ''
       if (change.code !== 'D') {
         try {
@@ -148,19 +191,19 @@ export const git = {
   },
 
   stage(paths: string[]) {
-    return git.run('暂存', () => api.gitStage(paths))
+    return git.run('暂存', () => api.gitStage(paths, state.gitRoot))
   },
   unstage(paths: string[]) {
-    return git.run('取消暂存', () => api.gitUnstage(paths))
+    return git.run('取消暂存', () => api.gitUnstage(paths, state.gitRoot))
   },
   stageAll() {
-    return git.run('暂存全部', () => api.gitStageAll())
+    return git.run('暂存全部', () => api.gitStageAll(state.gitRoot))
   },
   unstageAll() {
-    return git.run('取消全部暂存', () => api.gitUnstageAll())
+    return git.run('取消全部暂存', () => api.gitUnstageAll(state.gitRoot))
   },
   commit(message: string) {
-    return git.run('提交', () => api.gitCommit(message))
+    return git.run('提交', () => api.gitCommit(message, state.gitRoot))
   },
   /** 暂存全部后提交（提交下拉里的「提交全部」） */
   async commitAll(message: string) {
@@ -175,13 +218,13 @@ export const git = {
     if (state.busy) return
     await git.run('提交并推送', async () => {
       const result = await api.gitCommit(message)
-      const pushed = await api.gitPush()
+      const pushed = await api.gitPush(state.gitRoot)
       return { output: `${result.output} · ${pushed.output}` }
     })
   },
   /** 放弃更改：已跟踪的还原，未跟踪的删除 */
   discard(paths: string[], untracked: string[] = []) {
-    return git.run('放弃更改', () => api.gitDiscard(paths, untracked))
+    return git.run('放弃更改', () => api.gitDiscard(paths, untracked, state.gitRoot))
   },
   push() {
     return git.run('推送', () => api.gitPush())

@@ -4,15 +4,25 @@ import { h } from '../../h'
 import { registry, type WorkbenchContext } from '../../kernel/registry'
 import { registerGitCommands } from './commands'
 import { CSS } from './styles'
+import { GitRootDialog } from './GitRootDialog'
 import { SourceControl } from './SourceControl'
 
 function GitView({ ctx }: { ctx: WorkbenchContext }) {
   return h(SourceControl, { cwd: ctx.cwd, remote: ctx.remote })
 }
 
+function GitRootOverlay({ ctx }: { ctx: WorkbenchContext }) {
+  return h(GitRootDialog, { remote: ctx.remote })
+}
+
 export function registerGitFeature(): () => void {
   const disposers = [
     registry.addStyles(CSS),
+    registry.registerOverlay({
+      apiVersion: 1,
+      id: 'git-root-dialog',
+      component: GitRootOverlay
+    }),
     registry.registerView({
       apiVersion: 1,
       id: 'scm',

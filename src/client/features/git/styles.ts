@@ -22,6 +22,14 @@ export const CSS = `
 
 .dsv-scm-sync { color: var(--dsv-fg-faint); font-size: 10px; }
 
+.dsv-scm-root {
+  color: var(--dsv-fg-faint);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dsv-scm-spacer { flex: 1; }
 
 .dsv-scm-icon-btn {
@@ -305,6 +313,110 @@ export const CSS = `
   color: var(--dsv-fg-faint);
   line-height: 1.6;
 }
+
+.dsv-scm-root-btn {
+  height: 24px;
+  padding: 0 10px;
+  margin-top: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dsv-scm-root-btn:hover { color: var(--dsv-fg); border-color: var(--dsv-accent); }
+
+/* ── 选择 Git 目录对话框 ── */
+.dsv-gitroot-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, calc(100vw - 120px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+  background: var(--dsv-panel, var(--dsv-bg));
+  border: 1px solid var(--dsv-accent, #0078d4);
+  border-radius: 12px;
+  pointer-events: auto;
+  z-index: 1166;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dsv-accent, #0078d4) 35%, transparent),
+    0 18px 48px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+}
+
+.dsv-gitroot-head { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.dsv-gitroot-hint { font-size: 11px; opacity: 0.65; line-height: 1.6; }
+
+.dsv-gitroot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.dsv-gitroot-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--dsv-mono, monospace);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-gitroot-item:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.14)); }
+.dsv-gitroot-item[data-active="true"] { border-color: var(--dsv-accent); }
+.dsv-gitroot-item-icon { opacity: 0.7; }
+
+.dsv-gitroot-input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--dsv-mono, monospace);
+  font-size: 11px;
+}
+
+.dsv-gitroot-input:focus { outline: none; border-color: var(--dsv-accent); }
+
+.dsv-gitroot-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.dsv-gitroot-actions button {
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dsv-gitroot-actions .dsv-gitroot-primary {
+  background: var(--dsv-accent, #0078d4);
+  border-color: transparent;
+  color: #fff;
+}
+
+.dsv-gitroot-error { color: #e06c75; font-size: 11px; }
 
 .dsv-scm-empty-icon {
   width: 28px;
