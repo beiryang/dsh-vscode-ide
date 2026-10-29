@@ -41,7 +41,7 @@ export const CSS = `
   padding: 0 8px;
   border: 1px solid var(--dsv-border);
   border-radius: 6px;
-  background: transparent;
+  background: var(--dsv-bg);
   color: inherit;
   font-family: var(--dsv-mono, monospace);
   font-size: 12px;

@@ -52,7 +52,7 @@ export const CSS = `
    */
   border: 1px solid var(--dsv-accent, #0078d4);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--dsv-accent, #0078d4) 22%, var(--dsv-panel-alt, #2d2d30));
+  background: color-mix(in srgb, var(--dsv-accent, #0078d4) 18%, var(--dsv-bg, #282c34));
   color: #fff;
   font-size: 12px;
   font-weight: 500;
@@ -110,9 +110,9 @@ export const CSS = `
   border: 1px solid var(--dsv-accent, #0078d4);
   border-radius: 10px;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--dsv-accent, #0078d4) 45%, transparent),
-    0 0 18px color-mix(in srgb, var(--dsv-accent, #0078d4) 22%, transparent),
-    0 18px 48px rgba(0, 0, 0, 0.34);
+    0 0 0 1px color-mix(in srgb, var(--dsv-accent, #0078d4) 40%, transparent),
+    0 0 16px color-mix(in srgb, var(--dsv-accent, #0078d4) 18%, transparent),
+    0 18px 42px color-mix(in srgb, var(--dsv-fg, #000) 22%, transparent);
   overflow: hidden;
 }
 

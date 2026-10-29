@@ -74,7 +74,7 @@ export const CSS = `
   padding: 6px 8px;
   border: 1px solid var(--dsv-border);
   border-radius: 4px;
-  background: var(--dsv-input, var(--dsv-bg));
+  background: var(--dsv-bg);
   color: var(--dsv-fg);
   font: inherit;
   font-size: 12px;
