@@ -3,50 +3,27 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
-## 1.2.0
+Per-release cadence: feature work lands on `main` without version bumps; the version and the git tag are created
+only when a release is actually published. Intermediate iterations are collapsed into the release they belong to.
+
+## 1.1.0 — unreleased
 
 ### Added
 
-- Editor appearance settings, applied live without reopening tabs:
-  - font size (10–24 px)
-  - word wrap on/off
-  - line numbers on/off
-  - tab width (1–8)
-- Monaco indentation detection is disabled so the chosen tab width actually takes effect
-
-## 1.1.2
-
-### Changed
-
-- Content search is a **floating panel** instead of a permanent sidebar tab (VS Code style): opened with
-  `Ctrl+Alt+Shift+F` or the command palette, closed with `Esc` or a click outside
-- Removed the `搜` title-bar button; the panel needs no permanent UI
-- New kernel API `registerOverlay` for global floating layers that follow the window's lifetime
-
-### Fixed
-
-- `Esc` inside the search panel no longer closes the whole workbench
-
-## 1.1.1
-
-### Fixed
-
-- Search shortcut moved to `Ctrl+Alt+Shift+F`: `Ctrl+Alt+F` is DSH's “copy session”
-- Added a `搜` button in the title bar as a mouse entry point for content search
-
-## 1.1.0
-
-### Added
-
-- **Content search** (`Ctrl+Alt+Shift+F`, sidebar “搜索” view, or the `搜` button in the title bar): search the whole workspace, results grouped by file
-  with line numbers, click to jump to the line; `Aa` / `ab` / `.*` toggles for case sensitivity, whole word and regex
-- Host uses `git grep` inside Git repositories (fast, skips binaries) and falls back to a bounded filesystem walk
-  elsewhere (skips `node_modules`/`.git`/build dirs, binary files and files over 1 MB; 500 result cap)
+- **Content search** as a floating panel (`Ctrl+Alt+Shift+F`, or “在文件中搜索” in the command palette):
+  whole-workspace search, results grouped per file with line numbers, click to jump to the line,
+  `Aa` / `ab` / `.*` toggles for case sensitivity, whole word and regex; closed with `Esc` or a click outside
+- Host search engine: `git grep` inside Git repositories, bounded filesystem walk elsewhere
+  (skips `node_modules`/`.git`/build dirs, binary files and files over 1 MB; 500-result cap)
 - Remote (SFTP) workspaces report a clear “not supported yet” message instead of hanging
+- Editor appearance settings, applied live without reopening tabs: font size (10–24 px), word wrap,
+  line numbers, tab width (1–8)
+- Kernel API `registerOverlay` for global floating layers that follow the window's lifetime
 
 ### Changed
 
-- `openFile` accepts an optional `line`, so any feature (search, future problem matchers) can jump to a position
+- `openFile` accepts an optional `line`, so any feature can jump to a position
+- Monaco indentation detection is disabled so the configured tab width actually takes effect
 
 ## 1.0.0 — first public release
 
