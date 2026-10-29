@@ -3,6 +3,7 @@
 export const CSS = `
 /* ── 分支条 ── */
 .dsv-scm-branch {
+  position: relative;
   flex: none;
   display: flex;
   align-items: center;
@@ -31,6 +32,13 @@ export const CSS = `
 }
 
 .dsv-scm-spacer { flex: 1; }
+
+.dsv-scm-more {
+  position: absolute;
+  right: 6px;
+  top: 28px;
+  z-index: 40;
+}
 
 .dsv-scm-icon-btn {
   flex: none;

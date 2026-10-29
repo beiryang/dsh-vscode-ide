@@ -119,6 +119,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [collapsed, setCollapsed] = React.useState({ staged: false, unstaged: false })
   const [menu, setMenu] = React.useState<MenuState | null>(null)
   const [commitMenu, setCommitMenu] = React.useState(false)
+  const [rootMenu, setRootMenu] = React.useState(false)
 
   React.useEffect(() => {
     git.attach(cwd)
@@ -126,10 +127,11 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
 
   // 点别处关掉右键菜单 / 提交下拉
   React.useEffect(() => {
-    if (!menu && !commitMenu) return
+    if (!menu && !commitMenu && !rootMenu) return
     const close = () => {
       setMenu(null)
       setCommitMenu(false)
+      setRootMenu(false)
     }
     const timer = window.setTimeout(() => {
       window.addEventListener('pointerdown', close)
@@ -140,7 +142,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       window.removeEventListener('pointerdown', close)
       window.removeEventListener('blur', close)
     }
-  }, [menu, commitMenu])
+  }, [menu, commitMenu, rootMenu])
 
   const staged = snap.changes.filter((change) => change.staged)
   const unstaged = snap.changes.filter((change) => !change.staged)
@@ -208,7 +210,41 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
         },
         '⤴'
       ),
-      h('button', { className: 'dsv-scm-icon-btn', title: '刷新 Git 状态', onClick: () => void git.refresh() }, '↻')
+      h('button', { className: 'dsv-scm-icon-btn', title: '刷新 Git 状态', onClick: () => void git.refresh() }, '↻'),
+      h(
+        'button',
+        {
+          className: 'dsv-scm-icon-btn',
+          title: '仓库设置（更改 / 清除 Git 仓库目录）',
+          onClick: (event: React.MouseEvent) => {
+            event.stopPropagation()
+            setRootMenu((previous) => !previous)
+          }
+        },
+        '⋯'
+      ),
+      rootMenu
+        ? h(
+            'div',
+            { className: 'dsv-scm-dropdown dsv-scm-more', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
+            h(
+              'button',
+              { onClick: () => { setRootMenu(false); gitRootDialog.open() } },
+              snap.gitRoot ? '更改 Git 仓库目录…' : '选择 Git 仓库目录…'
+            ),
+            h(
+              'button',
+              {
+                disabled: !snap.gitRoot,
+                onClick: () => {
+                  setRootMenu(false)
+                  git.setRoot('')
+                }
+              },
+              '清除选择（用工作区根）'
+            )
+          )
+        : null
     ),
 
     snap.phase === 'error'
@@ -269,6 +305,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
             onClick: (event: React.MouseEvent) => {
               event.stopPropagation()
               setMenu(null)
+              setRootMenu(false)
               setCommitMenu((previous) => !previous)
             }
           },
