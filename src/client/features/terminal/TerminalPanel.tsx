@@ -5,6 +5,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 import { TerminalView } from './TerminalView'
@@ -17,7 +18,7 @@ export function TerminalPanel() {
   if (!snap.open) return null
 
   const create = () => {
-    sshDialog.open()
+    void quickConnect()
   }
 
   const createLocal = async () => {
@@ -86,7 +87,8 @@ export function TerminalPanel() {
         )
       ),
       h('span', { style: { flex: 1 } }),
-      h('button', { className: 'dsv-mini-btn', title: '新建 SSH 终端（可手填主机，不依赖远程工作区）', onClick: () => create() }, '＋SSH'),
+      h('button', { className: 'dsv-mini-btn', title: '连接 SSH（已记住唯一主机时直接连）', onClick: () => create() }, busy ? '…' : '＋SSH'),
+      h('button', { className: 'dsv-mini-btn', title: '选择或新建 SSH 连接', onClick: () => sshDialog.open() }, '▾'),
       h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（非 PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
       h('button', { className: 'dsv-mini-btn', title: '收起终端面板', onClick: () => terminal.close() }, '▾')
     ),

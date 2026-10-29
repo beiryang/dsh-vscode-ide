@@ -1,6 +1,7 @@
 /** 终端命令：新建 SSH / 本地、开关面板、关闭当前。 */
 
 import { registerCommand } from '../../kernel/commands'
+import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 
@@ -11,7 +12,7 @@ export function registerTerminalCommands(): () => void {
       title: '终端：新建 SSH 终端',
       category: '终端',
       keybinding: 'Ctrl+Alt+T',
-      run: () => sshDialog.open()
+      run: () => quickConnect()
     }),
     registerCommand({
       id: 'terminal.newLocal',

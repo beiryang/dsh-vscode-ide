@@ -44,7 +44,8 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Git** — branch and changes list, per-file stage/unstage, commit, push (auto-publishes a branch without upstream)
 - **SSH terminal** — xterm.js, multiple sessions, resizable panel. Connection details are reused from
   `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
-  first use needs no pre-configured remote workspace. Hosts can be saved, passwords are never stored
+  first use needs no pre-configured remote workspace. With exactly one remembered host (or a remote workspace)
+  “＋SSH” connects immediately; the chooser only appears when there are several or none. Passwords are never stored
 - **Local PowerShell console** — output pane + input line (no PTY, so no `vim`/`top`)
 - **Themes** — follow DSH, built-in One Dark Pro, or **import any VS Code theme JSON** (editor and shell change together)
 - **Icons** — built-in Material Icon Theme, or **import any VS Code icon theme** (sprites are generated at build time and lazily loaded)
