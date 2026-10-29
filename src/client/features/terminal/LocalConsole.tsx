@@ -28,6 +28,9 @@ function stripAnsi(text: string): string {
     .replace(/\u001b\[[0-9;?]*[a-zA-Z]/g, '')
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
+    // PowerShell 会把表格列补空格到控制台宽度（默认 120 列），
+    // 这些行尾空格在窄面板里会换行成"空行"，直接去掉
+    .replace(/[ \t]+$/gm, '')
 }
 
 const MAX_OUTPUT = 200000
