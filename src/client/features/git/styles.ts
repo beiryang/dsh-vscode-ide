@@ -704,4 +704,12 @@ export const CSS = `
 }
 
 .dsv-scm-dialog-btn:disabled { opacity: 0.5; cursor: default; }
+
+.dsv-scm-menu-info {
+  padding: 4px 10px 6px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  color: var(--dsv-fg-dim);
+  font-size: 11px;
+}
 `

@@ -7,7 +7,7 @@ import { registry, type WorkbenchContext } from '../../kernel/registry'
 import { api } from '../../kernel/transport'
 
 type Hit = { path: string; rel: string; line: number; text: string }
-type Options = { caseSensitive: boolean; wholeWord: boolean; regex: boolean }
+type Options = { caseSensitive: boolean; wholeWord: boolean; regex: boolean; include: string; exclude: string }
 type Meta = { engine: 'git' | 'walk'; elapsedMs: number; truncated: boolean; scanned?: number }
 
 function escapeRegExp(value: string): string {
@@ -38,7 +38,14 @@ function highlight(text: string, query: string, options: Options): React.ReactNo
 
 export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
   const [query, setQuery] = React.useState('')
-  const [options, setOptions] = React.useState<Options>({ caseSensitive: false, wholeWord: false, regex: false })
+  const [options, setOptions] = React.useState<Options>({
+    caseSensitive: false,
+    wholeWord: false,
+    regex: false,
+    include: '',
+    exclude: ''
+  })
+  const [filterOpen, setFilterOpen] = React.useState(false)
   const [hits, setHits] = React.useState<Hit[]>([])
   const [meta, setMeta] = React.useState<Meta | null>(null)
   const [busy, setBusy] = React.useState(false)
@@ -109,7 +116,7 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     registry.openFile(hit.path, { name, line: hit.line })
   }
 
-  const toggleOption = (key: keyof Options) => {
+  const toggleOption = (key: 'caseSensitive' | 'wholeWord' | 'regex') => {
     setOptions((previous) => ({ ...previous, [key]: !previous[key] }))
   }
 
@@ -189,8 +196,40 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
           onClick: () => setReplaceOpen((previous) => !previous)
         },
         '⇄'
+      ),
+      h(
+        'button',
+        {
+          className: 'dsv-search-toggle',
+          title: '筛选：包含 / 排除（glob，逗号分隔）',
+          'data-active': filterOpen || options.include || options.exclude ? 'true' : 'false',
+          onClick: () => setFilterOpen((previous) => !previous)
+        },
+        '⋯'
       )
     ),
+    filterOpen
+      ? h(
+          'div',
+          { className: 'dsv-search-replace' },
+          h('input', {
+            className: 'dsv-search-input',
+            value: options.include,
+            spellCheck: false,
+            placeholder: '包含：如 src/**/*.ts，逗号分隔',
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+              setOptions((previous) => ({ ...previous, include: event.target.value }))
+          }),
+          h('input', {
+            className: 'dsv-search-input',
+            value: options.exclude,
+            spellCheck: false,
+            placeholder: '排除：如 **/*.min.js, dist/**',
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+              setOptions((previous) => ({ ...previous, exclude: event.target.value }))
+          })
+        )
+      : null,
     replaceOpen
       ? h(
           'div',

@@ -489,7 +489,16 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
     h(
       'div',
       { className: 'dsv-scm-branch' },
-      h('span', { className: 'dsv-scm-branch-name', title: snap.branch || '未知分支' }, snap.branch ? `⎇ ${snap.branch}` : '源代码管理'),
+      h(
+        'span',
+        {
+          className: 'dsv-scm-branch-name',
+          title: snap.branch
+            ? `${snap.branch}${snap.ahead || snap.behind ? ` · 领先 ${snap.ahead} 个提交 / 落后 ${snap.behind} 个提交` : ' · 与上游一致'}`
+            : '未知分支'
+        },
+        snap.branch ? `⎇ ${snap.branch}` : '源代码管理'
+      ),
       snap.gitRoot ? h('span', { className: 'dsv-scm-root', title: `Git 目录：${snap.gitRoot}` }, ` · ${snap.gitRoot}`) : null,
       snap.ahead || snap.behind ? h('span', { className: 'dsv-scm-sync', title: '本地领先 / 落后远端' }, `↑${snap.ahead} ↓${snap.behind}`) : null,
       remote ? h('span', { className: 'dsv-scm-sync', title: '命令在服务器上执行' }, '远程') : null,
@@ -521,6 +530,13 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
         ? h(
             'div',
             { className: 'dsv-scm-dropdown dsv-scm-more', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
+            h(
+              'div',
+              { className: 'dsv-scm-menu-info' },
+              snap.branch ? `分支 ${snap.branch}` : '未命名分支',
+              snap.ahead || snap.behind ? ` · 领先 ${snap.ahead} / 落后 ${snap.behind}` : ' · 与上游一致',
+              snap.gitRoot ? ` · ${snap.gitRoot}` : ''
+            ),
             h(
               'button',
               { onClick: () => { setRootMenu(false); gitRootDialog.open() } },
