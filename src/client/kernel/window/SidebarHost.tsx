@@ -63,11 +63,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
             h('button', { className: 'dsv-mini-btn', title: '返回', onClick: back }, '←'),
             h('span', { className: 'dsv-sidebar-floating-title' }, active.title)
           )
-        : h(
-            'div',
-            { className: 'dsv-sidebar-head' },
-            h('span', { className: 'dsv-sidebar-head-title' }, active?.title ?? '')
-          ),
+        : null,
       active ? h(active.component, { key: active.id, ctx }) : null
     )
   )

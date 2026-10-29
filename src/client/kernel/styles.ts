@@ -207,7 +207,9 @@ export const CSS = `
 .dsv-activity-icon { font-size: 16px; line-height: 1; }
 .dsv-activity-label { display: none; }
 
-.dsv-sidebar {
+.dsv-sidebar { flex-direction: row; overflow: hidden; }
+
+.dsv-sidebar-orig {
   flex: none;
   width: 264px;
   min-width: 180px;
