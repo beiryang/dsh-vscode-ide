@@ -86,6 +86,12 @@ export const api = {
   stat: (path: string) => call<{ path: string; dir: boolean; size: number; mtimeMs: number }>('stat', { path }),
   search: (options: { query?: string; limit?: number } = {}) =>
     call<{ files: Array<{ path: string; rel: string; name: string }>; truncated: boolean; root: string }>('search', options),
+  /** 全文替换（先搜索定位文件，再逐文件原子写） */
+  replaceContent: (options: { query: string; replacement: string; regex?: boolean; caseSensitive?: boolean; wholeWord?: boolean }) =>
+    call<{ engine: 'git' | 'walk'; filesChanged: number; replaced: number; filesScanned: number; truncated: boolean }>(
+      'replace/content',
+      options
+    ),
   /** 全局内容搜索（Git 仓库走 git grep，其余遍历） */
   searchContent: (options: { query: string; regex?: boolean; caseSensitive?: boolean; wholeWord?: boolean }) =>
     call<{

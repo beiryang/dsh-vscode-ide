@@ -38,6 +38,11 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
 - Window: **minimize button in the title bar** (same behaviour as peek — hides the window, `Ctrl+Alt+Q` returns).
   The status-bar “✕ 关闭” button was removed; closing stays available via the title-bar ✕, `Esc`, and the
   sidebar launcher
+- **Replace all** in the search panel (`⇄` toggles the replace box, confirmation shows the match/file counts);
+  backing host route `replace/content` reuses the search index and writes each file atomically
+- **Remote Git**: on SFTP workspaces the Git panel now works — `status / log / show / stage / unstage /
+  commit / push / discard` run on the server over the existing SSH connection (`lib/host/remote-git.js`),
+  paths are mapped back to the local mirror so diffs still open in Monaco
 
 ### Changed
 

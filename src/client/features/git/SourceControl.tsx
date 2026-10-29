@@ -120,7 +120,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
   const [commitMenu, setCommitMenu] = React.useState(false)
 
   React.useEffect(() => {
-    if (cwd && !remote) void git.refresh()
+    if (cwd) void git.refresh()
   }, [cwd, remote])
 
   // 点别处关掉右键菜单 / 提交下拉
@@ -194,6 +194,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       { className: 'dsv-scm-branch' },
       h('span', { className: 'dsv-scm-branch-name', title: snap.branch || '未知分支' }, snap.branch ? `⎇ ${snap.branch}` : '源代码管理'),
       snap.ahead || snap.behind ? h('span', { className: 'dsv-scm-sync', title: '本地领先 / 落后远端' }, `↑${snap.ahead} ↓${snap.behind}`) : null,
+      remote ? h('span', { className: 'dsv-scm-sync', title: '命令在服务器上执行' }, '远程') : null,
       h('span', { className: 'dsv-scm-spacer' }),
       h(
         'button',
@@ -208,14 +209,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       h('button', { className: 'dsv-scm-icon-btn', title: '刷新 Git 状态', onClick: () => void git.refresh() }, '↻')
     ),
 
-    remote
-      ? h(
-          'div',
-          { className: 'dsv-tree-note' },
-          '当前是远程工作区：资源管理器已走 SFTP，但源代码管理还没有适配远端仓库（Git 面板只对本地工作区有效）。'
-        )
-      : null,
-    remote ? null : snap.phase === 'error' ? h('div', { className: 'dsv-tree-note' }, snap.message) : null,
+    snap.phase === 'error' ? h('div', { className: 'dsv-tree-note' }, snap.message) : null,
 
     /* 提交区 */
     h(

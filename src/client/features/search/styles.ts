@@ -86,6 +86,28 @@ export const CSS = `
   opacity: 1;
 }
 
+.dsv-search-replace {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--dsv-border);
+}
+
+.dsv-search-replace-btn {
+  flex: none;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--dsv-accent, #0078d4);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dsv-search-replace-btn:disabled { background: var(--dsv-panel-alt); color: var(--dsv-fg-dim); cursor: default; }
+
 .dsv-search-meta {
   flex: none;
   padding: 6px 10px;

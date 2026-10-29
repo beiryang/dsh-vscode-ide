@@ -43,6 +43,10 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
   const [meta, setMeta] = React.useState<Meta | null>(null)
   const [busy, setBusy] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [replaceOpen, setReplaceOpen] = React.useState(false)
+  const [replacement, setReplacement] = React.useState('')
+  const [replacing, setReplacing] = React.useState(false)
+  const [replaceNote, setReplaceNote] = React.useState<string | null>(null)
   const [collapsed, setCollapsed] = React.useState<Set<string>>(() => new Set())
   const [activeHit, setActiveHit] = React.useState<string | null>(null)
   const inputRef = React.useRef<HTMLInputElement | null>(null)
@@ -109,6 +113,23 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     setOptions((previous) => ({ ...previous, [key]: !previous[key] }))
   }
 
+  const replaceAll = async () => {
+    const value = query.trim()
+    if (!value || replacing) return
+    if (!window.confirm(`将在 ${groups.length} 个文件中替换 ${hits.length} 处匹配：\n\n${value} → ${replacement || '（删除）'}\n\n确定继续？`)) return
+    setReplacing(true)
+    setReplaceNote(null)
+    try {
+      const result = await api.replaceContent({ query: value, replacement, ...options })
+      setReplaceNote(`已替换 ${result.replaced} 处，涉及 ${result.filesChanged} 个文件`)
+      await run()
+    } catch (cause) {
+      setReplaceNote(`替换失败：${cause instanceof Error ? cause.message : String(cause)}`)
+    } finally {
+      setReplacing(false)
+    }
+  }
+
   return h(
     'div',
     { className: 'dsv-search' },
@@ -158,8 +179,41 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
           onClick: () => toggleOption('regex')
         },
         '.*'
+      ),
+      h(
+        'button',
+        {
+          className: 'dsv-search-toggle',
+          title: replaceOpen ? '隐藏替换' : '显示替换',
+          'data-active': replaceOpen ? 'true' : 'false',
+          onClick: () => setReplaceOpen((previous) => !previous)
+        },
+        '⇄'
       )
     ),
+    replaceOpen
+      ? h(
+          'div',
+          { className: 'dsv-search-replace' },
+          h('input', {
+            className: 'dsv-search-input',
+            value: replacement,
+            spellCheck: false,
+            placeholder: '替换为…（留空即删除匹配内容）',
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) => setReplacement(event.target.value)
+          }),
+          h(
+            'button',
+            {
+              className: 'dsv-search-replace-btn',
+              disabled: replacing || !query.trim() || hits.length === 0,
+              title: hits.length === 0 ? '先搜索出结果再替换' : `替换 ${hits.length} 处（${groups.length} 个文件）`,
+              onClick: () => void replaceAll()
+            },
+            replacing ? '替换中…' : '全部替换'
+          )
+        )
+      : null,
     error
       ? h('div', { className: 'dsv-search-meta', 'data-state': 'error' }, error)
       : meta
@@ -172,6 +226,7 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
             busy ? h('span', null, '搜索中…') : null
           )
         : null,
+    replaceNote ? h('div', { className: 'dsv-search-meta', 'data-state': replaceNote.startsWith('替换失败') ? 'error' : 'info' }, replaceNote) : null,
     h(
       'div',
       { className: 'dsv-search-results' },

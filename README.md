@@ -37,11 +37,12 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Save / close** — `Ctrl+S` (temp file + atomic rename), `Ctrl+W`, dirty markers, close confirmation
 - **Find & replace** — Monaco's built-in widget (`Ctrl+F`)
 - **Quick open / command palette** — `Ctrl+Alt+P` and `Ctrl+Alt+Shift+P` (`Ctrl+P` belongs to DSH)
-- **Content search** — `Ctrl+Alt+Shift+F` opens a floating search panel: search the whole workspace, results grouped per file, click to jump to the line;
+- **Content search & replace** — `Ctrl+Alt+Shift+F` opens a floating search panel: search the whole workspace, results grouped per file, click to jump to the line, `⇄` reveals the replace box for a confirmed replace-all;
   `git grep` inside repositories, bounded filesystem walk elsewhere (local workspaces only for now)
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files
-- **Git** — branch and changes list, per-file stage/unstage, commit, push (auto-publishes a branch without upstream)
+- **Git** — branch and changes list, per-file stage/unstage, commit (dropdown: staged / all / commit-and-push), discard, push;
+  works on remote workspaces too — the commands run on the server over SSH
 - **SSH terminal** — xterm.js, multiple sessions, resizable panel. Connection details are reused from
   `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
   first use needs no pre-configured remote workspace. With exactly one remembered host (or a remote workspace)
