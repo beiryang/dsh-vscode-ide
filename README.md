@@ -37,7 +37,7 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Save / close** — `Ctrl+S` (temp file + atomic rename), `Ctrl+W`, dirty markers, close confirmation
 - **Find & replace** — Monaco's built-in widget (`Ctrl+F`)
 - **Quick open / command palette** — `Ctrl+Alt+P` and `Ctrl+Alt+Shift+P` (`Ctrl+P` belongs to DSH)
-- **Content search** — `Ctrl+Alt+Shift+F`: search the whole workspace, results grouped per file, click to jump to the line;
+- **Content search** — `Ctrl+Alt+Shift+F` opens a floating search panel: search the whole workspace, results grouped per file, click to jump to the line;
   `git grep` inside repositories, bounded filesystem walk elsewhere (local workspaces only for now)
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files

@@ -41,6 +41,13 @@ export type ViewContribution = {
   component: React.ComponentType<{ ctx: WorkbenchContext }>
 }
 
+/** 叠加层：浮在窗口之上的全局浮层（搜索面板等），随窗口一起挂载/卸载 */
+export type OverlayContribution = {
+  apiVersion?: number
+  id: string
+  component: React.ComponentType<{ ctx: WorkbenchContext }>
+}
+
 export type StatusItem = {
   apiVersion?: number
   id: string
@@ -67,6 +74,7 @@ function flushStyles() {
 }
 const versions = { views: 0, status: 0 }
 const views: ViewContribution[] = []
+const overlays: OverlayContribution[] = []
 const statusItems: StatusItem[] = []
 
 let documentState: DocumentState = { activePath: null, dirtyCount: 0, tabCount: 0 }
@@ -106,6 +114,25 @@ export const registry = {
       bump('views')
     }
   },
+  /* ── 叠加层 ── */
+  registerOverlay(contribution: OverlayContribution): () => void {
+    if (!acceptVersion(contribution)) return () => undefined
+    if (!contribution || typeof contribution.id !== 'string' || !contribution.component) {
+      console.warn('[dsh-vscode-ide] registerOverlay 参数不合法，已忽略')
+      return () => undefined
+    }
+    const existing = overlays.findIndex((item) => item.id === contribution.id)
+    if (existing >= 0) overlays.splice(existing, 1)
+    overlays.push(contribution)
+    return () => {
+      const index = overlays.findIndex((item) => item.id === contribution.id)
+      if (index >= 0) overlays.splice(index, 1)
+    }
+  },
+  getOverlays(): OverlayContribution[] {
+    return [...overlays]
+  },
+
   getViews(region: Region): ViewContribution[] {
     return views.filter((item) => item.region === region)
   },

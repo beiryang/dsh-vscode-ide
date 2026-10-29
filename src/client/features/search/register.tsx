@@ -1,22 +1,19 @@
-/** 搜索 feature：侧栏「搜索」视图 + `Ctrl+Alt+Shift+F` 入口。 */
+/** 搜索 feature：浮动搜索面板 + `Ctrl+Alt+Shift+F` 入口。 */
 
 import { registerCommand } from '../../kernel/commands'
 import { layout } from '../../kernel/layout'
 import { registry } from '../../kernel/registry'
-import { sidebar } from '../../kernel/sidebar'
-import { SearchView } from './SearchView'
+import { searchPanel } from './panel'
+import { SearchOverlay } from './SearchOverlay'
 import { CSS } from './styles'
 
 export function registerSearchFeature(): () => void {
   const disposers = [
     registry.addStyles(CSS),
-    registry.registerView({
+    registry.registerOverlay({
       apiVersion: 1,
-      id: 'search',
-      title: '搜索',
-      region: 'sidebar',
-      order: 15,
-      component: SearchView
+      id: 'search-overlay',
+      component: SearchOverlay
     }),
     registerCommand({
       id: 'search.inFiles',
@@ -25,8 +22,7 @@ export function registerSearchFeature(): () => void {
       keybinding: 'Ctrl+Alt+Shift+F',
       run: () => {
         layout.open()
-        sidebar.setActive('search')
-        window.dispatchEvent(new Event('dsv:focus-search'))
+        searchPanel.open()
       }
     })
   ]

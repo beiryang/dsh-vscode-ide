@@ -3,6 +3,19 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions are semver.
 
+## 1.1.2
+
+### Changed
+
+- Content search is a **floating panel** instead of a permanent sidebar tab (VS Code style): opened with
+  `Ctrl+Alt+Shift+F` or the command palette, closed with `Esc` or a click outside
+- Removed the `搜` title-bar button; the panel needs no permanent UI
+- New kernel API `registerOverlay` for global floating layers that follow the window's lifetime
+
+### Fixed
+
+- `Esc` inside the search panel no longer closes the whole workbench
+
 ## 1.1.1
 
 ### Fixed

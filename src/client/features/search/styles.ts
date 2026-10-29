@@ -1,12 +1,39 @@
-/** 搜索视图样式。 */
+/** 搜索浮层样式。 */
 
 export const CSS = `
+/* 浮层容器：需要时才出现，不占侧栏 */
+.dsv-search-overlay {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 200px));
+  max-height: min(68vh, 620px);
+  display: flex;
+  flex-direction: column;
+  background: var(--dsv-panel, var(--dsv-bg));
+  border: 1px solid var(--dsv-accent, #0078d4);
+  border-radius: 12px;
+  overflow: hidden;
+  pointer-events: auto;
+  z-index: 1165;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--dsv-accent, #0078d4) 35%, transparent),
+    0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
 .dsv-search {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   font-size: 12px;
+}
+
+/* 浮层里让内容自己撑开，避免 height:100% 在自适应高度下塌成一条 */
+.dsv-search-overlay .dsv-search {
+  height: auto;
+  flex: 1 1 auto;
 }
 
 .dsv-search-bar {

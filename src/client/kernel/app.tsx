@@ -86,7 +86,9 @@ export function App({ ctx }: { ctx: unknown }) {
       // 其余情况一律关 —— 窗口被盖住时这是最可靠的退路
       if (event.key === 'Escape' && layout.getSnapshot().open) {
         const target = event.target as HTMLElement | null
-        const editing = typeof target?.closest === 'function' && target.closest('.monaco-editor, input, textarea')
+        const editing =
+          typeof target?.closest === 'function' &&
+          target.closest('.monaco-editor, input, textarea, [data-dsv-search-overlay]')
         if (!editing) {
           event.preventDefault()
           layout.close()
