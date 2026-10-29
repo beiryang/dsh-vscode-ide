@@ -46,7 +46,15 @@ function codeHint(code: string): string {
 
 type MenuState = { x: number; y: number; change: GitChange; staged: boolean }
 
-type Commit = { hash: string; author: string; when: string; subject: string; refs: string }
+type Commit = {
+  hash: string
+  full?: string
+  author: string
+  when: string
+  subject: string
+  parents?: string[]
+  refs: string
+}
 
 function refBadges(refs: string): Array<{ label: string; kind: 'branch' | 'remote' | 'tag' | 'ref' }> {
   return refs
@@ -66,8 +74,44 @@ type CommitDetail = {
   error?: string
 }
 
+const LANE_COLORS = ['#61afef', '#98c379', '#e5c07b', '#c678dd', '#56b6c2', '#e06c75']
+
+type LaneRow = { dot: number; count: number; occupied: boolean[] }
+
+/** 简单的多车道布局：每个活跃分支一条竖线，提交落在自己的车道上 */
+function buildLanes(commits: Commit[]): LaneRow[] {
+  const lanes: Array<string | null> = []
+  const rows: LaneRow[] = []
+  for (const commit of commits) {
+    let lane = lanes.indexOf(commit.hash)
+    if (lane < 0) {
+      lane = lanes.findIndex((value) => value === null)
+      if (lane < 0) {
+        lane = lanes.length
+        lanes.push(null)
+      }
+    }
+    lanes[lane] = commit.hash
+    const parents = (commit.parents ?? []).filter(Boolean)
+    lanes[lane] = parents[0] ?? null
+    for (const parent of parents.slice(1)) {
+      if (lanes.includes(parent)) continue
+      let slot = lanes.findIndex((value, index) => value === null && index !== lane)
+      if (slot < 0) {
+        slot = lanes.length
+        lanes.push(null)
+      }
+      lanes[slot] = parent
+    }
+    while (lanes.length > 0 && lanes[lanes.length - 1] === null) lanes.pop()
+    rows.push({ dot: lane, count: Math.max(1, lanes.length), occupied: lanes.map((value) => value !== null) })
+  }
+  return rows
+}
+
 function GraphRow({
   commit,
+  lanes,
   expanded,
   detail,
   busy,
@@ -77,6 +121,7 @@ function GraphRow({
   onLeave
 }: {
   commit: Commit
+  lanes: LaneRow
   expanded: boolean
   detail?: CommitDetail
   busy: boolean
@@ -87,7 +132,7 @@ function GraphRow({
 }) {
   return h(
     'div',
-    { className: 'dsv-scm-commit' },
+    { className: 'dsv-scm-commit-item' },
     h(
       'div',
       {
@@ -98,13 +143,43 @@ function GraphRow({
         onMouseLeave: onLeave,
         title: '点击查看这次提交改了哪些文件'
       },
-      h('span', { className: 'dsv-scm-graph-dot' }),
+      h(
+        'svg',
+        {
+          className: 'dsv-scm-lanes',
+          width: lanes.count * 10 + 2,
+          height: '100%',
+          viewBox: `0 0 ${lanes.count * 10 + 2} 26`,
+          preserveAspectRatio: 'none'
+        },
+        lanes.occupied.map((active, index) =>
+          active && index !== lanes.dot
+            ? h('line', {
+                key: `lane-${index}`,
+                x1: index * 10 + 6,
+                y1: 0,
+                x2: index * 10 + 6,
+                y2: 26,
+                stroke: LANE_COLORS[index % LANE_COLORS.length],
+                'stroke-width': 2,
+                'stroke-opacity': 0.75
+              })
+            : null
+        ),
+        h('circle', {
+          key: 'dot',
+          cx: lanes.dot * 10 + 6,
+          cy: 13,
+          r: 4,
+          fill: LANE_COLORS[lanes.dot % LANE_COLORS.length]
+        })
+      ),
       h('span', { className: 'dsv-scm-graph-subject' }, commit.subject),
       h('span', { className: 'dsv-scm-graph-author' }, commit.author),
       refBadges(commit.refs).map((badge) =>
         h('span', { key: badge.label, className: 'dsv-scm-ref', 'data-kind': badge.kind }, badge.label)
       ),
-      h('span', { className: 'dsv-scm-commit-caret' }, expanded ? '▾' : '▸')
+      h('span', { className: 'dsv-scm-commit-toggle' }, expanded ? '▾' : '▸')
     ),
     expanded
       ? h(
@@ -257,6 +332,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
     }
   }, [menu, commitMenu, rootMenu])
 
+  const lanes = React.useMemo(() => buildLanes(snap.commits), [snap.commits])
   const staged = snap.changes.filter((change) => change.staged)
   const unstaged = snap.changes.filter((change) => !change.staged)
   const canCommit = staged.length > 0 && message.trim().length > 0 && !snap.busy
@@ -449,7 +525,7 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
     /* 提交区 */
     h(
       'div',
-      { className: 'dsv-scm-commit' },
+      { className: 'dsv-scm-commit-item' },
       h('textarea', {
         className: 'dsv-scm-message',
         rows: 2,
@@ -590,10 +666,11 @@ export function SourceControl({ cwd, remote }: { cwd: string | null; remote?: bo
       : h(
           'div',
           { className: 'dsv-scm-graph', style: { height: `${graphHeight}px` } },
-          snap.commits.map((commit) =>
+          snap.commits.map((commit, index) =>
             h(GraphRow, {
               key: commit.hash,
               commit,
+              lanes: lanes[index] ?? { dot: 0, count: 1, occupied: [true] },
               expanded: openCommit === commit.hash,
               detail: commitDetails[commit.hash],
               busy: commitBusy === commit.hash,

@@ -116,7 +116,7 @@ export const api = {
   gitLog: (limit = 20, gitDir = '') =>
     call<{
       root: string
-      commits: Array<{ hash: string; author: string; when: string; subject: string; refs: string }>
+      commits: Array<{ hash: string; full: string; author: string; when: string; subject: string; parents: string[]; refs: string }>
     }>('git/log', { limit, gitDir }),
   gitHead: (path: string, gitDir = '') =>
     call<{ root: string; rel: string; text: string; exists: boolean }>('git/head', { path, gitDir }),

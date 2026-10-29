@@ -17,6 +17,16 @@ export type GitChange = {
   from?: string
 }
 
+export type Commit = {
+  hash: string
+  full?: string
+  author: string
+  when: string
+  subject: string
+  parents?: string[]
+  refs: string
+}
+
 export type GitState = {
   phase: 'idle' | 'loading' | 'ready' | 'error'
   message: string | null
@@ -32,7 +42,7 @@ export type GitState = {
   /** 当前使用的 Git 目录（相对工作区根，'' = 工作区根） */
   gitRoot: string
   /** 最近的提交（Graph 区块） */
-  commits: Array<{ hash: string; author: string; when: string; subject: string; refs: string }>
+  commits: Commit[]
 }
 
 let state: GitState = {

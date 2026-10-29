@@ -334,13 +334,31 @@ export const CSS = `
   padding-bottom: 6px;
 }
 
+.dsv-scm-commit-item { border: none; }
+
 .dsv-scm-graph-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 24px;
-  padding: 0 8px 0 18px;
+  height: 26px;
+  padding: 0 8px 0 4px;
   font-size: 12px;
+  border: none;
+}
+
+.dsv-scm-lanes {
+  flex: none;
+  height: 26px;
+  display: block;
+}
+
+.dsv-scm-commit-toggle {
+  flex: none;
+  font-size: 9px;
+  color: var(--dsv-fg-dim);
+  opacity: 0.7;
+  border: none;
+  background: none;
 }
 
 .dsv-scm-graph-row:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.14)); }

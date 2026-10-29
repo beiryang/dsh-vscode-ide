@@ -31,6 +31,9 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   paths and per-row stage/unstage actions
 - Smart “＋SSH”: connects straight away when the session is a remote workspace or exactly one host is remembered;
   the dialog (host list + form) only appears when there are several hosts or none. The `▾` button always opens it
+- Graph now draws **connection lanes** (SVG): each active branch is a coloured vertical line, commits sit on their
+  lane, so merges/parallel branches read as connected lines. Removed the per-row separator lines and the boxed
+  expand arrow (plain small caret); hover info card and click-to-expand behaviour stay
 - Source Control **file type icons** (shared Material sprite) in change rows, and a **Graph section**: recent commits
   with author, relative time, and ref badges for the current branch, remotes and tags, plus refresh / fetch / pull /
   push buttons. `git/pull` and `git/fetch` are new host routes (local and remote). The Graph area has a draggable
