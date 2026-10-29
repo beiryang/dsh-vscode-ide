@@ -11,6 +11,7 @@ import * as React from 'react'
 
 import { h } from '../../h'
 import { api } from '../../kernel/transport'
+import { prefs } from '../../kernel/prefs'
 import { terminal, type TermSession } from './terminal'
 
 function decodeBase64(base64: string): string {
@@ -36,6 +37,9 @@ export function LocalConsole({ session, active }: { session: TermSession; active
   const [line, setLine] = React.useState('')
   const [history, setHistory] = React.useState<string[]>([])
   const [historyAt, setHistoryAt] = React.useState(-1)
+  const prefsVersion = React.useSyncExternalStore(prefs.subscribe, () => prefs.version)
+  void prefsVersion
+  const fontPrefs = prefs.getSnapshot()
   const inputRef = React.useRef<HTMLInputElement | null>(null)
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -143,6 +147,10 @@ export function LocalConsole({ session, active }: { session: TermSession; active
       {
         className: 'dsv-local-scroll',
         ref: scrollRef,
+        style: {
+          fontFamily: fontPrefs.editorFontFamily || undefined,
+          fontSize: `${fontPrefs.terminalFontSize || 12}px`
+        },
         onMouseDown: (event: React.MouseEvent) => {
           if (event.target === event.currentTarget) inputRef.current?.focus()
         }
