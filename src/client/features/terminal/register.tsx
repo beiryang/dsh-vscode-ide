@@ -5,6 +5,8 @@ import { prefs } from '../../kernel/prefs'
 import { registry } from '../../kernel/registry'
 import { registerTerminalCommands } from './commands'
 import { CSS } from './styles'
+import { SshDialog } from './SshDialog'
+import { sshDialog } from './sshTargets'
 import { TerminalPanel } from './TerminalPanel'
 import { terminal } from './terminal'
 import { syncTerminalFont, syncTerminalTheme } from './theme'
@@ -35,6 +37,11 @@ export function registerTerminalFeature(): () => void {
       region: 'panel',
       order: 10,
       component: TerminalPanelView
+    }),
+    registry.registerOverlay({
+      apiVersion: 1,
+      id: 'ssh-dialog',
+      component: SshDialog
     }),
     registry.registerStatusItem({
       apiVersion: 1,

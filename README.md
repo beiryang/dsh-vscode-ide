@@ -42,7 +42,9 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files
 - **Git** — branch and changes list, per-file stage/unstage, commit, push (auto-publishes a branch without upstream)
-- **SSH terminal** — xterm.js, multiple sessions, resizable panel; connection metadata is reused from `dsh-remote-ssh`, zero configuration
+- **SSH terminal** — xterm.js, multiple sessions, resizable panel. Connection details are reused from
+  `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
+  first use needs no pre-configured remote workspace. Hosts can be saved, passwords are never stored
 - **Local PowerShell console** — output pane + input line (no PTY, so no `vim`/`top`)
 - **Themes** — follow DSH, built-in One Dark Pro, or **import any VS Code theme JSON** (editor and shell change together)
 - **Icons** — built-in Material Icon Theme, or **import any VS Code icon theme** (sprites are generated at build time and lazily loaded)

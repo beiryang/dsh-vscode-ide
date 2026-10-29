@@ -93,8 +93,8 @@ export const terminal = {
     publish({ activeId: id })
   },
 
-  /** 新建一个 SSH 终端（先开面板，再连） */
-  async create(): Promise<void> {
+  /** 新建一个 SSH 终端（先开面板，再连）；返回错误信息，成功返回 null */
+  async create(ssh?: { host: string; port?: number; user: string; keyPath?: string; password?: string; passphrase?: string }): Promise<string | null> {
     terminal.open()
     const placeholder: TermSession = {
       id: `pending-${Date.now()}`,
@@ -104,21 +104,22 @@ export const terminal = {
     }
     publish({ sessions: [...state.sessions, placeholder], activeId: placeholder.id })
     try {
-      const session = await api.termOpen(100, 28)
+      const session = await api.termOpen(100, 28, ssh)
       publish({
         sessions: state.sessions.map((item) =>
           item.id === placeholder.id ? { id: session.id, label: session.label, status: 'ready', kind: 'ssh' } : item
         ),
         activeId: session.id
       })
+      return null
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       publish({
         sessions: state.sessions.map((item) =>
-          item.id === placeholder.id
-            ? { ...item, status: 'error', message: error instanceof Error ? error.message : String(error) }
-            : item
+          item.id === placeholder.id ? { ...item, status: 'error', message } : item
         )
       })
+      return message
     }
   },
 

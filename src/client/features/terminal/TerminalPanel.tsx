@@ -5,6 +5,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 import { TerminalView } from './TerminalView'
 import { LocalConsole } from './LocalConsole'
@@ -15,14 +16,8 @@ export function TerminalPanel() {
 
   if (!snap.open) return null
 
-  const create = async () => {
-    if (busy) return
-    setBusy(true)
-    try {
-      await terminal.create()
-    } finally {
-      setBusy(false)
-    }
+  const create = () => {
+    sshDialog.open()
   }
 
   const createLocal = async () => {
@@ -91,7 +86,7 @@ export function TerminalPanel() {
         )
       ),
       h('span', { style: { flex: 1 } }),
-      h('button', { className: 'dsv-mini-btn', title: '新建 SSH 终端', onClick: () => void create() }, busy ? '…' : '＋SSH'),
+      h('button', { className: 'dsv-mini-btn', title: '新建 SSH 终端（可手填主机，不依赖远程工作区）', onClick: () => create() }, '＋SSH'),
       h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（非 PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
       h('button', { className: 'dsv-mini-btn', title: '收起终端面板', onClick: () => terminal.close() }, '▾')
     ),
@@ -102,7 +97,7 @@ export function TerminalPanel() {
         ? h(
             'div',
             { className: 'dsv-term-empty' },
-            '还没有终端。右上角「＋SSH」连远程工作区，「＋本地」开本地 PowerShell（非 PTY）。'
+            '还没有终端。右上角「＋SSH」连接远程主机（手填主机/用户/私钥），「＋本地」开本地 PowerShell（非 PTY）。'
           )
         : snap.sessions.map((session) =>
             session.status === 'ready' && session.kind === 'local'

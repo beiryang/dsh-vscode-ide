@@ -22,6 +22,10 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
 - Editor appearance settings, applied live without reopening tabs: font size (10–24 px), word wrap,
   line numbers, tab width (1–8)
 - Kernel API `registerOverlay` for global floating layers that follow the window's lifetime
+- **Manual SSH connections**: the “＋SSH” button opens a dialog for host / port / user / key path (or password),
+  so the terminal works on first install without a pre-configured `dsh-remote-ssh` workspace.
+  Saved hosts live in `localStorage: dsv:ssh.hosts.v1` (no passwords); missing key paths fall back to
+  `~/.ssh/id_ed25519`, `id_ecdsa`, `id_rsa`
 
 ### Changed
 

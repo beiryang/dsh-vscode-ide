@@ -114,7 +114,15 @@ export const api = {
   gitUnstageAll: () => call<{ ok: boolean }>('git/unstageAll', {}),
   gitCommit: (message: string) => call<{ output: string }>('git/commit', { message }),
   gitPush: () => call<{ output: string }>('git/push', {}),
-  termOpen: (cols: number, rows: number) => call<{ id: string; label: string }>('term/open', { cols, rows }),
+  /** 新建 SSH 终端；ssh 省略时用当前远程工作区的元数据 */
+  termOpen: (
+    cols: number,
+    rows: number,
+    ssh?: { host: string; port?: number; user: string; keyPath?: string; password?: string; passphrase?: string }
+  ) => call<{ id: string; label: string }>('term/open', { cols, rows, ssh }),
+  /** 当前会话若是远程工作区，返回预填用的连接参数 */
+  sshInfo: () =>
+    call<{ host: string; port: number; user: string; keyPath?: string; remotePath?: string } | null>('ssh/info', {}),
   localOpen: () => call<{ id: string; label: string; shell: string }>('local/open', {}),
   termWrite: (id: string, data: string) => call<{ written: boolean }>('term/write', { id, data }),
   termResize: (id: string, cols: number, rows: number) => call<{ resized: boolean }>('term/resize', { id, cols, rows }),
