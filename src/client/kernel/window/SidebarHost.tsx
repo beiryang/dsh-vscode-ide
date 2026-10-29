@@ -1,11 +1,8 @@
 /**
- * 侧栏容器：按注册表渲染「资源管理器 / 源代码管理 …」这些页签。
+ * 侧栏容器：左侧竖向图标栏（类 VS Code 活动栏）+ 右侧内容区。
  *
- * 内核不知道每个页签里是什么，只知道 id/title/component；
- * 当前选中的页签存在 kernel/sidebar.ts，别的模块可以让它切过去。
- *
- * 带 hidden 的视图（比如设置）不占页签位置，被激活时顶部出现一条
- * 「标题 + 返回」的窄条，返回时回到第一个可见页签。
+ * 内核仍然只知道 id/title/icon/component；图标缺失时用标题首字兜底。
+ * hidden 视图（比如设置）不占图标栏位置，激活时顶部出现「返回 + 标题」。
  */
 
 import * as React from 'react'
@@ -13,6 +10,12 @@ import * as React from 'react'
 import { h } from '../../h'
 import { registry, type ViewContribution, type WorkbenchContext } from '../registry'
 import { sidebar } from '../sidebar'
+
+function iconOf(view: ViewContribution): string {
+  if (view.icon) return view.icon
+  const title = view.title.trim()
+  return title ? title.slice(0, 1) : '·'
+}
 
 export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
   React.useSyncExternalStore(registry.subscribeViews, registry.getViewVersion)
@@ -31,30 +34,41 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
   return h(
     'div',
     { className: 'dsv-sidebar' },
-    active?.hidden
-      ? h(
-          'div',
-          { className: 'dsv-sidebar-floating-head' },
-          h('button', { className: 'dsv-mini-btn', title: '返回', onClick: back }, '←'),
-          h('span', { className: 'dsv-sidebar-floating-title' }, active.title)
+    /* 竖向图标栏 */
+    h(
+      'div',
+      { className: 'dsv-activitybar' },
+      visible.map((view: ViewContribution) =>
+        h(
+          'button',
+          {
+            key: view.id,
+            className: 'dsv-activity-btn',
+            'data-active': view.id === active?.id ? 'true' : 'false',
+            title: view.title,
+            onClick: () => sidebar.setActive(view.id)
+          },
+          h('span', { className: 'dsv-activity-icon' }, iconOf(view))
         )
-      : h(
-          'div',
-          { className: 'dsv-sidebar-tabs' },
-          visible.map((view: ViewContribution) =>
-            h(
-              'button',
-              {
-                key: view.id,
-                className: 'dsv-sidebar-tab',
-                'data-active': view.id === active?.id ? 'true' : 'false',
-                onClick: () => sidebar.setActive(view.id)
-              },
-              view.icon ? h('span', { className: 'dsv-sidebar-tab-icon' }, view.icon) : null,
-              view.title
-            )
+      )
+    ),
+    /* 内容区 */
+    h(
+      'div',
+      { className: 'dsv-sidebar-content' },
+      active?.hidden
+        ? h(
+            'div',
+            { className: 'dsv-sidebar-floating-head' },
+            h('button', { className: 'dsv-mini-btn', title: '返回', onClick: back }, '←'),
+            h('span', { className: 'dsv-sidebar-floating-title' }, active.title)
           )
-        ),
-    active ? h(active.component, { key: active.id, ctx }) : null
+        : h(
+            'div',
+            { className: 'dsv-sidebar-head' },
+            h('span', { className: 'dsv-sidebar-head-title' }, active?.title ?? '')
+          ),
+      active ? h(active.component, { key: active.id, ctx }) : null
+    )
   )
 }
