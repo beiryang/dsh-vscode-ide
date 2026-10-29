@@ -11,6 +11,35 @@ import { h } from '../../h'
 import { registry, type ViewContribution, type WorkbenchContext } from '../registry'
 import { sidebar } from '../sidebar'
 
+function ActivityIcon({ name }: { name: string }) {
+  const paths: Record<string, string[]> = {
+    explorer: ['M4 2h5l3 3v9H4z', 'M9 2v3h3'],
+    git: ['M5 5.2v5.6', 'M11 7.2c0 2.6-6 2.8-6 3.6'],
+    search: []
+  }
+  if (name === 'search') {
+    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
+      h('circle', { cx: 7, cy: 7, r: 4.2, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.3 }),
+      h('path', { d: 'M10.2 10.2 14 14', stroke: 'currentColor', 'stroke-width': 1.3, 'stroke-linecap': 'round' })
+    )
+  }
+  if (name === 'explorer') {
+    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
+      ...paths.explorer.map((d, i) => h('path', { key: i, d, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2, 'stroke-linejoin': 'round' })
+      )
+  }
+  if (name === 'git') {
+    return h('svg', { width: 22, height: 22, viewBox: '0 0 16 16', 'aria-hidden': 'true' },
+      h('circle', { cx: 5, cy: 3.2, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('circle', { cx: 5, cy: 12.8, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('circle', { cx: 11, cy: 6, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('path', { d: 'M5 4.8v6.4', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('path', { d: 'M11 7.6c0 3-6 3.1-6 3.6', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 })
+    )
+  }
+  return h('span', { className: 'dsv-activity-icon' }, name)
+}
+
 function iconOf(view: ViewContribution): string {
   if (view.icon) return view.icon
   const title = view.title.trim()
@@ -48,7 +77,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
             title: view.title,
             onClick: () => sidebar.setActive(view.id)
           },
-          h('span', { className: 'dsv-activity-icon' }, iconOf(view))
+          h(ActivityIcon, { name: view.id === 'explorer' ? 'explorer' : view.id === 'git' ? 'git' : view.icon ?? view.title })
         )
       ),
       h(
@@ -62,7 +91,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
             if (open) open()
           }
         },
-        h('span', { className: 'dsv-activity-icon' }, '⌕')
+        h(ActivityIcon, { name: 'search' })
       )
     ),
     /* 内容区 */

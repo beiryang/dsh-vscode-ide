@@ -23,6 +23,27 @@ export const CSS = `
   opacity: 0.9;
 }
 
+.dsv-window ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dsv-window ::-webkit-scrollbar-track { background: transparent; }
+
+.dsv-window ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--dsv-fg) 22%, transparent);
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+
+.dsv-window ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--dsv-fg) 34%, transparent);
+  background-clip: padding-box;
+}
+
+.dsv-window ::-webkit-scrollbar-corner { background: transparent; }
+
 .dsv-root {
   position: fixed;
   inset: 0;
@@ -202,6 +223,12 @@ export const CSS = `
   width: 2px;
   border-radius: 1px;
   background: var(--dsv-accent);
+}
+
+.dsv-activity-svg {
+  width: 22px;
+  height: 22px;
+  display: block;
 }
 
 .dsv-activity-icon { font-size: 16px; line-height: 1; }
