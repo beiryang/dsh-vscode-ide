@@ -26,6 +26,9 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   so the terminal works on first install without a pre-configured `dsh-remote-ssh` workspace.
   Saved hosts live in `localStorage: dsv:ssh.hosts.v1` (no passwords); missing key paths fall back to
   `~/.ssh/id_ed25519`, `id_ecdsa`, `id_rsa`
+- Source Control panel restyled after VS Code: branch row with sync/refresh icons, message box with a full-width
+  commit button, collapsible “已暂存的更改 / 更改” sections with counts, colour-coded status letters, dim directory
+  paths and per-row stage/unstage actions
 - Smart “＋SSH”: connects straight away when the session is a remote workspace or exactly one host is remembered;
   the dialog (host list + form) only appears when there are several hosts or none. The `▾` button always opens it
 
