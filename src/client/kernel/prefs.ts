@@ -20,6 +20,8 @@ export type Prefs = {
   editorTabSize: number
   /** 显示行号 */
   editorLineNumbers: boolean
+  /** 底部面板停靠位置：右侧（占满高度）或底部 */
+  panelDock: 'right' | 'bottom'
 }
 
 /**
@@ -49,7 +51,8 @@ export const DEFAULT_PREFS: Prefs = {
   editorFontSize: 13,
   editorWordWrap: false,
   editorTabSize: 2,
-  editorLineNumbers: true
+  editorLineNumbers: true,
+  panelDock: 'right'
 }
 
 export const TERMINAL_FONT_MIN = 10
@@ -99,7 +102,8 @@ function load(): Prefs {
       editorFontSize: clampNumber(parsed.editorFontSize, EDITOR_FONT_MIN, EDITOR_FONT_MAX, DEFAULT_PREFS.editorFontSize),
       editorWordWrap: asBoolean(parsed.editorWordWrap, DEFAULT_PREFS.editorWordWrap),
       editorTabSize: clampNumber(parsed.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, DEFAULT_PREFS.editorTabSize),
-      editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers)
+      editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers),
+      panelDock: parsed.panelDock === 'bottom' ? 'bottom' : 'right'
     }
   } catch {
     return { ...DEFAULT_PREFS }
@@ -173,6 +177,9 @@ export const prefs = {
   },
   setEditorLineNumbers(value: boolean) {
     publish({ ...state, editorLineNumbers: value })
+  },
+  setPanelDock(dock: 'right' | 'bottom') {
+    publish({ ...state, panelDock: dock === 'bottom' ? 'bottom' : 'right' })
   },
   resetEditorFontFamily() {
     publish({ ...state, editorFontFamily: DEFAULT_EDITOR_FONT })

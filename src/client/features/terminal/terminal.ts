@@ -23,6 +23,7 @@ export type TermSession = {
 export type TerminalState = {
   open: boolean
   height: number
+  width: number
   sessions: TermSession[]
   activeId: string | null
 }
@@ -30,23 +31,32 @@ export type TerminalState = {
 const KEY = 'dsv:terminal.v1'
 export const MIN_TERM_HEIGHT = 120
 export const MAX_TERM_HEIGHT = 720
+export const MIN_TERM_WIDTH = 320
+export const MAX_TERM_WIDTH = 900
 
 function load(): TerminalState {
   let height = 240
+  let width = 420
   let open = false
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
-      const parsed = JSON.parse(raw) as { v?: number; height?: number; open?: boolean }
+      const parsed = JSON.parse(raw) as { v?: number; height?: number; width?: number; open?: boolean }
       if (parsed.v === 1) {
         if (typeof parsed.height === 'number') height = clampHeight(parsed.height)
+        if (typeof parsed.width === 'number') width = clampWidth(parsed.width)
         open = parsed.open === true
       }
     }
   } catch {
     /* ignore */
   }
-  return { open, height, sessions: [], activeId: null }
+  return { open, height, width, sessions: [], activeId: null }
+}
+
+function clampWidth(value: number) {
+  const max = Math.min(MAX_TERM_WIDTH, Math.max(MIN_TERM_WIDTH, Math.round(window.innerWidth * 0.5)))
+  return Math.min(Math.max(Math.round(value), MIN_TERM_WIDTH), max)
 }
 
 function clampHeight(value: number) {
@@ -60,7 +70,7 @@ const listeners = new Set<() => void>()
 function publish(next: Partial<TerminalState>) {
   state = { ...state, ...next }
   try {
-    localStorage.setItem(KEY, JSON.stringify({ v: 1, height: state.height, open: state.open }))
+    localStorage.setItem(KEY, JSON.stringify({ v: 1, height: state.height, width: state.width, open: state.open }))
   } catch {
     /* ignore */
   }
@@ -85,6 +95,9 @@ export const terminal = {
   },
   toggle() {
     publish({ open: !state.open })
+  },
+  setWidth(width: number) {
+    publish({ width: clampWidth(width) })
   },
   setHeight(height: number) {
     publish({ height: clampHeight(height) })

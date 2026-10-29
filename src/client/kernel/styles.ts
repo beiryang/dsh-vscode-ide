@@ -183,6 +183,16 @@ export const CSS = `
 
 .dsv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--dsv-bg); }
 
+.dsv-panel-dock:empty { border-left: none; }
+
+.dsv-panel-dock {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--dsv-border);
+}
+
 .dsv-status-item { display: inline-flex; align-items: center; }
 
 .dsv-statusbar {

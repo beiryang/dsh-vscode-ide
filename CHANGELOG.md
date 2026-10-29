@@ -38,6 +38,9 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
 - Window: **minimize button in the title bar** (same behaviour as peek — hides the window, `Ctrl+Alt+Q` returns).
   The status-bar “✕ 关闭” button was removed; closing stays available via the title-bar ✕, `Esc`, and the
   sidebar launcher
+- **Terminal panel position**: docks on the right by default (full height beside the editor, file tree on the left),
+  with a header button to switch between right and bottom; its edge is draggable in both positions and the width is
+  remembered
 - **Replace all** in the search panel (`⇄` toggles the replace box, confirmation shows the match/file counts);
   backing host route `replace/content` reuses the search index and writes each file atomically
 - **Per-workspace Git root**: the branch row now has a `⋯` menu (“change repository folder…” / “clear selection,

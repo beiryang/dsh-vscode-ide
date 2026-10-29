@@ -5,6 +5,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { prefs } from '../../kernel/prefs'
 import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
@@ -13,6 +14,9 @@ import { LocalConsole } from './LocalConsole'
 
 export function TerminalPanel() {
   const snap = React.useSyncExternalStore(terminal.subscribe, terminal.getSnapshot)
+  const prefsVersion = React.useSyncExternalStore(prefs.subscribe, () => prefs.version)
+  void prefsVersion
+  const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
 
   if (!snap.open) return null
@@ -34,10 +38,13 @@ export function TerminalPanel() {
   const beginResize = (event: React.PointerEvent) => {
     if (event.button !== 0) return
     event.preventDefault()
+    const startX = event.clientX
     const startY = event.clientY
     const startHeight = snap.height
+    const startWidth = snap.width
     const onMove = (moveEvent: PointerEvent) => {
-      terminal.setHeight(startHeight + (startY - moveEvent.clientY))
+      if (dock === 'right') terminal.setWidth(startWidth + (startX - moveEvent.clientX))
+      else terminal.setHeight(startHeight + (startY - moveEvent.clientY))
     }
     const onUp = () => {
       window.removeEventListener('pointermove', onMove)
@@ -51,8 +58,16 @@ export function TerminalPanel() {
 
   return h(
     'div',
-    { className: 'dsv-term', style: { height: `${snap.height}px` } },
-    h('div', { className: 'dsv-term-resize', onPointerDown: beginResize, title: '拖动调整高度' }),
+    {
+      className: 'dsv-term',
+      'data-dock': dock,
+      style: dock === 'right' ? { width: `${snap.width}px`, height: '100%' } : { height: `${snap.height}px` }
+    },
+    h('div', {
+      className: 'dsv-term-resize',
+      onPointerDown: beginResize,
+      title: dock === 'right' ? '拖动调整宽度' : '拖动调整高度'
+    }),
     h(
       'div',
       { className: 'dsv-term-head' },
@@ -90,6 +105,15 @@ export function TerminalPanel() {
       h('button', { className: 'dsv-mini-btn', title: '连接 SSH（已记住唯一主机时直接连）', onClick: () => create() }, busy ? '…' : '＋SSH'),
       h('button', { className: 'dsv-mini-btn', title: '选择或新建 SSH 连接', onClick: () => sshDialog.open() }, '▾'),
       h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（非 PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
+      h(
+        'button',
+        {
+          className: 'dsv-mini-btn',
+          title: dock === 'right' ? '停靠到下方' : '停靠到右侧（占满高度）',
+          onClick: () => prefs.setPanelDock(dock === 'right' ? 'bottom' : 'right')
+        },
+        dock === 'right' ? '⇩' : '⇨'
+      ),
       h('button', { className: 'dsv-mini-btn', title: '收起终端面板', onClick: () => terminal.close() }, '▾')
     ),
     h(

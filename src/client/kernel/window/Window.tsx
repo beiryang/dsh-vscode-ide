@@ -12,6 +12,7 @@ import { h } from '../../h'
 import { WINDOW_TITLE } from '../brand'
 import { layout, MIN_H, MIN_W, SAFE_TOP, type Rect } from '../layout'
 import { palette } from '../palette'
+import { prefs } from '../prefs'
 import { api, health } from '../transport'
 import { registry, type WorkbenchContext } from '../registry'
 import { Palette } from '../ui/Palette'
@@ -96,6 +97,7 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
     void loadRoot()
   }, [loadRoot, sessionId, state.open])
 
+
   // 从速览回来：窗口重新可见后让编辑器恢复布局与焦点
   React.useEffect(() => {
     if (!state.open || state.peek) return
@@ -160,6 +162,7 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
     : state.rect
   const mainViews = registry.getViews('main')
   const panelViews = registry.getViews('panel')
+  const panelDock = prefs.getSnapshot().panelDock
 
   const windowStyle: React.CSSProperties = {
     left: `${rect.x}px`,
@@ -205,9 +208,16 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
       'div',
       { className: 'dsv-body' },
       h(SidebarHost, { ctx }),
-      h('div', { className: 'dsv-main' }, mainViews.map((view) => h(view.component, { key: view.id, ctx })))
+      h('div', { className: 'dsv-main' }, mainViews.map((view) => h(view.component, { key: view.id, ctx }))),
+      panelDock === 'right'
+        ? h(
+            'div',
+            { className: 'dsv-panel-dock' },
+            panelViews.map((view) => h(view.component, { key: view.id, ctx }))
+          )
+        : null
     ),
-    panelViews.map((view) => h(view.component, { key: view.id, ctx })),
+    panelDock === 'bottom' ? panelViews.map((view) => h(view.component, { key: view.id, ctx })) : null,
     h(Palette, null),
     registry.getOverlays().map((overlay) => h(overlay.component, { key: overlay.id, ctx })),
     h(

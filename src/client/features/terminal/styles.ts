@@ -132,6 +132,22 @@ export const CSS = `
 
 .dsv-term-resize { position: absolute; top: -3px; left: 0; right: 0; height: 6px; cursor: ns-resize; z-index: 3; }
 
+/* 右侧停靠：竖着占满高度，拖拽手柄换成左边缘 */
+.dsv-term[data-dock="right"] {
+  border-top: none;
+  height: 100%;
+}
+
+.dsv-term[data-dock="right"] .dsv-term-resize {
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  right: auto;
+  width: 6px;
+  height: auto;
+  cursor: ew-resize;
+}
+
 /*
  * 终端头部的按钮是「文字按钮」（＋SSH / ＋本地），而 .dsv-mini-btn 是 20×20 的
  * 方形图标按钮 —— 直接复用会把文字挤成两行。这里单独放宽。
