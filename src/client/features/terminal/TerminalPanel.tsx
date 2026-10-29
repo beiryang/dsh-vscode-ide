@@ -10,7 +10,6 @@ import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 import { TerminalView } from './TerminalView'
-import { LocalConsole } from './LocalConsole'
 
 export function TerminalPanel() {
   const snap = React.useSyncExternalStore(terminal.subscribe, terminal.getSnapshot)
@@ -148,7 +147,7 @@ export function TerminalPanel() {
       h('span', { style: { flex: 1 } }),
       h('button', { className: 'dsv-mini-btn', title: '连接 SSH（已记住唯一主机时直接连）', onClick: () => create() }, busy ? '…' : '＋SSH'),
       h('button', { className: 'dsv-mini-btn', title: '选择或新建 SSH 连接', onClick: () => sshDialog.open() }, '▾'),
-      h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（非 PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
+      h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
       h(
         'button',
         {
@@ -167,13 +166,11 @@ export function TerminalPanel() {
         ? h(
             'div',
             { className: 'dsv-term-empty' },
-            '还没有终端。右上角「＋SSH」连接远程主机（手填主机/用户/私钥），「＋本地」开本地 PowerShell（非 PTY）。'
+            '还没有终端。右上角「＋SSH」连接远程主机（手填主机/用户/私钥），「＋本地」开本地 PowerShell（真 PTY）。'
           )
         : snap.sessions.map((session) =>
-            session.status === 'ready' && session.kind === 'local'
-              ? h(LocalConsole, { key: session.id, session, active: session.id === active?.id })
-              : session.status === 'ready'
-                ? h(TerminalView, { key: session.id, session, active: session.id === active?.id })
+            session.status === 'ready'
+              ? h(TerminalView, { key: session.id, session, active: session.id === active?.id })
                 : h(
                   'div',
                   {

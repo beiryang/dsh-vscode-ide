@@ -134,6 +134,23 @@ for (const entry of [
 }
 log(`已复制到 ${targetDir}`)
 
+/* 运行期依赖（目前只有 node-pty）：npm 安装时会自动装，本地脚本复制时需要手动带过去 */
+{
+  const own = JSON.parse(readFileSync(join(SRC, 'package.json'), 'utf8'))
+  const deps = Object.keys(own.dependencies ?? {})
+  for (const name of deps) {
+    const from = join(SRC, 'node_modules', name)
+    if (!existsSync(from)) {
+      log(`⚠ 缺运行期依赖 ${name}（先在源目录 npm install）`)
+      continue
+    }
+    const to = join(targetDir, 'node_modules', name)
+    mkdirSync(dirname(to), { recursive: true })
+    cpSync(from, to, { recursive: true })
+  }
+  if (deps.length > 0) log(`已带运行期依赖：${deps.join(', ')}`)
+}
+
 /* profile/package.json */
 {
   const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf8'))
