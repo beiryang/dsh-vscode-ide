@@ -50,7 +50,7 @@ export function SidebarHost({ ctx }: { ctx: WorkbenchContext }) {
           },
           h('span', { className: 'dsv-activity-icon' }, iconOf(view))
         )
-      )
+      ),
       h(
         'button',
         {
