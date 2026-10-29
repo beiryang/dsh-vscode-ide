@@ -106,6 +106,12 @@ export function TerminalView({ session, active }: { session: TermSession; active
         } catch {
           /* 容器还没尺寸 */
         }
+        // 初次 fit 后必须立刻把真实列/行数告诉 PTY：
+        // 否则 PowerShell 仍按打开时的旧宽度排版，表格每行被补到旧宽度，
+        // xterm 端再折行 —— 表现就是每一行表格后面夹一个空行。
+        if (term.cols > 0 && term.rows > 0) {
+          void api.termResize(session.id, term.cols, term.rows).catch(() => undefined)
+        }
         term.onData((data: string) => {
           void api.termWrite(session.id, data).catch(() => undefined)
         })
@@ -151,6 +157,8 @@ export function TerminalView({ session, active }: { session: TermSession; active
     const timer = window.setTimeout(() => {
       try {
         fitRef.current?.fit()
+    const term = termRef.current
+    if (term) void api.termResize(session.id, term.cols, term.rows).catch(() => undefined)
         termRef.current?.focus()
       } catch {
         /* ignore */
