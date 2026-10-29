@@ -64,14 +64,44 @@ function luminance(color: string): number {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
 }
 
+function resolveCssColor(value: string): string | null {
+  if (!value) return null
+  try {
+    const probe = document.createElement('span')
+    probe.style.color = value
+    probe.style.display = 'none'
+    document.body?.appendChild(probe)
+    const resolved = getComputedStyle(probe).color
+    probe.remove()
+    return resolved || null
+  } catch {
+    return null
+  }
+}
+
+function opaque(color: string | null): boolean {
+  return Boolean(color) && color !== 'transparent' && !/rgba\(.*,\s*0(\.0+)?\)$/.test(color ?? '')
+}
+
 export function isDark(): boolean {
   const body = document.body
   if (!body) return true
   if (body.hasAttribute('data-ds-dark-theme')) return true
   const scheme = getComputedStyle(body).colorScheme || ''
   if (scheme.includes('dark')) return true
-  const bg = getComputedStyle(body).backgroundColor
-  if (bg && bg !== 'rgba(0, 0, 0, 0)') return luminance(bg) < 0.5
+
+  // 依次看：body 背景 → html 背景 → DSH 主题变量；都透明时用正文颜色反推
+  const candidates = [
+    getComputedStyle(body).backgroundColor,
+    document.documentElement ? getComputedStyle(document.documentElement).backgroundColor : '',
+    resolveCssColor('var(--dsw-alias-bg-base)') ?? '',
+    resolveCssColor('var(--dsw-alias-bg-layer-1)') ?? ''
+  ]
+  for (const candidate of candidates) {
+    if (opaque(candidate)) return luminance(candidate as string) < 0.5
+  }
+  const fg = getComputedStyle(body).color || resolveCssColor('var(--dsw-alias-label-primary)') || ''
+  if (opaque(fg)) return luminance(fg as string) > 0.5
   return true
 }
 
