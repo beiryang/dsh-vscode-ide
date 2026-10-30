@@ -246,4 +246,19 @@ export const CSS = `
   cursor: pointer;
 }
 .dsv-search-close:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.16)); color: var(--dsv-fg); }
+
+.dsv-search-resizer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background:
+    linear-gradient(135deg, transparent 0 45%, var(--dsv-fg-dim) 45% 50%, transparent 50% 100%) no-repeat right bottom / 10px 10px,
+    linear-gradient(135deg, transparent 0 65%, var(--dsv-fg-dim) 65% 70%, transparent 70% 100%) no-repeat right bottom / 15px 15px;
+  opacity: 0.7;
+}
+.dsv-search-resizer:hover { opacity: 1; }
 `
