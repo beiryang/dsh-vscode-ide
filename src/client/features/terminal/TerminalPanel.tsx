@@ -7,6 +7,7 @@ import * as React from 'react'
 import { h } from '../../h'
 import { api } from '../../kernel/transport'
 import { prefs } from '../../kernel/prefs'
+import { sessionStore } from '../../kernel/session'
 import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
@@ -20,14 +21,18 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
   const [busy, setBusy] = React.useState(false)
   const [bannerDismissed, setBannerDismissed] = React.useState<Set<string>>(new Set())
   const [workspaceRemote, setWorkspaceRemote] = React.useState<boolean | null>(null)
+  const [workspaceCwd, setWorkspaceCwd] = React.useState<string | null>(ctx?.cwd ?? null)
+  // 会话 key 由内核每秒同步；用它做依赖，切工作区（不关窗口）也能重新探测
+  const liveSession = React.useSyncExternalStore(sessionStore.subscribe, sessionStore.getSnapshot)
 
-  // 自己查一次工作区是否远程：ctx 在切换工作区时可能滞后，这里以宿主返回为准
   React.useEffect(() => {
     let alive = true
     void api
       .roots()
       .then((info) => {
-        if (alive) setWorkspaceRemote(info.remote === true)
+        if (!alive) return
+        setWorkspaceRemote(info.remote === true)
+        setWorkspaceCwd(info.cwd)
       })
       .catch(() => {
         if (alive) setWorkspaceRemote(false)
@@ -35,7 +40,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
     return () => {
       alive = false
     }
-  }, [ctx?.cwd, ctx?.sessionId])
+  }, [liveSession])
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null)
   const [renameFor, setRenameFor] = React.useState<{ id: string; value: string } | null>(null)
   const lastHeight = React.useRef(260)
@@ -219,7 +224,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
           h(
             'span',
             { className: 'dsv-term-banner-text' },
-            `此终端运行在 ${active.label} 上；当前工作区仍是本地${ctx?.cwd ? `（${ctx.cwd}）` : ''}，命令只在远端生效。`
+            `此终端运行在 ${active.label} 上；当前工作区仍是本地${workspaceCwd ? `（${workspaceCwd}）` : ''}，命令只在远端生效。`
           ),
           h(
             'button',
