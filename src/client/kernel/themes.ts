@@ -106,35 +106,87 @@ export function shellPaletteOf(theme: EditorTheme): ShellPalette {
 }
 
 const KEY = 'dsv:theme.v1'
-const CUSTOM_KEY = 'dsv:theme.custom.v1'
+const CUSTOMS_KEY = 'dsv:themes.customs.v1'
+const LEGACY_CUSTOM_KEY = 'dsv:theme.custom.v1'
 const listeners = new Set<() => void>()
-let current: ThemeId = 'follow'
-let custom: EditorTheme | null = null
+let current = 'follow'
+let customs: EditorTheme[] = []
 
-/** 恢复用户导入的自定义主题 */
+type SavedTheme = {
+  id?: string
+  name?: string
+  type?: 'dark' | 'light'
+  colors?: Record<string, string>
+  rules?: TokenRule[]
+}
+
+function readStoredCustoms(): SavedTheme[] {
+  try {
+    const raw = localStorage.getItem(CUSTOMS_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed as SavedTheme[]
+    }
+  } catch {
+    /* ignore */
+  }
+  return []
+}
+
+function toEditorTheme(saved: SavedTheme, index: number): EditorTheme | null {
+  if (!saved || !saved.colors || typeof saved.colors !== 'object') return null
+  return {
+    id: typeof saved.id === 'string' && saved.id ? saved.id : `custom:${index}`,
+    label: saved.name || '自定义主题',
+    base: saved.type === 'light' ? 'vs' : 'vs-dark',
+    colors: saved.colors,
+    rules: Array.isArray(saved.rules) ? saved.rules : []
+  }
+}
+
+/** 恢复用户导入的主题列表（并迁移旧版单个主题） */
 try {
-  const raw = localStorage.getItem(CUSTOM_KEY)
-  if (raw) {
-    const saved = JSON.parse(raw) as { name?: string; type?: 'dark' | 'light'; colors?: Record<string, string>; rules?: TokenRule[] }
-    if (saved && saved.colors && typeof saved.colors === 'object') {
-      custom = {
-        id: 'dsv-custom',
-        label: saved.name || '自定义主题',
-        base: saved.type === 'light' ? 'vs' : 'vs-dark',
-        colors: saved.colors,
-        rules: Array.isArray(saved.rules) ? saved.rules : []
-      }
+  customs = readStoredCustoms()
+    .map(toEditorTheme)
+    .filter((theme): theme is EditorTheme => theme !== null)
+  if (customs.length === 0) {
+    const legacy = localStorage.getItem(LEGACY_CUSTOM_KEY)
+    if (legacy) {
+      const migrated = toEditorTheme({ ...(JSON.parse(legacy) as SavedTheme), id: 'custom:legacy' }, 0)
+      if (migrated) customs = [migrated]
     }
   }
 } catch {
-  custom = null
+  customs = []
 }
 
 try {
   const saved = localStorage.getItem(KEY)
-  if (saved === 'one-dark' || saved === 'follow' || saved === 'custom') current = saved
+  if (saved) current = saved
 } catch {
   /* localStorage 不可用时用默认值 */
+}
+if (current === 'custom') current = customs[0]?.id ?? 'follow'
+if (current.startsWith('custom:') && !customs.some((theme) => theme.id === current)) current = 'follow'
+
+function persistCustoms() {
+  try {
+    localStorage.setItem(
+      CUSTOMS_KEY,
+      JSON.stringify(
+        customs.map((theme) => ({
+          id: theme.id,
+          name: theme.label,
+          type: theme.base === 'vs' ? 'light' : 'dark',
+          colors: theme.colors,
+          rules: theme.rules
+        }))
+      )
+    )
+    localStorage.removeItem(LEGACY_CUSTOM_KEY)
+  } catch {
+    /* 存不下就只在本次会话生效 */
+  }
 }
 
 function persistActive() {
@@ -145,6 +197,10 @@ function persistActive() {
   }
 }
 
+function emit() {
+  for (const listener of listeners) listener()
+}
+
 export const themeStore = {
   subscribe(listener: () => void): () => void {
     listeners.add(listener)
@@ -152,52 +208,54 @@ export const themeStore = {
       listeners.delete(listener)
     }
   },
-  getSnapshot(): ThemeId {
+  getSnapshot(): string {
     return current
   },
-  set(id: ThemeId) {
+  set(id: string) {
     if (id === current) return
     current = id
     persistActive()
-    for (const listener of listeners) listener()
+    emit()
   },
   /** 当前生效的编辑器主题（follow 时返回 null，表示用内置深浅两套） */
   editorTheme(): EditorTheme | null {
-    if (current === 'custom') return custom
-    return current === 'one-dark' ? ONE_DARK : null
+    if (current === 'one-dark') return ONE_DARK
+    if (current.startsWith('custom:')) return customs.find((theme) => theme.id === current) ?? null
+    return null
   },
-  /** 导入并启用自定义主题（供设置页调用） */
-  setCustom(theme: { name: string; type: 'dark' | 'light'; colors: Record<string, string>; rules: TokenRule[] }) {
-    custom = {
-      id: 'dsv-custom',
-      label: theme.name || '自定义主题',
+  /** 已导入的自定义主题（下拉里和两个内置选项并列） */
+  listCustoms(): EditorTheme[] {
+    return customs.slice()
+  },
+  /** 导入并启用自定义主题；同名主题会覆盖旧条目 */
+  setCustom(theme: { name: string; type: 'dark' | 'light'; colors: Record<string, string>; rules: TokenRule[] }): string {
+    const label = theme.name || '自定义主题'
+    const existing = customs.findIndex((item) => item.label === label)
+    const id = existing >= 0 ? customs[existing].id : `custom:${Date.now().toString(36)}`
+    const next: EditorTheme = {
+      id,
+      label,
       base: theme.type === 'light' ? 'vs' : 'vs-dark',
       colors: theme.colors,
       rules: theme.rules ?? []
     }
-    try {
-      localStorage.setItem(CUSTOM_KEY, JSON.stringify({ name: custom.label, type: theme.type, colors: theme.colors, rules: custom.rules }))
-    } catch {
-      /* 存不下就只在本次会话生效 */
-    }
-    current = 'custom'
+    customs = existing >= 0 ? customs.map((item) => (item.id === id ? next : item)) : [...customs, next]
+    persistCustoms()
+    current = id
     persistActive()
-    for (const listener of listeners) listener()
+    emit()
+    return id
   },
-  clearCustom() {
-    custom = null
-    try {
-      localStorage.removeItem(CUSTOM_KEY)
-    } catch {
-      /* ignore */
-    }
-    if (current === 'custom') {
+  removeCustom(id: string) {
+    customs = customs.filter((theme) => theme.id !== id)
+    persistCustoms()
+    if (current === id) {
       current = 'follow'
       persistActive()
     }
-    for (const listener of listeners) listener()
+    emit()
   },
   customTheme(): EditorTheme | null {
-    return custom
+    return current.startsWith('custom:') ? customs.find((theme) => theme.id === current) ?? null : null
   }
 }

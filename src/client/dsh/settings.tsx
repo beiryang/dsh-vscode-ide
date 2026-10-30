@@ -140,23 +140,59 @@ export function SettingsSection() {
           'div',
           { className: 'dsv-settings-row' },
           h(
-            'button',
-            { 'data-active': themeId === 'follow' ? 'true' : 'false', onClick: () => themeStore.set('follow') },
-            '跟随 DSH'
-          ),
+            'select',
+            {
+              className: 'dsv-settings-select',
+              value: themeId,
+              onChange: (event: React.ChangeEvent<HTMLSelectElement>) => themeStore.set(event.target.value)
+            },
+            h('option', { value: 'follow' }, '跟随 DSH'),
+            h('option', { value: 'one-dark' }, 'One Dark Pro'),
+            themeStore
+              .listCustoms()
+              .map((theme) => h('option', { key: theme.id, value: theme.id }, `自定义 · ${theme.label}`))
+          )
+        ),
+        h(
+          'div',
+          { className: 'dsv-settings-hint' },
+          '「跟随 DSH」自动使用当前 DSH 主题；导入的 VS Code 主题也会出现在这个下拉里，可随时切换'
+        )
+      ),
+
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '导入主题（VS Code 主题 JSON 的完整路径）'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h('input', {
+            className: 'dsv-settings-input',
+            value: themePath,
+            spellCheck: false,
+            placeholder: 'C:\\Users\\你\\.vscode\\extensions\\...\\themes\\OneDark-Pro.json',
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) => setThemePath(event.target.value)
+          }),
           h(
             'button',
-            { 'data-active': themeId === 'one-dark' ? 'true' : 'false', onClick: () => themeStore.set('one-dark') },
-            'One Dark Pro'
+            { disabled: importing !== null || !themePath.trim(), onClick: () => void importThemeFile() },
+            importing === 'theme' ? '导入中…' : '导入'
           ),
-          themeStore.customTheme()
-            ? h(
-                'button',
-                { 'data-active': themeId === 'custom' ? 'true' : 'false', onClick: () => themeStore.set('custom') },
-                themeStore.customTheme()!.label
-              )
+          themeId.startsWith('custom:')
+            ? h('button', { onClick: () => themeStore.removeCustom(themeId) }, '移除当前主题')
             : null
-        )
+        ),
+        themeStore.listCustoms().length > 0
+          ? h(
+              'div',
+              { className: 'dsv-settings-hint' },
+              `已导入 ${themeStore.listCustoms().length} 个主题：${themeStore
+                .listCustoms()
+                .map((theme) => theme.label)
+                .join('、')}`
+            )
+          : null
       ),
 
       h(
@@ -297,33 +333,7 @@ export function SettingsSection() {
     h(
       'div',
       { className: 'dsv-settings-group' },
-      h('div', { className: 'dsv-settings-group-title' }, '扩展资源'),
-
-      h(
-        'div',
-        { className: 'dsv-settings-item' },
-        h('div', { className: 'dsv-settings-label' }, '导入主题（VS Code 主题 JSON 的完整路径）'),
-        h(
-          'div',
-          { className: 'dsv-settings-row' },
-          h('input', {
-            className: 'dsv-settings-input',
-            value: themePath,
-            spellCheck: false,
-            placeholder: 'C:\\Users\\你\\.vscode\\extensions\\...\\themes\\OneDark-Pro.json',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) => setThemePath(event.target.value)
-          }),
-          h(
-            'button',
-            { disabled: importing !== null || !themePath.trim(), onClick: () => void importThemeFile() },
-            importing === 'theme' ? '导入中…' : '导入'
-          ),
-          themeStore.customTheme() ? h('button', { onClick: () => themeStore.clearCustom() }, '移除') : null
-        ),
-        themeStore.customTheme()
-          ? h('div', { className: 'dsv-settings-hint' }, `当前自定义：${themeStore.customTheme()!.label}`)
-          : null
-      ),
+      h('div', { className: 'dsv-settings-group-title' }, '图标'),
 
       h(
         'div',

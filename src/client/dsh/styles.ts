@@ -162,6 +162,20 @@ export const CSS = `
 
 .dsv-settings-label { font-size: 12px; opacity: 0.88; }
 
+.dsv-settings-select {
+  height: 26px;
+  min-width: 260px;
+  padding: 0 26px 0 8px;
+  border: 1px solid var(--dsw-alias-border-l2, #3c3c3c);
+  border-radius: 6px;
+  background: var(--dsv-input, transparent);
+  color: var(--dsv-fg);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dsv-settings-select:focus { outline: none; border-color: var(--dsv-accent, #0078d4); }
+
 .dsv-settings-input {
   flex: 1 1 320px;
   min-width: 0;

@@ -98,6 +98,13 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   full hash, checkout, create branch, revert), backed by `git/checkout|branch|revert` routes for local and remote
   workspaces
 
+- **Theme picker & multiple imported themes** — the editor theme is now a single dropdown (Follow DSH / One Dark Pro /
+  every imported VS Code theme) instead of side-by-side buttons, and “import theme” moved into the same
+  Appearance group as the picker; imported themes are stored as a list (`localStorage: dsv:themes.customs.v1`,
+  migrating the old single-theme key) and same-name imports replace the previous entry
+- **Settings typography** — the Code Space settings section uses Microsoft YaHei throughout instead of
+  mixing DSH's UI, input and monospace fonts
+
 ### Fixed
 
 - Source Control now shows the real reason (including the remote case) instead of a generic
