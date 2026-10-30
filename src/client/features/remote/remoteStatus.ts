@@ -1,6 +1,6 @@
 /**
- * 远程连接状态：Code Space 打开时自动探测一次默认连接，
- * 用绿色/灰色圆点表示「最近一次探测是否连通」。
+ * 远程连接状态：Code Space 打开时探测一次，打开远程面板时再重新探测；
+ * 所有连接并行测试，各自显示绿/灰圆点。
  */
 
 import { remoteApi } from './api'
@@ -9,8 +9,8 @@ type Profile = { id: string; name?: string; host?: string; user?: string }
 
 let state: Record<string, boolean> = {}
 const listeners = new Set<() => void>()
-let probing: Promise<void> | null = null
-let probed = false
+let inflight: Promise<void> | null = null
+let probedOnce = false
 
 function emit() {
   for (const listener of listeners) listener()
@@ -37,20 +37,27 @@ export const remoteStatus = {
   }
 }
 
-/** 只探测一次：默认取第一个连接，失败再试下一个；任一成功即停止 */
-export function ensureAutoProbe(): Promise<void> {
-  if (probed) return probing ?? Promise.resolve()
-  probed = true
-  probing = (async () => {
+/** 并行探测所有连接，每个连接独立更新时间 */
+export function probeAll(): Promise<void> {
+  if (inflight) return inflight
+  inflight = (async () => {
     const list = await remoteApi<{ profiles: Profile[] }>('listProfiles', undefined, 8000)
     if (!list.ok) return
-    for (const profile of list.value.profiles ?? []) {
-      const result = await remoteApi<{ warning?: string }>('testConnection', { id: profile.id }, 45000)
-      remoteStatus.mark(profile.id, result.ok)
-      if (result.ok) break
-    }
+    await Promise.all(
+      (list.value.profiles ?? []).map(async (profile) => {
+        const result = await remoteApi<{ warning?: string }>('testConnection', { id: profile.id }, 45000)
+        remoteStatus.mark(profile.id, result.ok)
+      })
+    )
   })().finally(() => {
-    probing = null
+    inflight = null
   })
-  return probing
+  return inflight
+}
+
+/** 启动时只探测一次（Code Space 窗口挂载） */
+export function ensureAutoProbe(): Promise<void> {
+  if (probedOnce) return Promise.resolve()
+  probedOnce = true
+  return probeAll()
 }

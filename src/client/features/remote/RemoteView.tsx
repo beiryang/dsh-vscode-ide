@@ -9,7 +9,7 @@ import * as React from 'react'
 
 import { h } from '../../h'
 import { remoteApi, remoteBaseName, remoteJoin, remoteParentPath } from './api'
-import { ensureAutoProbe, remoteStatus } from './remoteStatus'
+import { probeAll, remoteStatus } from './remoteStatus'
 
 type Profile = {
   id: string
@@ -62,8 +62,9 @@ export function RemoteView() {
     }
   }, [selectedProfile])
 
+  // 每次打开远程面板都重新探测（并行，各连接独立更新）
   React.useEffect(() => {
-    void ensureAutoProbe()
+    void probeAll()
   }, [])
 
   const [profileForm, setProfileForm] = React.useState<null | {
