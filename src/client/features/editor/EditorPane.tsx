@@ -2,7 +2,7 @@
  * 编辑器容器：负责把 Monaco 挂到 DOM 上（模型与标签状态在 workspace 里）。
  *
  * 两个容器：普通编辑器与对比编辑器。哪个显示由当前标签的 kind 决定，
- * 两者都常驻，避免来回创建/销毁。
+ * 两者都常驻，避免来回创建/销毁。右侧分屏由 EditorView 单独放一列。
  */
 
 import * as React from 'react'
@@ -24,7 +24,6 @@ export function EditorPane() {
   const snap = React.useSyncExternalStore(workspace.subscribe, workspace.getSnapshot)
   const editorRef = React.useRef<HTMLDivElement | null>(null)
   const diffRef = React.useRef<HTMLDivElement | null>(null)
-  const secondaryRef = React.useRef<HTMLDivElement | null>(null)
 
   const activeTab = snap.tabs.find((tab) => tab.key === snap.active)
   const isDiff = activeTab?.kind === 'diff'
@@ -45,13 +44,6 @@ export function EditorPane() {
   }, [])
 
   React.useEffect(() => {
-    const element = secondaryRef.current
-    if (!element || !snap.secondary) return
-    void workspace.attachSecondary(element)
-    return () => workspace.detachSecondary()
-  }, [snap.secondary?.key])
-
-  React.useEffect(() => {
     // 切标签 / 窗口尺寸变化后补一次布局，避免光标位置与可见区域错位
     workspace.relayout()
   }, [snap.active])
@@ -69,7 +61,7 @@ export function EditorPane() {
         style: isDiff ? { display: 'none' } : undefined
       }),
       h('div', { ref: diffRef, className: 'dsv-diff', style: isDiff ? undefined : { display: 'none' } }),
-      empty && !snap.secondary ? h(Welcome, { loading: snap.status.phase === 'loading' }) : null,
+      empty ? h(Welcome, { loading: snap.status.phase === 'loading' }) : null,
       snap.status.message && snap.status.phase !== 'ready'
         ? h(
             'div',
@@ -82,28 +74,6 @@ export function EditorPane() {
             snap.status.message
           )
         : null
-    ),
-    snap.secondary
-      ? h(
-          'div',
-          { className: 'dsv-split' },
-          h(
-            'div',
-            { className: 'dsv-split-head' },
-            h('span', { className: 'dsv-split-name', title: snap.secondary.path }, snap.secondary.name),
-            h('button', { className: 'dsv-mini-btn', title: '关闭分屏', onClick: () => workspace.closeSecondary() }, '✕')
-          ),
-          h(
-            'div',
-            { className: 'dsv-split-crumbs', title: snap.secondary.path },
-            snap.secondary.path
-              .split(/[\\/]/)
-              .filter(Boolean)
-              .slice(-4)
-              .join(' › ')
-          ),
-          h('div', { ref: secondaryRef, className: 'dsv-split-editor' })
-        )
-      : null
+    )
   )
 }

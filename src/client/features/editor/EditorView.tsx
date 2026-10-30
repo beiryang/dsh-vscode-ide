@@ -15,29 +15,72 @@ import { Breadcrumbs } from './Breadcrumbs'
 export function EditorView({ ctx }: { ctx?: { cwd?: string | null } }) {
   const snap = React.useSyncExternalStore(workspace.subscribe, workspace.getSnapshot)
   const activeTab = snap.tabs.find((tab) => tab.key === snap.active)
+  const secondaryRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    if (!snap.secondary) return
+    const element = secondaryRef.current
+    if (!element) return
+    void workspace.attachSecondary(element)
+    return () => workspace.detachSecondary()
+  }, [snap.secondary?.key])
 
   return h(
     'div',
     { className: 'dsv-editor-view' },
     h(
       'div',
-      { className: 'dsv-editor-toolbar' },
+      { className: 'dsv-editor-columns' },
+      h(
+        'div',
+        { className: 'dsv-editor-column' },
+        h(
+          'div',
+          { className: 'dsv-editor-toolbar' },
       h(TabBar, { tabs: snap.tabs, active: snap.active }),
       activeTab && activeTab.kind === 'file'
+            ? h(
+                'button',
+                {
+                  className: 'dsv-mini-btn',
+                  title: '与磁盘版本比较（未保存的内容 ⇄ 磁盘）',
+                  onClick: () => void workspace.compareWithDisk()
+                },
+                '⇄'
+              )
+            : null
+        ),
+        activeTab && activeTab.kind === 'file'
+          ? h(Breadcrumbs, { path: activeTab.path, cwd: ctx?.cwd ?? null })
+          : null,
+        h(EditorPane, null)
+      ),
+      snap.secondary
         ? h(
-            'button',
-            {
-              className: 'dsv-mini-btn',
-              title: '与磁盘版本比较（未保存的内容 ⇄ 磁盘）',
-              onClick: () => void workspace.compareWithDisk()
-            },
-            '⇄'
+            'div',
+            { className: 'dsv-split-column' },
+            h(
+              'div',
+              { className: 'dsv-split-head' },
+              h('span', { className: 'dsv-split-name', title: snap.secondary.path }, snap.secondary.name),
+              h(
+                'button',
+                { className: 'dsv-mini-btn', title: '关闭分屏', onClick: () => workspace.closeSecondary() },
+                '✕'
+              )
+            ),
+            h(
+              'div',
+              { className: 'dsv-split-crumbs', title: snap.secondary.path },
+              snap.secondary.path
+                .split(/[\\/]/)
+                .filter(Boolean)
+                .slice(-4)
+                .join(' › ')
+            ),
+            h('div', { ref: secondaryRef, className: 'dsv-split-editor' })
           )
         : null
-    ),
-    activeTab && activeTab.kind === 'file'
-      ? h(Breadcrumbs, { path: activeTab.path, cwd: ctx?.cwd ?? null })
-      : null,
-    h(EditorPane, null)
+    )
   )
 }

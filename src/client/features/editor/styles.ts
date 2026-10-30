@@ -3,6 +3,10 @@
 export const CSS = `
 .dsv-editor-view { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 
+.dsv-editor-columns { flex: 1; min-height: 0; display: flex; }
+
+.dsv-editor-column { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
 .dsv-editor-toolbar { flex: none; display: flex; align-items: center; gap: 4px; }
 
 .dsv-editor-toolbar .dsv-tabbar { flex: 1; min-width: 0; }
@@ -268,7 +272,7 @@ export const CSS = `
 .dsv-problems-pos { flex: none; font-size: 11px; color: var(--dsv-fg-dim); font-family: var(--dsv-mono, monospace); }
 
 /* 右侧分屏 */
-.dsv-split {
+.dsv-split-column {
   flex: 0 0 46%;
   min-width: 220px;
   display: flex;
