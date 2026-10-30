@@ -11,6 +11,7 @@ import { TabBar } from './TabBar'
 import { EditorPane } from './EditorPane'
 import { workspace } from './monaco/workspace'
 import { Breadcrumbs } from './Breadcrumbs'
+import type { Entry } from '../../kernel/transport'
 
 export function EditorView({ ctx }: { ctx?: { cwd?: string | null } }) {
   const snap = React.useSyncExternalStore(workspace.subscribe, workspace.getSnapshot)
@@ -69,15 +70,11 @@ export function EditorView({ ctx }: { ctx?: { cwd?: string | null } }) {
                 '✕'
               )
             ),
-            h(
-              'div',
-              { className: 'dsv-split-crumbs', title: snap.secondary.path },
-              snap.secondary.path
-                .split(/[\\/]/)
-                .filter(Boolean)
-                .slice(-4)
-                .join(' › ')
-            ),
+            h(Breadcrumbs, {
+              path: snap.secondary.path,
+              cwd: ctx?.cwd ?? null,
+              onOpen: (entry: Entry) => void workspace.openSecondary(entry)
+            }),
             h('div', { ref: secondaryRef, className: 'dsv-split-editor' })
           )
         : null

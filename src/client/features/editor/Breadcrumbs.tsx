@@ -9,7 +9,12 @@ import { h } from '../../h'
 import { api, type Entry } from '../../kernel/transport'
 import { workspace } from './monaco/workspace'
 
-type Props = { path: string; cwd: string | null }
+type Props = {
+  path: string
+  cwd: string | null
+  /** 覆盖"打开文件"的行为（例如右侧分屏：在自己的列里打开） */
+  onOpen?: (entry: Entry) => void
+}
 
 function splitPath(path: string, cwd: string | null): { label: string; dir: string }[] {
   const normalized = path.replace(/\\/g, '/')
@@ -25,7 +30,7 @@ function splitPath(path: string, cwd: string | null): { label: string; dir: stri
   return segments
 }
 
-export function Breadcrumbs({ path, cwd }: Props) {
+export function Breadcrumbs({ path, cwd, onOpen }: Props) {
   const [menu, setMenu] = React.useState<{ x: number; y: number; dir: string } | null>(null)
   const [entries, setEntries] = React.useState<Entry[]>([])
   const [busy, setBusy] = React.useState(false)
@@ -77,7 +82,8 @@ export function Breadcrumbs({ path, cwd }: Props) {
       return
     }
     setMenu(null)
-    void workspace.openEntry(entry, { preview: true })
+    if (onOpen) onOpen(entry)
+    else void workspace.openEntry(entry, { preview: true })
   }
 
   return h(
