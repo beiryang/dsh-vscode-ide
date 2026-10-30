@@ -13,6 +13,7 @@ import { api, type Entry } from '../../../kernel/transport'
 import { getDraft, putDraft, removeDraft } from '../drafts'
 import { layout } from '../../../kernel/layout'
 import { statusInfo } from '../../../kernel/status'
+import { problemsStore, type Problem } from '../problems'
 import { DEFAULT_EDITOR_FONT, prefs } from '../../../kernel/prefs'
 import { isDark } from '../../../kernel/theme'
 import { loadMonaco } from './loader'
@@ -152,8 +153,35 @@ let editorReady = false
 const listeners = new Set<() => void>()
 let snapshot: Snapshot = { tabs, active, status, editorReady }
 
+/** 把各模型上的诊断同步到「问题」面板 */
+function publishProblems() {
+  if (!monacoRef) return
+  const list: Problem[] = []
+  for (const [key, model] of models) {
+    const tab = tabOf(key)
+    const markers = monacoRef.editor.getModelMarkers({ resource: model.uri }) ?? []
+    for (const marker of markers) {
+      if (!marker.message) continue
+      const severity: Problem['severity'] =
+        marker.severity === 8 ? 'error' : marker.severity === 4 ? 'warning' : marker.severity === 2 ? 'info' : 'hint'
+      list.push({
+        path: tab?.path ?? model.uri.fsPath,
+        name: tab?.name ?? model.uri.fsPath.split(/[\\/]/).pop() ?? '',
+        line: marker.startLineNumber,
+        column: marker.startColumn,
+        severity,
+        message: marker.message,
+        source: marker.source ?? ''
+      })
+    }
+  }
+  list.sort((a, b) => (a.severity === b.severity ? a.line - b.line : a.severity < b.severity ? -1 : 1))
+  problemsStore.set(list)
+}
+
 function publish() {
   snapshot = { tabs: tabs.slice(), active, status: { ...status }, editorReady }
+  publishProblems()
   persistTabs()
   for (const listener of listeners) listener()
 }
@@ -434,6 +462,8 @@ export const workspace = {
     })
 
     syncEditor()
+    monaco.editor.onDidChangeMarkers(() => publishProblems())
+    publishProblems()
     setStatus('ready', null)
     publish()
   },

@@ -195,4 +195,73 @@ export const CSS = `
 }
 
 .dsv-tab-menu-item:hover { background: var(--dsv-hover); }
+
+/* 问题面板（浮层） */
+.dsv-problems {
+  position: fixed;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  width: min(760px, 86vw);
+  max-height: 58vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 1300;
+  border: 1px solid var(--dsv-border);
+  border-radius: 8px;
+  background: var(--dsv-panel);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.dsv-problems-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+}
+
+.dsv-problems-title { font-size: 12px; font-weight: 600; }
+.dsv-problems-count { font-size: 11px; color: var(--dsv-fg-dim); }
+.dsv-problems-count[data-kind="error"] { color: #e06c75; }
+.dsv-problems-count[data-kind="warning"] { color: #d7ba7d; }
+
+.dsv-problems-body { flex: 1; min-height: 0; overflow: auto; padding: 4px 0 8px; }
+.dsv-problems-empty { padding: 20px 16px; font-size: 12px; color: var(--dsv-fg-dim); text-align: center; }
+
+.dsv-problems-file {
+  padding: 6px 12px 2px;
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+  border-top: 1px solid var(--dsv-border-soft, var(--dsv-border));
+}
+
+.dsv-problems-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  padding: 0 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dsv-problems-row:hover { background: var(--dsv-hover); }
+.dsv-problems-icon[data-severity="error"] { color: #e06c75; }
+.dsv-problems-icon[data-severity="warning"] { color: #d7ba7d; }
+.dsv-problems-icon[data-severity="info"] { color: #61afef; }
+.dsv-problems-icon[data-severity="hint"] { color: var(--dsv-fg-dim); }
+
+.dsv-problems-message {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsv-problems-pos { flex: none; font-size: 11px; color: var(--dsv-fg-dim); font-family: var(--dsv-mono, monospace); }
 `

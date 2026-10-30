@@ -9,8 +9,11 @@ import { h } from '../../h'
 import { layout } from '../../kernel/layout'
 import { prefs } from '../../kernel/prefs'
 import { registry } from '../../kernel/registry'
+import { registerCommand } from '../../kernel/commands'
 import { registerEditorCommands } from './commands'
 import { CSS } from './styles'
+import { ProblemsOverlay } from './ProblemsOverlay'
+import { problemsPanel } from './problems'
 import { EditorView } from './EditorView'
 import { monacoProbe } from './probe'
 import { workspace } from './monaco/workspace'
@@ -26,6 +29,27 @@ export function registerEditorFeature(): () => void {
 
   disposers.push(registry.addStyles(CSS))
   disposers.push(registerEditorCommands())
+
+  disposers.push(
+    registry.registerOverlay({
+      apiVersion: 1,
+      id: 'problems-overlay',
+      component: ProblemsOverlay
+    })
+  )
+
+  disposers.push(
+    registerCommand({
+      id: 'problems.open',
+      title: '查看：问题',
+      category: '视图',
+      keybinding: 'Ctrl+Alt+Shift+M',
+      run: () => {
+        layout.open()
+        problemsPanel.toggle()
+      }
+    })
+  )
 
   disposers.push(
     registry.registerView({
