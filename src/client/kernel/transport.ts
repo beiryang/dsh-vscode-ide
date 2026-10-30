@@ -86,6 +86,7 @@ export const api = {
   createEntry: (path: string, dir: boolean) => call<{ path: string; dir: boolean }>('fs/create', { path, dir }),
   deleteEntry: (path: string) => call<{ path: string }>('fs/delete', { path }),
   renameEntry: (path: string, name: string) => call<{ path: string; name: string }>('fs/rename', { path, name }),
+  moveEntry: (from: string, toDir: string) => call<{ path: string; moved: boolean }>('fs/move', { from, toDir }),
   revealEntry: (path: string) => call<{ path: string }>('fs/reveal', { path }),
   stat: (path: string) => call<{ path: string; dir: boolean; size: number; mtimeMs: number }>('stat', { path }),
   search: (options: { query?: string; limit?: number } = {}) =>

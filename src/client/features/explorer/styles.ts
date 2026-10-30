@@ -118,4 +118,10 @@ export const CSS = `
 }
 
 .dsv-tree-dialog-btn:disabled { opacity: 0.5; cursor: default; }
+
+.dsv-tree-row[data-selected="true"] {
+  background: color-mix(in srgb, var(--dsv-accent) 22%, transparent);
+}
+
+.dsv-tree:focus { outline: none; }
 `

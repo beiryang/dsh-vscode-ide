@@ -48,6 +48,8 @@ export function FileTree(props: Props) {
   const [menu, setMenu] = React.useState<MenuState | null>(null)
   const [dialog, setDialog] = React.useState<DialogState | null>(null)
   const [busy, setBusy] = React.useState(false)
+  const [selected, setSelected] = React.useState<string | null>(null)
+  const [dragging, setDragging] = React.useState<string | null>(null)
 
   const load = React.useCallback(async (path: string) => {
     setLoading((prev) => new Set(prev).add(path))
@@ -113,6 +115,59 @@ export function FileTree(props: Props) {
     for (const dir of dirs) void load(dir)
   }, [children, load, props.cwd])
 
+  /** 当前展开状态下可见的行（键盘上下移动用） */
+  const visibleEntries = (): Entry[] => {
+    const flat: Entry[] = []
+    const walk = (dir: string) => {
+      for (const entry of children.get(dir) ?? []) {
+        flat.push(entry)
+        if (entry.dir && expanded.has(entry.path)) walk(entry.path)
+      }
+    }
+    if (props.cwd) walk(props.cwd)
+    return flat
+  }
+
+  const moveInto = async (from: string, dir: string) => {
+    if (!from || from === dir) return
+    try {
+      const result = await api.moveEntry(from, dir)
+      if (!result.moved) return
+      await load(parentOf(from))
+      await load(dir)
+      setExpanded((previous) => new Set(previous).add(dir))
+      setSelected(result.path)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    }
+  }
+
+  const onTreeKeyDown = (event: React.KeyboardEvent) => {
+    const list = visibleEntries()
+    if (list.length === 0) return
+    const index = list.findIndex((item) => item.path === selected)
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const delta = event.key === 'ArrowDown' ? 1 : -1
+      const nextIndex = index < 0 ? 0 : Math.min(Math.max(index + delta, 0), list.length - 1)
+      setSelected(list[nextIndex].path)
+      return
+    }
+    const entry = index >= 0 ? list[index] : undefined
+    if (!entry) return
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (entry.dir) toggle(entry)
+      else props.onOpen(entry, { preview: false })
+    } else if (event.key === 'Delete') {
+      event.preventDefault()
+      setDialog({ kind: 'delete', target: entry, parentDir: entry.dir ? entry.path : parentOf(entry.path), value: '' })
+    } else if (event.key === 'F2') {
+      event.preventDefault()
+      setDialog({ kind: 'rename', target: entry, parentDir: entry.dir ? entry.path : parentOf(entry.path), value: entry.name })
+    }
+  }
+
   const openMenu = (event: React.MouseEvent, entry: Entry | null, parentDir: string) => {
     event.preventDefault()
     event.stopPropagation()
@@ -168,12 +223,40 @@ export function FileTree(props: Props) {
             className: 'dsv-tree-row',
             'data-dir': entry.dir ? 'true' : 'false',
             'data-active': entry.path === props.activePath ? 'true' : 'false',
+            'data-selected': entry.path === selected ? 'true' : 'false',
+            draggable: true,
             style: { paddingLeft: `${6 + depth * 12}px` },
             title: entry.path,
-            onClick: () => (entry.dir ? toggle(entry) : props.onOpen(entry, { preview: true })),
+            onClick: () => {
+              setSelected(entry.path)
+              if (entry.dir) toggle(entry)
+              else props.onOpen(entry, { preview: true })
+            },
             onDoubleClick: () => {
               if (!entry.dir) props.onOpen(entry, { preview: false })
             },
+            onDragStart: (event: React.DragEvent) => {
+              setDragging(entry.path)
+              try {
+                event.dataTransfer.setData('text/plain', entry.path)
+                event.dataTransfer.effectAllowed = 'move'
+              } catch {
+                /* ignore */
+              }
+            },
+            onDragOver: (event: React.DragEvent) => {
+              if (!entry.dir || !dragging || dragging === entry.path) return
+              event.preventDefault()
+            },
+            onDrop: (event: React.DragEvent) => {
+              if (!entry.dir) return
+              event.preventDefault()
+              event.stopPropagation()
+              const from = dragging ?? event.dataTransfer.getData('text/plain')
+              setDragging(null)
+              if (from) void moveInto(from, entry.path)
+            },
+            onDragEnd: () => setDragging(null),
             onContextMenu: (event: React.MouseEvent) => openMenu(event, entry, entry.dir ? entry.path : parentOf(entry.path))
           },
           h('span', { className: 'dsv-caret' }, entry.dir ? (open ? '▾' : '▸') : ''),
@@ -206,6 +289,19 @@ export function FileTree(props: Props) {
       'div',
       {
         className: 'dsv-tree',
+        tabIndex: 0,
+        onClick: (event: React.MouseEvent) => (event.currentTarget as HTMLElement).focus(),
+        onKeyDown: onTreeKeyDown,
+        onDragOver: (event: React.DragEvent) => {
+          if (dragging) event.preventDefault()
+        },
+        onDrop: (event: React.DragEvent) => {
+          if (!props.cwd) return
+          event.preventDefault()
+          const from = dragging ?? event.dataTransfer.getData('text/plain')
+          setDragging(null)
+          if (from) void moveInto(from, props.cwd)
+        },
         onContextMenu: (event: React.MouseEvent) => {
           if (event.target !== event.currentTarget) return
           if (props.cwd) openMenu(event, null, props.cwd)
