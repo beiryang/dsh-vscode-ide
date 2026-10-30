@@ -393,4 +393,28 @@ export const CSS = `
   cursor: pointer;
 }
 .dsv-sync-primary { border-color: transparent; background: var(--dsv-accent); color: #fff; }
+
+.dsv-remote-syncbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 10px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--dsv-accent) 40%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--dsv-accent) 12%, transparent);
+  font-size: 11px;
+}
+.dsv-remote-syncbar-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsv-remote-syncbar-cancel {
+  flex: none;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 11px;
+  cursor: pointer;
+}
 `

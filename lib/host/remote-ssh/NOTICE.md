@@ -25,7 +25,10 @@ What we do with it:
    `No configurable plugin entry "dsh-remote-ssh"`. In that case connections and
    workspaces are stored in `~/.dsh/code-space-remote.json`. Upstream behaviour is
    unchanged when the plugin runs as its own loader entry.
-2. **Diagnostics**: the parent plugin logs mount progress to `~/.dsh/code-space-remote.log`.
+2. **Cancellable pull** (`syncHandles` + `cancelSync` API): while a syncDown runs, its
+   ssh/tar child processes stay in a per-workspace map so Code Space can terminate them; the
+   normal failure path then discards the temporary directory and leaves the mirror untouched.
+3. **Diagnostics**: the parent plugin logs mount progress to `~/.dsh/code-space-remote.log`.
 
 Dependencies required by the copied file (declared in the root `package.json` so the
 module keeps resolving after the upstream plugin is uninstalled): `yaml`,

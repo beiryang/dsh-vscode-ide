@@ -43,6 +43,8 @@ export function RemoteView() {
   const [loading, setLoading] = React.useState(true)
   const [note, setNote] = React.useState<Note>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
+  const [syncJob, setSyncJob] = React.useState<{ id: string; name: string } | null>(null)
+  const [cancelling, setCancelling] = React.useState(false)
   const [syncDialog, setSyncDialog] = React.useState<null | {
     workspace: RemoteWorkspace
     paths: string
@@ -228,10 +230,29 @@ export function RemoteView() {
   ) => {
     const method = direction === 'down' ? 'syncDown' : 'syncUp'
     setBusy(`${method}:${workspace.id}`)
-    const result = await remoteApi(method, { id: workspace.id, ...extra }, 900000)
-    setBusy(null)
-    if (!result.ok) setNote({ kind: 'error', text: `${direction === 'down' ? '拉取' : '推送'}失败：${result.error}` })
-    else setNote({ kind: 'info', text: `${direction === 'down' ? '已拉取到本地镜像' : '已推送回远程'}` })
+    setNote({ kind: 'info', text: `正在${direction === 'down' ? '拉取' : '推送'} ${remoteBaseName(workspace.remotePath)}…` })
+    if (direction === 'down') setSyncJob({ id: workspace.id, name: remoteBaseName(workspace.remotePath) })
+    try {
+      const result = await remoteApi(method, { id: workspace.id, ...extra }, 900000)
+      if (!result.ok) setNote({ kind: 'error', text: `${direction === 'down' ? '拉取' : '推送'}失败：${result.error}` })
+      else setNote({ kind: 'info', text: `${direction === 'down' ? '已拉取到本地镜像' : '已推送回远程'}` })
+    } finally {
+      setBusy(null)
+      setSyncJob(null)
+      setCancelling(false)
+    }
+  }
+
+  const cancelSync = async () => {
+    if (!syncJob || cancelling) return
+    setCancelling(true)
+    const result = await remoteApi('cancelSync', { id: syncJob.id }, 15000)
+    if (!result.ok) {
+      setCancelling(false)
+      setNote({ kind: 'error', text: `取消失败：${result.error}` })
+      return
+    }
+    setNote({ kind: 'info', text: '已请求取消拉取，正在清理临时文件…' })
   }
 
   const removeWorkspace = async (workspace: RemoteWorkspace) => {
@@ -413,6 +434,18 @@ export function RemoteView() {
           )
     ),
 
+    syncJob
+      ? h(
+          'div',
+          { className: 'dsv-remote-syncbar' },
+          h('span', { className: 'dsv-remote-syncbar-text' }, `正在拉取 ${syncJob.name}…`),
+          h(
+            'button',
+            { className: 'dsv-remote-syncbar-cancel', disabled: cancelling, onClick: () => void cancelSync() },
+            cancelling ? '取消中…' : '取消'
+          )
+        )
+      : null,
     h(
       'div',
       { className: 'dsv-remote-section' },
@@ -581,16 +614,6 @@ export function RemoteView() {
                 'button',
                 {
                   className: 'dsv-remote-act',
-                  title: '把本地镜像推送回远程',
-                  disabled: busy === `syncUp:${workspace.id}`,
-                  onClick: (event: React.MouseEvent) => { event.stopPropagation(); void sync(workspace, 'up') }
-                },
-                busy === `syncUp:${workspace.id}` ? '…' : '⬆'
-              ),
-              h(
-                'button',
-                {
-                  className: 'dsv-remote-act',
                   title: '移除登记',
                   onClick: (event: React.MouseEvent) => {
                     event.stopPropagation()
@@ -610,11 +633,11 @@ export function RemoteView() {
           h(
             'div',
             { className: 'dsv-sync-dlg' },
-            h('div', { className: 'dsv-sync-head' }, `同步选项 · ${remoteBaseName(syncDialog.workspace.remotePath)}`),
+            h('div', { className: 'dsv-sync-head' }, `拉取选项 · ${remoteBaseName(syncDialog.workspace.remotePath)}`),
             h(
               'label',
               { className: 'dsv-sync-field' },
-              '同步范围（相对远端根，逗号/换行分隔；留空 = 整树）',
+              '同步范围（相对远端根，逗号/换行分隔；留空 = 整树，强烈建议填写）',
               h('textarea', {
                 className: 'dsv-sync-input',
                 rows: 2,
@@ -674,15 +697,11 @@ export function RemoteView() {
             h(
               'div',
               { className: 'dsv-sync-actions' },
-              h(
-                'button',
-                { className: 'dsv-sync-btn', onClick: () => setSyncDialog(null) },
-                '取消'
-              ),
+              h('button', { className: 'dsv-sync-btn', onClick: () => setSyncDialog(null) }, '取消'),
               h(
                 'button',
                 {
-                  className: 'dsv-sync-btn',
+                  className: 'dsv-sync-btn dsv-sync-primary',
                   onClick: () => {
                     const current = syncDialog
                     setSyncDialog(null)
@@ -696,24 +715,6 @@ export function RemoteView() {
                   }
                 },
                 '⬇ 拉取'
-              ),
-              h(
-                'button',
-                {
-                  className: 'dsv-sync-btn dsv-sync-primary',
-                  onClick: () => {
-                    const current = syncDialog
-                    setSyncDialog(null)
-                    void sync(current.workspace, 'up', {
-                      paths: splitList(current.paths).length ? splitList(current.paths) : undefined,
-                      exclude: splitList(current.exclude).length ? splitList(current.exclude) : undefined,
-                      maxBytes: Number(current.maxGiB) > 0 ? Math.round(Number(current.maxGiB) * 1024 ** 3) : undefined,
-                      force: current.force || undefined,
-                      repairNames: current.repairNames || undefined
-                    })
-                  }
-                },
-                '⬆ 推送'
               )
             )
           )
