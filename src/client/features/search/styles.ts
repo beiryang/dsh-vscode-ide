@@ -217,4 +217,33 @@ export const CSS = `
   background: var(--dsv-panel);
 }
 .dsv-search-file-result { padding-left: 10px; }
+
+.dsv-search-dragbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px 0 10px;
+  border-bottom: 1px solid var(--dsv-border);
+  background: color-mix(in srgb, var(--dsv-accent) 8%, transparent);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.dsv-search-dragbar:active { cursor: grabbing; }
+.dsv-search-grip { color: var(--dsv-fg-dim); font-size: 13px; }
+.dsv-search-dragtitle { font-size: 12px; color: var(--dsv-fg-dim); }
+.dsv-search-close {
+  flex: none;
+  width: 24px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  font-size: 12px;
+  cursor: pointer;
+}
+.dsv-search-close:hover { background: var(--dsv-hover, rgba(127, 127, 127, 0.16)); color: var(--dsv-fg); }
 `
