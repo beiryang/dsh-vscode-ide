@@ -12,7 +12,7 @@ import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 import { TerminalView, termRegistry } from './TerminalView'
 
-export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string | null } }) {
+export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string | null; sessionId?: string } }) {
   const snap = React.useSyncExternalStore(terminal.subscribe, terminal.getSnapshot)
   const prefsVersion = React.useSyncExternalStore(prefs.subscribe, () => prefs.version)
   void prefsVersion
