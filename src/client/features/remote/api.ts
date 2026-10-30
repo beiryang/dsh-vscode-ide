@@ -16,9 +16,20 @@ export async function remoteApi<T>(method: string, args?: Record<string, unknown
       headers: { 'content-type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
       body: JSON.stringify(args ?? {})
     })
-    const payload = (await response.json()) as { ok?: boolean; value?: T; error?: { message?: string } }
-    if (payload && payload.ok) return { ok: true, value: payload.value as T }
-    return { ok: false, error: payload?.error?.message || `HTTP ${response.status}` }
+    const text = await response.text()
+    if (!text.trim()) {
+      return {
+        ok: false,
+        error: `HTTP ${response.status}（服务未就绪：内置远程没启用，或 dsh-remote-ssh 被停用）`
+      }
+    }
+    try {
+      const payload = JSON.parse(text) as { ok?: boolean; value?: T; error?: { message?: string } }
+      if (payload && payload.ok) return { ok: true, value: payload.value as T }
+      return { ok: false, error: payload?.error?.message || `HTTP ${response.status}` }
+    } catch {
+      return { ok: false, error: `HTTP ${response.status}：响应不是 JSON（${text.slice(0, 80)}）` }
+    }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
   }
