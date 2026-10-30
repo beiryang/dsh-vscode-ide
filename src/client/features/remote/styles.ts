@@ -440,4 +440,19 @@ export const CSS = `
 .dsv-import-row:hover { background: var(--dsv-hover); }
 .dsv-import-name { flex: none; min-width: 90px; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsv-import-meta { flex: 1; min-width: 0; color: var(--dsv-fg-dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dsv-ws-globe {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 11px;
+  height: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--dsv-accent, #4aa3ff);
+  background: var(--dsw-alias-bg-l1, var(--dsv-panel, #1e1e1e));
+  pointer-events: none;
+}
 `

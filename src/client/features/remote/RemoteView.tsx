@@ -373,6 +373,32 @@ export function RemoteView() {
     void load()
   }
 
+  /** 标题自愈：宿主早期写入的 `连接名:远端路径` 自动标题不再直接展示 */
+  const displayTitleOf = (workspace: RemoteWorkspace) => {
+    const raw = (workspace.title || workspace.name || '').trim()
+    const profile = profiles.find((item) => item.id === workspace.profileId)
+    const auto = profile ? `${profile.name || profile.host}:${workspace.remotePath}` : ''
+    const looksAuto =
+      !raw ||
+      raw === auto ||
+      (raw.endsWith(workspace.remotePath) && /^[^:]+:s*(~|\/)/.test(raw))
+    return looksAuto ? remoteBaseName(workspace.remotePath) : raw
+  }
+
+  // 把旧的自动标题写回成干净标题（每个工作区每次会话只尝试一次）
+  const healedTitles = React.useRef<Set<string>>(new Set())
+  React.useEffect(() => {
+    for (const workspace of workspaces) {
+      if (healedTitles.current.has(workspace.id)) continue
+      const clean = displayTitleOf(workspace)
+      if (clean && workspace.title !== clean) {
+        healedTitles.current.add(workspace.id)
+        void remoteApi('updateWorkspace', { id: workspace.id, title: clean })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspaces, profiles])
+
   const removeWorkspace = async (workspace: RemoteWorkspace) => {
     if (!window.confirm(`移除远程工作区「${remoteBaseName(workspace.remotePath)}」？（只移除登记，不动远端/镜像文件）`))
       return
@@ -743,7 +769,7 @@ export function RemoteView() {
               h(
                 'span',
                 { className: 'dsv-remote-name', title: workspace.remotePath },
-                remoteBaseName(workspace.remotePath)
+                displayTitleOf(workspace)
               ),
               h('span', { className: 'dsv-remote-meta', title: workspace.mirrorPath }, workspace.remotePath),
               h(
@@ -785,7 +811,7 @@ export function RemoteView() {
                     setEditDialog({
                       workspace,
                       remotePath: workspace.remotePath,
-                      title: workspace.title || workspace.name || '',
+                      title: displayTitleOf(workspace),
                       paths: (workspace.syncPaths || []).join(', '),
                       exclude: (workspace.syncExclude || []).join(', '),
                       maxGiB:

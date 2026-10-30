@@ -2,13 +2,14 @@
 
 import { registry } from '../../kernel/registry'
 import { dshInject, dshService, setDirectoryFlowState } from '../../kernel/dshContext'
+import { installRemoteWorkspaceAppearance } from './appearance'
 import { DirectoryFlow } from './DirectoryFlow'
 import { RemoteProbe } from './RemoteProbe'
 import { RemoteView } from './RemoteView'
 import { CSS } from './styles'
 
 export function registerRemoteFeature(): () => void {
-  const disposers: Array<() => void> = [registry.addStyles(CSS)]
+  const disposers: Array<() => void> = [registry.addStyles(CSS), installRemoteWorkspaceAppearance()]
 
   disposers.push(
     registry.registerOverlay({
