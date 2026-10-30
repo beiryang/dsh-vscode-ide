@@ -42,6 +42,15 @@ export const CSS = `
   font-size: 12px;
 }
 
+/*
+ * 设置页统一用微软雅黑：DSH 自己的输入框/按钮/等宽片段各有字体，
+ * 这里在 Code Space 设置分区内统一覆盖，避免同一页出现三种字形。
+ */
+.dsv-settings,
+.dsv-settings * {
+  font-family: 'Microsoft YaHei', 'Microsoft YaHei UI', '微软雅黑', 'PingFang SC', 'Noto Sans SC', sans-serif !important;
+}
+
 .dsv-settings-group {
   display: flex;
   flex-direction: column;
