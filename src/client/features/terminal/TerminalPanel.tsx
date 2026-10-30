@@ -27,18 +27,25 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
 
   React.useEffect(() => {
     let alive = true
-    void api
-      .roots()
-      .then((info) => {
-        if (!alive) return
-        setWorkspaceRemote(info.remote === true)
-        setWorkspaceCwd(info.cwd)
-      })
-      .catch(() => {
-        if (alive) setWorkspaceRemote(false)
-      })
+    const probe = () => {
+      void api
+        .roots()
+        .then((info) => {
+          if (!alive) return
+          setWorkspaceRemote(info.remote === true)
+          setWorkspaceCwd(info.cwd)
+        })
+        .catch(() => {
+          if (alive) setWorkspaceRemote(false)
+        })
+    }
+    probe()
+    // 双保险：会话 key 变化时立即探一次；同时 1.5 秒兜底轮询，
+    // 这样「第一次打开 Code Space 后切工作区」也能在 1.5 秒内更新提示
+    const timer = window.setInterval(probe, 1500)
     return () => {
       alive = false
+      window.clearInterval(timer)
     }
   }, [liveSession])
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null)
