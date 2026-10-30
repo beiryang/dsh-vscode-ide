@@ -54,7 +54,7 @@ export const CSS = `
   border-radius: 6px;
   background: var(--dsv-input, transparent);
   color: var(--dsv-fg);
-  font-family: var(--dsv-mono, monospace);
+  font-family: inherit;
   font-size: 11px;
 }
 
@@ -72,7 +72,7 @@ export const CSS = `
   border-radius: 5px;
   background: transparent;
   color: var(--dsv-fg);
-  font-family: var(--dsv-mono, monospace);
+  font-family: inherit;
   font-size: 11px;
   cursor: pointer;
   opacity: 0.55;
@@ -164,12 +164,12 @@ export const CSS = `
   text-align: right;
   color: var(--dsv-fg-dim);
   opacity: 0.85;
-  font-family: var(--dsv-mono, monospace);
+  font-family: inherit;
   font-size: 11px;
 }
 
 .dsv-search-text {
-  font-family: var(--dsv-mono, monospace);
+  font-family: inherit;
   font-size: 11px;
   white-space: pre;
   overflow: hidden;
@@ -206,4 +206,15 @@ export const CSS = `
 .dsv-search-replace-btn {
   font-family: inherit;
 }
+
+.dsv-search-section {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+  border-bottom: 1px solid var(--dsv-border);
+  position: sticky;
+  top: 0;
+  background: var(--dsv-panel);
+}
+.dsv-search-file-result { padding-left: 10px; }
 `
