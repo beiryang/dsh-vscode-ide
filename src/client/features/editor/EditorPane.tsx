@@ -59,13 +59,30 @@ export function EditorPane() {
   return h(
     'div',
     { className: 'dsv-editor-zone', 'data-mode': isDiff ? 'diff' : 'edit' },
-    h('div', {
-      ref: editorRef,
-      className: 'dsv-editor',
-      'data-empty': empty ? 'true' : 'false',
-      style: isDiff ? { display: 'none' } : undefined
-    }),
-    h('div', { ref: diffRef, className: 'dsv-diff', style: isDiff ? undefined : { display: 'none' } }),
+    h(
+      'div',
+      { className: 'dsv-editor-primary' },
+      h('div', {
+        ref: editorRef,
+        className: 'dsv-editor',
+        'data-empty': empty ? 'true' : 'false',
+        style: isDiff ? { display: 'none' } : undefined
+      }),
+      h('div', { ref: diffRef, className: 'dsv-diff', style: isDiff ? undefined : { display: 'none' } }),
+      empty && !snap.secondary ? h(Welcome, { loading: snap.status.phase === 'loading' }) : null,
+      snap.status.message && snap.status.phase !== 'ready'
+        ? h(
+            'div',
+            {
+              className: 'dsv-editor-toast',
+              'data-kind': snap.status.phase,
+              style: snap.status.phase === 'error' ? { cursor: 'pointer' } : undefined,
+              onClick: snap.status.phase === 'error' ? () => workspace.retry() : undefined
+            },
+            snap.status.message
+          )
+        : null
+    ),
     snap.secondary
       ? h(
           'div',
@@ -77,19 +94,6 @@ export function EditorPane() {
             h('button', { className: 'dsv-mini-btn', title: '关闭分屏', onClick: () => workspace.closeSecondary() }, '✕')
           ),
           h('div', { ref: secondaryRef, className: 'dsv-split-editor' })
-        )
-      : null,
-    empty ? h(Welcome, { loading: snap.status.phase === 'loading' }) : null,
-    snap.status.message && snap.status.phase !== 'ready'
-      ? h(
-          'div',
-          {
-            className: 'dsv-editor-toast',
-            'data-kind': snap.status.phase,
-            style: snap.status.phase === 'error' ? { cursor: 'pointer' } : undefined,
-            onClick: snap.status.phase === 'error' ? () => workspace.retry() : undefined
-          },
-          snap.status.message
         )
       : null
   )

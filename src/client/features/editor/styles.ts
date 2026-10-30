@@ -120,6 +120,8 @@ export const CSS = `
 
 .dsv-editor-zone { position: relative; flex: 1; min-height: 0; display: flex; }
 
+.dsv-editor-primary { position: relative; flex: 1; min-width: 0; min-height: 0; display: flex; }
+
 .dsv-editor { flex: 1; min-width: 0; min-height: 0; }
 
 .dsv-editor[data-empty="true"] { visibility: hidden; }
@@ -277,7 +279,7 @@ export const CSS = `
 
 .dsv-split-head {
   flex: none;
-  height: 26px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 6px;

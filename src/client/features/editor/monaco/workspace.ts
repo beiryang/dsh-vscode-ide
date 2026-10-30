@@ -652,10 +652,39 @@ export const workspace = {
     layout.open()
     const key = keyOf(entry.path)
     if (models.has(key)) {
-      active = key
-      if (options.preview && tabs.some((tab) => tab.key === key)) {
-        // 再次单击预览文件：保留预览态
+      // 模型可能是在右侧分屏里创建、还没进标签栏的：补一个标签再激活，
+      // 否则会出现「内容切了、标题和面包屑还停在旧文件」的情况
+      if (!tabOf(key)) {
+        const model = models.get(key)
+        const dirty = Boolean(model) && model.getAlternativeVersionId() !== savedVersion.get(key)
+        const nextTab: WorkspaceTab = {
+          key,
+          path: entry.path,
+          name: entry.name,
+          dirty,
+          readOnly: false,
+          size: 0,
+          truncated: false,
+          kind: 'file',
+          preview: options.preview === true && !dirty
+        }
+        const previewIndex = options.preview
+          ? tabs.findIndex((tab) => tab.preview === true && tab.kind === 'file' && !tab.dirty)
+          : -1
+        if (previewIndex >= 0) {
+          const replaced = tabs[previewIndex]
+          if (replaced.key !== key) {
+            forceClose(replaced.key)
+            const insertAt = Math.min(previewIndex, tabs.length)
+            tabs = [...tabs.slice(0, insertAt), nextTab, ...tabs.slice(insertAt)]
+          } else {
+            tabs = tabs.map((tab) => (tab.key === key ? nextTab : tab))
+          }
+        } else {
+          tabs = [...tabs, nextTab]
+        }
       }
+      active = key
       syncEditor()
       publish()
       return
