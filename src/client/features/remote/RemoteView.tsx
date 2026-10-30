@@ -43,6 +43,14 @@ export function RemoteView() {
   const [loading, setLoading] = React.useState(true)
   const [note, setNote] = React.useState<Note>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
+  const [syncDialog, setSyncDialog] = React.useState<null | {
+    workspace: RemoteWorkspace
+    paths: string
+    exclude: string
+    maxGiB: string
+    force: boolean
+    repairNames: boolean
+  }>(null)
   const connected = React.useSyncExternalStore(remoteStatus.subscribe, remoteStatus.getSnapshot)
   const [selectedProfile, setSelectedProfile] = React.useState<string>(() => {
     try {
@@ -207,10 +215,20 @@ export function RemoteView() {
     void load()
   }
 
-  const sync = async (workspace: RemoteWorkspace, direction: 'down' | 'up') => {
+  const splitList = (raw: string) =>
+    raw
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+  const sync = async (
+    workspace: RemoteWorkspace,
+    direction: 'down' | 'up',
+    extra?: Record<string, unknown>
+  ) => {
     const method = direction === 'down' ? 'syncDown' : 'syncUp'
     setBusy(`${method}:${workspace.id}`)
-    const result = await remoteApi(method, { id: workspace.id })
+    const result = await remoteApi(method, { id: workspace.id, ...extra }, 900000)
     setBusy(null)
     if (!result.ok) setNote({ kind: 'error', text: `${direction === 'down' ? '拉取' : '推送'}失败：${result.error}` })
     else setNote({ kind: 'info', text: `${direction === 'down' ? '已拉取到本地镜像' : '已推送回远程'}` })
@@ -534,6 +552,25 @@ export function RemoteView() {
                 'button',
                 {
                   className: 'dsv-remote-act',
+                  title: '同步选项（范围 / 排除 / 上限 / force）',
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    setSyncDialog({
+                      workspace,
+                      paths: '',
+                      exclude: '',
+                      maxGiB: '',
+                      force: false,
+                      repairNames: false
+                    })
+                  }
+                },
+                '⋯'
+              ),
+              h(
+                'button',
+                {
+                  className: 'dsv-remote-act',
                   title: '从远程拉取到本地镜像',
                   disabled: busy === `syncDown:${workspace.id}`,
                   onClick: (event: React.MouseEvent) => { event.stopPropagation(); void sync(workspace, 'down') }
@@ -566,6 +603,122 @@ export function RemoteView() {
           )
     ),
 
+    syncDialog
+      ? h(
+          'div',
+          { className: 'dsv-sync-backdrop' },
+          h(
+            'div',
+            { className: 'dsv-sync-dlg' },
+            h('div', { className: 'dsv-sync-head' }, `同步选项 · ${remoteBaseName(syncDialog.workspace.remotePath)}`),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '同步范围（相对远端根，逗号/换行分隔；留空 = 整树）',
+              h('textarea', {
+                className: 'dsv-sync-input',
+                rows: 2,
+                value: syncDialog.paths,
+                placeholder: '.dsh 或 src,docs',
+                onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setSyncDialog((previous) => (previous ? { ...previous, paths: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '排除（相对远端根，支持 *，逗号/换行分隔）',
+              h('textarea', {
+                className: 'dsv-sync-input',
+                rows: 2,
+                value: syncDialog.exclude,
+                placeholder: 'data,*.log',
+                onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setSyncDialog((previous) => (previous ? { ...previous, exclude: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '体积上限（GiB，留空 = 默认 2 GiB）',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: syncDialog.maxGiB,
+                placeholder: '2',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setSyncDialog((previous) => (previous ? { ...previous, maxGiB: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: syncDialog.force,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setSyncDialog((previous) => (previous ? { ...previous, force: event.target.checked } : previous))
+              }),
+              '强制整树（跳过体积哨兵与“仅镜像存在”保护）'
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: syncDialog.repairNames,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setSyncDialog((previous) => (previous ? { ...previous, repairNames: event.target.checked } : previous))
+              }),
+              '修复旧版本乱码文件名（repairNames）'
+            ),
+            h(
+              'div',
+              { className: 'dsv-sync-actions' },
+              h(
+                'button',
+                { className: 'dsv-sync-btn', onClick: () => setSyncDialog(null) },
+                '取消'
+              ),
+              h(
+                'button',
+                {
+                  className: 'dsv-sync-btn',
+                  onClick: () => {
+                    const current = syncDialog
+                    setSyncDialog(null)
+                    void sync(current.workspace, 'down', {
+                      paths: splitList(current.paths).length ? splitList(current.paths) : undefined,
+                      exclude: splitList(current.exclude).length ? splitList(current.exclude) : undefined,
+                      maxBytes: Number(current.maxGiB) > 0 ? Math.round(Number(current.maxGiB) * 1024 ** 3) : undefined,
+                      force: current.force || undefined,
+                      repairNames: current.repairNames || undefined
+                    })
+                  }
+                },
+                '⬇ 拉取'
+              ),
+              h(
+                'button',
+                {
+                  className: 'dsv-sync-btn dsv-sync-primary',
+                  onClick: () => {
+                    const current = syncDialog
+                    setSyncDialog(null)
+                    void sync(current.workspace, 'up', {
+                      paths: splitList(current.paths).length ? splitList(current.paths) : undefined,
+                      exclude: splitList(current.exclude).length ? splitList(current.exclude) : undefined,
+                      maxBytes: Number(current.maxGiB) > 0 ? Math.round(Number(current.maxGiB) * 1024 ** 3) : undefined,
+                      force: current.force || undefined,
+                      repairNames: current.repairNames || undefined
+                    })
+                  }
+                },
+                '⬆ 推送'
+              )
+            )
+          )
+        )
+      : null,
     h(
       'div',
       { className: 'dsv-remote-hint dsv-remote-foot' },

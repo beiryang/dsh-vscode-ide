@@ -343,4 +343,54 @@ export const CSS = `
 .dsv-dirflow-empty { padding: 12px; font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); }
 .dsv-dirflow-foot { display: flex; justify-content: flex-end; gap: 8px; }
 .dsv-dirflow-error { padding: 8px 14px 12px; font-size: 12px; color: #cf222e; }
+
+.dsv-sync-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dsv-sync-dlg {
+  width: min(460px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 8px;
+  background: var(--dsv-panel);
+  color: var(--dsv-fg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+
+.dsv-sync-head { font-size: 12px; font-weight: 600; }
+.dsv-sync-field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--dsv-fg-dim); }
+.dsv-sync-input {
+  padding: 5px 8px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 5px;
+  background: var(--dsv-bg);
+  color: var(--dsv-fg);
+  font-size: 12px;
+  resize: vertical;
+  outline: none;
+}
+.dsv-sync-input:focus { border-color: var(--dsv-accent); }
+.dsv-sync-check { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dsv-fg); }
+.dsv-sync-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.dsv-sync-btn {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  cursor: pointer;
+}
+.dsv-sync-primary { border-color: transparent; background: var(--dsv-accent); color: #fff; }
 `
