@@ -93,7 +93,7 @@ export const api = {
     call<{ files: Array<{ path: string; rel: string; name: string }>; truncated: boolean; root: string }>('search', options),
   /** 全文替换（先搜索定位文件，再逐文件原子写） */
   replaceContent: (options: { query: string; replacement: string; regex?: boolean; caseSensitive?: boolean; wholeWord?: boolean }) =>
-    call<{ engine: 'git' | 'walk'; filesChanged: number; replaced: number; filesScanned: number; truncated: boolean }>(
+    call<{ engine: 'git' | 'walk' | 'remote'; filesChanged: number; replaced: number; filesScanned: number; truncated: boolean }>(
       'replace/content',
       options
     ),

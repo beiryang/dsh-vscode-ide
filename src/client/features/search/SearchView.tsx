@@ -123,6 +123,10 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
   const replaceAll = async () => {
     const value = query.trim()
     if (!value || replacing) return
+    if (ctx.remote) {
+      setReplaceNote('远程工作区不支持全部替换（避免无冲突检测的批量写远端），请用终端或 agent 工具修改。')
+      return
+    }
     if (!window.confirm(`将在 ${groups.length} 个文件中替换 ${hits.length} 处匹配：\n\n${value} → ${replacement || '（删除）'}\n\n确定继续？`)) return
     setReplacing(true)
     setReplaceNote(null)
@@ -246,7 +250,11 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
             {
               className: 'dsv-search-replace-btn',
               disabled: replacing || !query.trim() || hits.length === 0,
-              title: hits.length === 0 ? '先搜索出结果再替换' : `替换 ${hits.length} 处（${groups.length} 个文件）`,
+              title: ctx.remote
+      ? '远程工作区不支持全部替换'
+      : hits.length === 0
+        ? '先搜索出结果再替换'
+        : `替换 ${hits.length} 处（${groups.length} 个文件）`,
               onClick: () => void replaceAll()
             },
             replacing ? '替换中…' : '全部替换'
@@ -269,9 +277,7 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     h(
       'div',
       { className: 'dsv-search-results' },
-      ctx.remote
-        ? h('div', { className: 'dsv-search-empty' }, '远程工作区（SFTP）暂不支持内容搜索，请在本地工作区使用。')
-        : groups.length === 0
+      groups.length === 0
           ? h(
               'div',
               { className: 'dsv-search-empty' },
