@@ -20,6 +20,7 @@ import { registerCommand, listCommands, runCommand } from './kernel/commands'
 import { registerKernelCommands } from './kernel/core-commands'
 import { layout } from './kernel/layout'
 import { publicApi, registry } from './kernel/registry'
+import { setDshContext } from './kernel/dshContext'
 import { runProbe } from './kernel/probe'
 import { registerEditorFeature } from './features/editor/register'
 import { registerExplorerFeature } from './features/explorer/register'
@@ -62,6 +63,7 @@ export function apply(ctx: AnyCtx) {
 
 function applyUnsafe(ctx: AnyCtx) {
   if (typeof document === 'undefined' || !document.body) return
+  setDshContext(ctx)
   const global = window as unknown as Record<string, unknown>
   if (global.__dsv) return // 幂等：重复激活 / HMR 时直接复用已有实例
 

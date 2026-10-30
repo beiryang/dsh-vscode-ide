@@ -10,6 +10,7 @@ import * as React from 'react'
 import { h } from '../../h'
 import { remoteApi, remoteBaseName, remoteJoin, remoteParentPath } from './api'
 import { probeAll, remoteStatus } from './remoteStatus'
+import { openDshWorkspace } from '../../kernel/dshContext'
 
 type Profile = {
   id: string
@@ -28,6 +29,8 @@ type RemoteWorkspace = {
   mirrorPath: string
   title?: string
   name?: string
+  /** DSH 原生工作区 id（宿主 reconcile 后可用） */
+  shellWorkspaceId?: string
 }
 
 type DirEntry = { name: string; path?: string; type?: string; size?: number }
@@ -498,7 +501,20 @@ export function RemoteView() {
         : workspaces.map((workspace) =>
             h(
               'div',
-              { className: 'dsv-remote-row dsv-remote-ws', key: workspace.id },
+              {
+                className: 'dsv-remote-row dsv-remote-ws',
+                key: workspace.id,
+                title: '点击打开该镜像工作区',
+                onClick: () => {
+                  const id = workspace.shellWorkspaceId || ''
+                  if (!id) {
+                    setNote({ kind: 'error', text: '没有找到该工作区的原生 id，请先在 DSH 侧栏打开一次' })
+                    return
+                  }
+                  const opened = openDshWorkspace(id)
+                  if (!opened.ok) setNote({ kind: 'error', text: `打开工作区失败：${opened.error}` })
+                }
+              },
               h(
                 'span',
                 {
@@ -520,7 +536,7 @@ export function RemoteView() {
                   className: 'dsv-remote-act',
                   title: '从远程拉取到本地镜像',
                   disabled: busy === `syncDown:${workspace.id}`,
-                  onClick: () => void sync(workspace, 'down')
+                  onClick: (event: React.MouseEvent) => { event.stopPropagation(); void sync(workspace, 'down') }
                 },
                 busy === `syncDown:${workspace.id}` ? '…' : '⬇'
               ),
@@ -530,11 +546,22 @@ export function RemoteView() {
                   className: 'dsv-remote-act',
                   title: '把本地镜像推送回远程',
                   disabled: busy === `syncUp:${workspace.id}`,
-                  onClick: () => void sync(workspace, 'up')
+                  onClick: (event: React.MouseEvent) => { event.stopPropagation(); void sync(workspace, 'up') }
                 },
                 busy === `syncUp:${workspace.id}` ? '…' : '⬆'
               ),
-              h('button', { className: 'dsv-remote-act', title: '移除登记', onClick: () => void removeWorkspace(workspace) }, '✕')
+              h(
+                'button',
+                {
+                  className: 'dsv-remote-act',
+                  title: '移除登记',
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    void removeWorkspace(workspace)
+                  }
+                },
+                '✕'
+              )
             )
           )
     ),

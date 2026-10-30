@@ -43,12 +43,16 @@ export function probeAll(): Promise<void> {
   inflight = (async () => {
     const list = await remoteApi<{ profiles: Profile[] }>('listProfiles', undefined, 8000)
     if (!list.ok) return
-    await Promise.all(
-      (list.value.profiles ?? []).map(async (profile) => {
+    const queue = (list.value.profiles ?? []).slice()
+    const worker = async () => {
+      for (;;) {
+        const profile = queue.shift()
+        if (!profile) return
         const result = await remoteApi<{ warning?: string }>('testConnection', { id: profile.id }, 45000)
         remoteStatus.mark(profile.id, result.ok)
-      })
-    )
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(3, queue.length) }, worker))
   })().finally(() => {
     inflight = null
   })
