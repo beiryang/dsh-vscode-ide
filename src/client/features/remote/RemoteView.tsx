@@ -10,7 +10,7 @@ import * as React from 'react'
 import { h } from '../../h'
 import { remoteApi, remoteBaseName, remoteJoin, remoteParentPath } from './api'
 import { probeAll, remoteStatus } from './remoteStatus'
-import { openDshWorkspace } from '../../kernel/dshContext'
+import { getDirectoryFlowState, openDshWorkspace } from '../../kernel/dshContext'
 
 type Profile = {
   id: string
@@ -566,6 +566,10 @@ export function RemoteView() {
           )
     ),
 
-    h('div', { className: 'dsv-remote-hint dsv-remote-foot' }, '远程服务由内置兼容层或已安装的 dsh-remote-ssh 提供')
+    h(
+      'div',
+      { className: 'dsv-remote-hint dsv-remote-foot' },
+      `远程服务由内置兼容层或已安装的 dsh-remote-ssh 提供 · 目录流程：${getDirectoryFlowState()}`
+    )
   )
 }

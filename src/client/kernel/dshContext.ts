@@ -5,7 +5,12 @@
  * 所以在客户端 apply 时存一份只读引用，通过明确的函数暴露需要的动作。
  */
 
-type LooseCtx = { get?: (name: string) => unknown }
+type LooseCtx = {
+  get?: (name: string) => unknown
+  slots?: unknown
+  uiWorkspace?: unknown
+  inject?: (deps: string[], callback: (scope: Record<string, unknown>) => void) => unknown
+}
 
 let root: LooseCtx | null = null
 
@@ -45,4 +50,23 @@ export function dshService<T = unknown>(name: string): T | undefined {
   } catch {
     return undefined
   }
+}
+
+/** 等服务就绪后再执行（DSH 客户端 ctx 的 inject），返回清理函数 */
+export function dshInject(deps: string[], callback: (scope: Record<string, unknown>) => void): () => void {
+  try {
+    const dispose = root?.inject?.(deps, callback)
+    return typeof dispose === 'function' ? (dispose as () => void) : () => {}
+  } catch {
+    return () => {}
+  }
+}
+
+/** 目录流程注册状态（远程面板底部显示，便于排查） */
+let directoryFlowState = '未注册'
+export function setDirectoryFlowState(value: string) {
+  directoryFlowState = value
+}
+export function getDirectoryFlowState(): string {
+  return directoryFlowState
 }
