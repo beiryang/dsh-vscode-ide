@@ -9,6 +9,7 @@ import * as React from 'react'
 
 import { h } from '../../h'
 import { remoteApi, remoteBaseName, remoteJoin, remoteParentPath } from './api'
+import { ensureAutoProbe, remoteStatus } from './remoteStatus'
 
 type Profile = {
   id: string
@@ -39,7 +40,11 @@ export function RemoteView() {
   const [loading, setLoading] = React.useState(true)
   const [note, setNote] = React.useState<Note>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
-  const [testedOk, setTestedOk] = React.useState<Set<string>>(new Set())
+  const connected = React.useSyncExternalStore(remoteStatus.subscribe, remoteStatus.getSnapshot)
+
+  React.useEffect(() => {
+    void ensureAutoProbe()
+  }, [])
 
   const [profileForm, setProfileForm] = React.useState<null | {
     name: string
@@ -137,15 +142,10 @@ export function RemoteView() {
         { id: profile.id },
         45000
       )
+      remoteStatus.mark(profile.id, result.ok)
       if (result.ok) {
-        setTestedOk((previous) => new Set(previous).add(profile.id))
         setNote({ kind: 'info', text: `连接正常${result.value.warning ? `（${result.value.warning}）` : ''}` })
       } else {
-        setTestedOk((previous) => {
-          const next = new Set(previous)
-          next.delete(profile.id)
-          return next
-        })
         setNote({ kind: 'error', text: `连接失败：${result.error}` })
       }
     } finally {
@@ -329,8 +329,8 @@ export function RemoteView() {
                 'span',
                 {
                   className: 'dsv-remote-dot',
-                  'data-ok': testedOk.has(profile.id) ? 'true' : 'false',
-                  title: testedOk.has(profile.id) ? '最近一次测试成功' : '尚未测试或测试失败'
+                  'data-ok': connected[profile.id] ? 'true' : 'false',
+                  title: connected[profile.id] ? '最近一次探测/测试成功' : '尚未探测或探测失败'
                 },
                 '●'
               ),
