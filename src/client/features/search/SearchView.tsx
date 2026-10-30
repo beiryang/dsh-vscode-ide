@@ -56,6 +56,8 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
   const [replaceNote, setReplaceNote] = React.useState<string | null>(null)
   const [collapsed, setCollapsed] = React.useState<Set<string>>(() => new Set())
   const [activeHit, setActiveHit] = React.useState<string | null>(null)
+  const [mode, setMode] = React.useState<'content' | 'files'>('content')
+  const [fileHits, setFileHits] = React.useState<Array<{ path: string; rel: string; name: string }>>([])
   const inputRef = React.useRef<HTMLInputElement | null>(null)
 
   React.useEffect(() => {
@@ -78,8 +80,21 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     setBusy(true)
     setError(null)
     try {
+      if (mode === 'files') {
+        const startedAt = Date.now()
+        const result = await api.search({ query: value, limit: 4000 })
+        setFileHits(result.files ?? [])
+        setHits([])
+        setMeta({
+          engine: ctx.remote ? 'remote' : 'walk',
+          elapsedMs: Date.now() - startedAt,
+          truncated: Boolean(result.truncated)
+        })
+        return
+      }
       const result = await api.searchContent({ query: value, ...options })
       setHits(result.matches)
+      setFileHits([])
       setMeta({ engine: result.engine, elapsedMs: result.elapsedMs, truncated: result.truncated, scanned: result.scanned })
       setCollapsed(new Set())
     } catch (cause) {
@@ -89,7 +104,13 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     } finally {
       setBusy(false)
     }
-  }, [options, query])
+  }, [ctx.remote, mode, options, query])
+
+  // 切换「内容 / 文件名」时如果有查询，自动重跑一次
+  React.useEffect(() => {
+    if (query.trim()) void run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode])
 
   const groups = React.useMemo(() => {
     const map = new Map<string, Hit[]>()
@@ -169,6 +190,26 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
           'data-active': options.caseSensitive ? 'true' : 'false',
           onClick: () => toggleOption('caseSensitive')
         },
+        h(
+          'button',
+          {
+            className: 'dsv-search-toggle',
+            title: '搜索文件内容',
+            'data-active': mode === 'content' ? 'true' : 'false',
+            onClick: () => setMode('content')
+          },
+          '内容'
+        ),
+        h(
+          'button',
+          {
+            className: 'dsv-search-toggle',
+            title: '按文件名搜索',
+            'data-active': mode === 'files' ? 'true' : 'false',
+            onClick: () => setMode('files')
+          },
+          '文件名'
+        ),
         'Aa'
       ),
       h(
@@ -267,8 +308,8 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
         ? h(
             'div',
             { className: 'dsv-search-meta' },
-            h('span', null, `${meta.engine === 'git' ? 'git grep' : meta.engine === 'remote' ? '远端 grep' : '遍历'} · ${meta.elapsedMs}ms`),
-            h('span', null, `${hits.length} 处 / ${groups.length} 个文件`),
+            h('span', null, mode === 'files' ? `${ctx.remote ? '远端' : '本地'}文件名 · ${meta.elapsedMs}ms` : `${meta.engine === 'git' ? 'git grep' : meta.engine === 'remote' ? '远端 grep' : '遍历'} · ${meta.elapsedMs}ms`),
+            h('span', null, mode === 'files' ? `${fileHits.length} 个文件` : `${hits.length} 处 / ${groups.length} 个文件`),
             meta.truncated ? h('span', { style: { color: '#d7ba7d' } }, '已截断（结果太多）') : null,
             busy ? h('span', null, '搜索中…') : null
           )
@@ -277,7 +318,26 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     h(
       'div',
       { className: 'dsv-search-results' },
-      groups.length === 0
+      mode === 'files'
+        ? fileHits.length === 0
+          ? h(
+              'div',
+              { className: 'dsv-search-empty' },
+              busy ? '搜索中…' : query.trim() ? '没有找到匹配文件名的文件。' : '输入文件名片段后按 Enter 搜索。'
+            )
+          : fileHits.map((file) =>
+              h(
+                'div',
+                {
+                  key: file.rel,
+                  className: 'dsv-search-file',
+                  title: file.rel,
+                  onClick: () => registry.openFile(file.path, { name: file.name || file.rel.split('/').pop() || file.rel })
+                },
+                h('span', { className: 'dsv-search-file-path' }, file.rel)
+              )
+            )
+        : groups.length === 0
           ? h(
               'div',
               { className: 'dsv-search-empty' },
