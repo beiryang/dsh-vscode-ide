@@ -18,6 +18,9 @@ function ExplorerView({ ctx }: { ctx: WorkbenchContext }) {
     activePath: document.activePath,
     onOpen: (entry: Entry, options?: { preview?: boolean }) => {
       void workspace.openEntry(entry, options)
+    },
+    onOpenSide: (entry: Entry) => {
+      void workspace.openSecondary(entry)
     }
   })
 }

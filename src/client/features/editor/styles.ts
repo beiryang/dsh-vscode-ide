@@ -264,4 +264,37 @@ export const CSS = `
 }
 
 .dsv-problems-pos { flex: none; font-size: 11px; color: var(--dsv-fg-dim); font-family: var(--dsv-mono, monospace); }
+
+/* 右侧分屏 */
+.dsv-split {
+  flex: 0 0 46%;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--dsv-border);
+  margin-left: 1px;
+}
+
+.dsv-split-head {
+  flex: none;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+}
+
+.dsv-split-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsv-fg);
+}
+
+.dsv-split-editor { flex: 1; min-height: 0; position: relative; }
 `

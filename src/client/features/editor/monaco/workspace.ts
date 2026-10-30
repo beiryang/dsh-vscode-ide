@@ -41,11 +41,14 @@ export type WorkspaceStatus = {
   message: string | null
 }
 
+export type SecondaryPane = { key: string; path: string; name: string }
+
 type Snapshot = {
   tabs: WorkspaceTab[]
   active: string | null
   status: WorkspaceStatus
   editorReady: boolean
+  secondary: SecondaryPane | null
 }
 
 const EXT_LANGUAGE: Record<string, string> = {
@@ -149,9 +152,12 @@ function pushStatus() {
 let active: string | null = null
 let status: WorkspaceStatus = { phase: 'idle', message: null }
 let editorReady = false
+let secondary: SecondaryPane | null = null
+let editor2: any = null
+let secondaryContainer: HTMLElement | null = null
 
 const listeners = new Set<() => void>()
-let snapshot: Snapshot = { tabs, active, status, editorReady }
+let snapshot: Snapshot = { tabs, active, status, editorReady, secondary: null }
 
 /** 把各模型上的诊断同步到「问题」面板 */
 function publishProblems() {
@@ -180,7 +186,7 @@ function publishProblems() {
 }
 
 function publish() {
-  snapshot = { tabs: tabs.slice(), active, status: { ...status }, editorReady }
+  snapshot = { tabs: tabs.slice(), active, status: { ...status }, editorReady, secondary }
   publishProblems()
   persistTabs()
   for (const listener of listeners) listener()
@@ -352,6 +358,24 @@ function syncEditor() {
 }
 
 /** 创建（或复用）对比编辑器 */
+/** 让右侧分屏显示 secondary 指向的模型 */
+function syncSecondary() {
+  if (!editor2) return
+  const model = secondary ? models.get(secondary.key) : null
+  try {
+    if (editor2.getModel() !== model) editor2.setModel(model ?? null)
+  } catch {
+    /* ignore */
+  }
+  window.setTimeout(() => {
+    try {
+      editor2?.layout()
+    } catch {
+      /* ignore */
+    }
+  }, 0)
+}
+
 function ensureDiffEditor() {
   if (diffEditor || !diffContainer || !monacoRef) return diffEditor
   diffEditor = monacoRef.editor.createDiffEditor(diffContainer, {
@@ -468,6 +492,77 @@ export const workspace = {
     publish()
   },
 
+  /** 右侧分屏容器 */
+  async attachSecondary(element: HTMLElement) {
+    secondaryContainer = element
+    const monaco = monacoRef ?? (await ensureMonaco())
+    if (!monaco) return
+    if (!editor2) {
+      editor2 = monaco.editor.create(element, {
+        theme: themeName(),
+        automaticLayout: true,
+        ...editorPrefOptions(),
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false },
+        overviewRulerBorder: false,
+        renderLineHighlight: 'line'
+      } as any)
+    }
+    syncSecondary()
+  },
+
+  detachSecondary() {
+    try {
+      editor2?.dispose()
+    } catch {
+      /* ignore */
+    }
+    editor2 = null
+    secondaryContainer = null
+  },
+
+  /** 在右侧打开一个文件（不清空主编辑器标签） */
+  async openSecondary(entry: Entry) {
+    layout.open()
+    const key = keyOf(entry.path)
+    if (!models.has(key)) {
+      try {
+        const file = await api.read(entry.path)
+        if (file.binary) {
+          setStatus('error', `${entry.name} 是二进制文件，右侧分屏只处理文本`)
+          return
+        }
+        const monaco = monacoRef ?? (await ensureMonaco())
+        if (!monaco) return
+        const model = monaco.editor.createModel(file.text, languageOf(entry.name), monaco.Uri.file(file.path))
+        models.set(key, model)
+        savedVersion.set(key, model.getAlternativeVersionId())
+        baseInfo.set(key, { size: file.size, mtimeMs: file.mtimeMs ?? 0 })
+        model.onDidChangeContent(() => {
+          refreshDirty(key)
+          scheduleDraft(key)
+        })
+      } catch (error) {
+        setStatus('error', `右侧打开失败：${error instanceof Error ? error.message : String(error)}`)
+        return
+      }
+    }
+    secondary = { key, path: entry.path, name: entry.name }
+    syncSecondary()
+    publish()
+  },
+
+  closeSecondary() {
+    secondary = null
+    try {
+      editor2?.setModel(null)
+    } catch {
+      /* ignore */
+    }
+    publish()
+  },
+
   /** 对比编辑器的容器（窗口打开时由 EditorPane 调用） */
   async attachDiff(element: HTMLElement) {
     diffContainer = element
@@ -508,6 +603,11 @@ export const workspace = {
       /* ignore */
     }
     try {
+      editor2?.updateOptions?.(options)
+    } catch {
+      /* ignore */
+    }
+    try {
       diffEditor?.getOriginalEditor?.()?.updateOptions?.(options)
       diffEditor?.getModifiedEditor?.()?.updateOptions?.(options)
     } catch {
@@ -529,6 +629,11 @@ export const workspace = {
   syncTheme() {
     if (!monacoRef) return
     syncTheme(monacoRef)
+    try {
+      editor2?.updateOptions?.({ theme: themeName() })
+    } catch {
+      /* ignore */
+    }
     // 主题切换后整块重排一次，避免背景层残留旧色（浅色主题下就是白块）
     const target = editor
     if (target) {
@@ -905,6 +1010,14 @@ export const workspace = {
   close(key: string) {
     const tab = tabOf(key)
     if (!tab) return
+    if (secondary && secondary.key === key) {
+      secondary = null
+      try {
+        editor2?.setModel(null)
+      } catch {
+        /* ignore */
+      }
+    }
     if (tab.dirty && !window.confirm(`${tab.name} 有未保存的修改，确定关闭？`)) return
 
     const index = tabs.findIndex((item) => item.key === key)
@@ -951,6 +1064,11 @@ export const workspace = {
 
   /** 窗口重新可见时补一次布局（display 切换后 Monaco 需要重新量尺寸） */
   relayout() {
+    try {
+      editor2?.layout()
+    } catch {
+      /* ignore */
+    }
     try {
       editor?.layout()
     } catch {

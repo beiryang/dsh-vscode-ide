@@ -13,6 +13,7 @@ type Props = {
   cwd: string | null
   activePath: string | null
   onOpen: (entry: Entry, options?: { preview?: boolean }) => void
+  onOpenSide?: (entry: Entry) => void
 }
 
 type MenuState = { x: number; y: number; entry: Entry | null; parentDir: string }
@@ -420,6 +421,19 @@ export function FileTree(props: Props) {
             style: { left: `${menu.x}px`, top: `${menu.y}px` },
             onPointerDown: (event: React.PointerEvent) => event.stopPropagation()
           },
+          menuEntry && !menuEntry.dir && props.onOpenSide
+            ? h(
+                'button',
+                {
+                  className: 'dsv-tree-menu-item',
+                  onClick: () => {
+                    props.onOpenSide?.(menuEntry)
+                    setMenu(null)
+                  }
+                },
+                '在右侧分屏打开'
+              )
+            : null,
           menuEntry
             ? h(
                 'button',
