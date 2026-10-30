@@ -135,6 +135,27 @@ export const CSS = `
   background: var(--dsv-hover);
 }
 
+.dsv-titlebar-problems {
+  color: #f0b45a;
+  background: color-mix(in srgb, #f0b45a 16%, transparent);
+  border: 1px solid color-mix(in srgb, #f0b45a 42%, transparent);
+  border-radius: 4px;
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.dsv-titlebar-problems:hover {
+  background: color-mix(in srgb, #f0b45a 28%, transparent);
+  color: #ffd08a;
+}
+
+.dsv-titlebar-problems[data-empty="true"] {
+  color: var(--dsv-fg-dim);
+  background: transparent;
+  border-color: var(--dsv-border);
+  font-weight: 400;
+}
+
 .dsv-root {
   position: fixed;
   inset: 0;

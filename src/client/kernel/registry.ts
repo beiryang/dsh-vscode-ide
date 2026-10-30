@@ -61,6 +61,7 @@ export type DocumentState = {
   activePath: string | null
   dirtyCount: number
   tabCount: number
+  problemCount: number
 }
 
 type Listener = () => void

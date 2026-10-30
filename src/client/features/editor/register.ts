@@ -13,7 +13,7 @@ import { registerCommand } from '../../kernel/commands'
 import { registerEditorCommands } from './commands'
 import { CSS } from './styles'
 import { ProblemsOverlay } from './ProblemsOverlay'
-import { problemsPanel } from './problems'
+import { problemsPanel, problemsStore } from './problems'
 import { EditorView } from './EditorView'
 import { monacoProbe } from './probe'
 import { workspace } from './monaco/workspace'
@@ -86,10 +86,12 @@ export function registerEditorFeature(): () => void {
     registry.setDocumentState({
       activePath: active?.path ?? null,
       dirtyCount: snap.tabs.filter((tab) => tab.dirty).length,
-      tabCount: snap.tabs.length
+      tabCount: snap.tabs.length,
+      problemCount: problemsStore.getSnapshot().filter((item) => item.severity === 'error' || item.severity === 'warning').length
     })
   }
   disposers.push(workspace.subscribe(syncDocument))
+  disposers.push(problemsStore.subscribe(syncDocument))
   syncDocument()
 
   const relayout = () => workspace.relayout()

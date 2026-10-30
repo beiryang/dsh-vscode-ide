@@ -247,13 +247,15 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         h(
           'button',
           {
-            title: '问题面板（Ctrl+Alt+Shift+M）',
+            className: 'dsv-titlebar-problems',
+            'data-empty': (document.problemCount ?? 0) === 0 ? 'true' : 'false',
+            title: `问题面板（Ctrl+Alt+Shift+M）${document.problemCount ? ` · ${document.problemCount} 个错误/警告` : ''}`,
             onClick: () => {
               const openProblems = (window as unknown as { __dsvOpenProblems?: () => void }).__dsvOpenProblems
               if (openProblems) openProblems()
             }
           },
-          '!'
+          `⚠${document.problemCount ? ` ${document.problemCount}` : ''}`
         ),
         h('button', { title: '刷新工作区', onClick: () => void loadRoot() }, '↻'),
         h(
