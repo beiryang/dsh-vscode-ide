@@ -45,6 +45,7 @@ export function RemoteView() {
   const [busy, setBusy] = React.useState<string | null>(null)
   const [syncJob, setSyncJob] = React.useState<{ id: string; name: string } | null>(null)
   const [cancelling, setCancelling] = React.useState(false)
+  const cancelRequested = React.useRef(false)
   const [syncDialog, setSyncDialog] = React.useState<null | {
     workspace: RemoteWorkspace
     paths: string
@@ -231,7 +232,10 @@ export function RemoteView() {
     const method = direction === 'down' ? 'syncDown' : 'syncUp'
     setBusy(`${method}:${workspace.id}`)
     setNote({ kind: 'info', text: `正在${direction === 'down' ? '拉取' : '推送'} ${remoteBaseName(workspace.remotePath)}…` })
-    if (direction === 'down') setSyncJob({ id: workspace.id, name: remoteBaseName(workspace.remotePath) })
+    if (direction === 'down') {
+      cancelRequested.current = false
+      setSyncJob({ id: workspace.id, name: remoteBaseName(workspace.remotePath) })
+    }
     try {
       const result = await remoteApi(method, { id: workspace.id, ...extra }, 900000)
       if (!result.ok) setNote({ kind: 'error', text: `${direction === 'down' ? '拉取' : '推送'}失败：${result.error}` })
@@ -240,19 +244,31 @@ export function RemoteView() {
       setBusy(null)
       setSyncJob(null)
       setCancelling(false)
+      if (cancelRequested.current) {
+        setNote({ kind: 'info', text: '已取消拉取（临时文件已清理，本地镜像未改动）' })
+        cancelRequested.current = false
+      }
     }
   }
 
   const cancelSync = async () => {
     if (!syncJob || cancelling) return
     setCancelling(true)
+    cancelRequested.current = true
     const result = await remoteApi('cancelSync', { id: syncJob.id }, 15000)
     if (!result.ok) {
       setCancelling(false)
+      cancelRequested.current = false
       setNote({ kind: 'error', text: `取消失败：${result.error}` })
       return
     }
     setNote({ kind: 'info', text: '已请求取消拉取，正在清理临时文件…' })
+    // 不把 UI 押在后台请求一定及时返回：最多等 6 秒就收起进度条
+    window.setTimeout(() => {
+      setSyncJob((current) => (current && current.id === syncJob.id ? null : current))
+      setCancelling(false)
+      setNote({ kind: 'info', text: '已取消拉取（后台清理完成后镜像保持不变）' })
+    }, 6000)
   }
 
   const removeWorkspace = async (workspace: RemoteWorkspace) => {
