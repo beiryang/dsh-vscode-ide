@@ -10,14 +10,22 @@ only plugin that needs to be installed.
 
 What we do with it:
 
-- The host entry is mounted **only** when the environment variable
-  `DSV_BUILTIN_REMOTE_SSH=1` is set, because the external plugin and this copy would
-  otherwise register the same tools (`remote_ssh_*`) and the same `/remote-ssh/api`
-  routes twice.
+- The host entry is mounted by default (opt out with `DSV_BUILTIN_REMOTE_SSH=0`), because the
+  external plugin and this copy would otherwise register the same tools (`remote_ssh_*`) and
+  the same `/remote-ssh/api` routes twice.
 - The client UI of the upstream plugin is **not** copied; Code Space will talk to the
   same HTTP API from its own remote panel.
-- No changes are made to the vendored file. If we ever need to patch it, record the
-  diff in this file instead of editing silently.
+
+## Patches applied to the vendored file
+
+1. **File-backed settings** (`createFileSettingsFace` plus an early return in the
+   `ctx.inject(["settings"], ...)` callback when `ownEntryId(ctx, name)` is undefined):
+   mounted as a child of `dsh-vscode-ide` there is no loader entry named
+   `dsh-remote-ssh`, and DSH's settings API throws
+   `No configurable plugin entry "dsh-remote-ssh"`. In that case connections and
+   workspaces are stored in `~/.dsh/code-space-remote.json`. Upstream behaviour is
+   unchanged when the plugin runs as its own loader entry.
+2. **Diagnostics**: the parent plugin logs mount progress to `~/.dsh/code-space-remote.log`.
 
 Dependencies required by the copied file (declared in the root `package.json` so the
 module keeps resolving after the upstream plugin is uninstalled): `yaml`,
