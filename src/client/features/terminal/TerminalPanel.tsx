@@ -19,6 +19,23 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
   const [bannerDismissed, setBannerDismissed] = React.useState<Set<string>>(new Set())
+  const [workspaceRemote, setWorkspaceRemote] = React.useState<boolean | null>(null)
+
+  // 自己查一次工作区是否远程：ctx 在切换工作区时可能滞后，这里以宿主返回为准
+  React.useEffect(() => {
+    let alive = true
+    void api
+      .roots()
+      .then((info) => {
+        if (alive) setWorkspaceRemote(info.remote === true)
+      })
+      .catch(() => {
+        if (alive) setWorkspaceRemote(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [ctx?.cwd, ctx?.sessionId])
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null)
   const [renameFor, setRenameFor] = React.useState<{ id: string; value: string } | null>(null)
   const lastHeight = React.useRef(260)
@@ -195,7 +212,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
       ),
       h('button', { className: 'dsv-mini-btn', title: '收起终端面板', onClick: () => terminal.close() }, '▾')
     ),
-    active && active.kind === 'ssh' && !ctx?.remote && !bannerDismissed.has(active.id)
+    active && active.kind === 'ssh' && workspaceRemote === false && !bannerDismissed.has(active.id)
       ? h(
           'div',
           { className: 'dsv-term-banner' },

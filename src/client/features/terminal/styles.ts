@@ -425,4 +425,14 @@ export const CSS = `
 }
 
 .dsv-term-banner-text { flex: 1; min-width: 0; }
+
+/* 提示条里的按钮：不要用固定宽高的 mini-btn（英文会被挤成竖排） */
+.dsv-term-banner .dsv-mini-btn {
+  flex: none;
+  width: auto;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
 `
