@@ -86,7 +86,11 @@
     "pack:dry": "npm pack --dry-run"
   },
   "dependencies": {
-    "ssh2": "^1.17.0"
+    "ssh2": "^1.17.0",
+    "yaml": "^2.9.1",
+    "@deepseek-ai/schemastery": "^3.18.5",
+    "@deepseek-ai/cosmokit": "^1.8.6",
+    "@standard-schema/spec": "^1.1.0"
   },
   "repository": {
     "type": "git",
