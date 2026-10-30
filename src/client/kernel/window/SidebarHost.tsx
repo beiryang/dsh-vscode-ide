@@ -26,6 +26,13 @@ function ActivityIcon({ name }: { name: string }) {
       h('path', { key: 'b', d: 'M8.5 2.5V6H12', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 })
     ])
   }
+  if (name === 'globe') {
+    return svg([
+      h('circle', { key: 'a', cx: 8, cy: 8, r: 5.4, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),
+      h('path', { key: 'b', d: 'M2.6 8h10.8', stroke: 'currentColor', 'stroke-width': 1.1 }),
+      h('path', { key: 'c', d: 'M8 2.6c1.8 1.6 2.6 3.4 2.6 5.4S9.8 11.8 8 13.4C6.2 11.8 5.4 10 5.4 8S6.2 4.2 8 2.6z', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.1 })
+    ])
+  }
   if (name === 'git') {
     return svg([
       h('circle', { key: 'a', cx: 5, cy: 3.3, r: 1.6, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.2 }),

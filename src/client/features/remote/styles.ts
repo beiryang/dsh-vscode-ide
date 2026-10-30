@@ -1,0 +1,147 @@
+/** 远程面板样式（侧栏） */
+
+export const CSS = `
+.dsv-remote { font-size: 12px; }
+
+.dsv-remote-dim { font-size: 11px; color: var(--dsv-fg-dim); }
+
+.dsv-remote-section { border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border)); padding: 4px 0 6px; }
+
+.dsv-remote-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.dsv-remote-empty { padding: 6px 10px 8px; color: var(--dsv-fg-dim); font-size: 11px; }
+
+.dsv-remote-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px 0 10px;
+}
+
+.dsv-remote-row:hover { background: var(--dsv-hover); }
+
+.dsv-remote-name {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsv-fg);
+}
+
+.dsv-remote-meta {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--dsv-fg-dim);
+}
+
+.dsv-remote-act {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg-dim);
+  cursor: pointer;
+}
+
+.dsv-remote-act:hover:not(:disabled) { background: var(--dsv-hover); color: var(--dsv-fg); }
+.dsv-remote-act:disabled { opacity: 0.45; cursor: default; }
+
+.dsv-remote-form { display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 8px; }
+.dsv-remote-form-row { display: flex; gap: 6px; }
+
+.dsv-remote-input {
+  width: 100%;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 5px;
+  background: var(--dsv-input, transparent);
+  color: var(--dsv-fg);
+  font-size: 12px;
+  outline: none;
+}
+
+.dsv-remote-input:focus { border-color: var(--dsv-accent); }
+
+.dsv-remote-primary {
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: var(--dsv-accent);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dsv-remote-primary:disabled { opacity: 0.5; cursor: default; }
+
+.dsv-remote-entries {
+  max-height: 160px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px;
+}
+
+.dsv-remote-entry {
+  text-align: left;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 11px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsv-remote-entry:hover { background: var(--dsv-hover); }
+
+.dsv-remote-note {
+  margin: 6px 10px 2px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+  background: color-mix(in srgb, var(--dsv-accent) 12%, transparent);
+  color: var(--dsv-fg);
+}
+
+.dsv-remote-note[data-kind="error"] {
+  background: color-mix(in srgb, #e06c75 16%, transparent);
+  color: #ffb3ba;
+}
+
+.dsv-remote-note-close {
+  float: right;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dsv-remote-hint { padding: 4px 10px; font-size: 10px; color: var(--dsv-fg-dim); line-height: 1.45; }
+.dsv-remote-foot { padding-top: 8px; }
+`

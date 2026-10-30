@@ -24,6 +24,7 @@ import { runProbe } from './kernel/probe'
 import { registerEditorFeature } from './features/editor/register'
 import { registerExplorerFeature } from './features/explorer/register'
 import { registerGitFeature } from './features/git/register'
+import { registerRemoteFeature } from './features/remote/register'
 import { registerSearchFeature } from './features/search/register'
 import { registerTerminalFeature } from './features/terminal/register'
 import { CSS } from './kernel/styles'
@@ -88,6 +89,7 @@ function applyUnsafe(ctx: AnyCtx) {
     registerExplorerFeature(),
     registerSearchFeature(),
     registerGitFeature(),
+    registerRemoteFeature(),
     registerTerminalFeature()
   ]
 
