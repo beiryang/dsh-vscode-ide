@@ -124,4 +124,24 @@ export const CSS = `
 }
 
 .dsv-tree:focus { outline: none; }
+
+.dsv-tree-row[data-drop="true"] {
+  outline: 1px solid var(--dsv-accent);
+  outline-offset: -1px;
+  background: color-mix(in srgb, var(--dsv-accent) 18%, transparent);
+}
+
+.dsv-drag-hint {
+  position: fixed;
+  z-index: 1600;
+  padding: 2px 8px;
+  border: 1px solid var(--dsv-accent);
+  border-radius: 4px;
+  background: var(--dsv-panel);
+  color: var(--dsv-fg);
+  font-size: 11px;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
 `

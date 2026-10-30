@@ -50,6 +50,8 @@ export function FileTree(props: Props) {
   const [busy, setBusy] = React.useState(false)
   const [selected, setSelected] = React.useState<string | null>(null)
   const [dragging, setDragging] = React.useState<string | null>(null)
+  const [dropTarget, setDropTarget] = React.useState<{ path: string; name: string } | null>(null)
+  const [dragPos, setDragPos] = React.useState<{ x: number; y: number } | null>(null)
 
   const load = React.useCallback(async (path: string) => {
     setLoading((prev) => new Set(prev).add(path))
@@ -237,6 +239,7 @@ export function FileTree(props: Props) {
             },
             onDragStart: (event: React.DragEvent) => {
               setDragging(entry.path)
+              setDragPos({ x: event.clientX, y: event.clientY })
               try {
                 event.dataTransfer.setData('text/plain', entry.path)
                 event.dataTransfer.effectAllowed = 'move'
@@ -244,9 +247,13 @@ export function FileTree(props: Props) {
                 /* ignore */
               }
             },
+            'data-drop': dropTarget?.path === entry.path ? 'true' : 'false',
             onDragOver: (event: React.DragEvent) => {
               if (!entry.dir || !dragging || dragging === entry.path) return
               event.preventDefault()
+              event.stopPropagation()
+              setDropTarget({ path: entry.path, name: entry.name })
+              setDragPos({ x: event.clientX, y: event.clientY })
             },
             onDrop: (event: React.DragEvent) => {
               if (!entry.dir) return
@@ -254,9 +261,15 @@ export function FileTree(props: Props) {
               event.stopPropagation()
               const from = dragging ?? event.dataTransfer.getData('text/plain')
               setDragging(null)
+              setDropTarget(null)
+              setDragPos(null)
               if (from) void moveInto(from, entry.path)
             },
-            onDragEnd: () => setDragging(null),
+            onDragEnd: () => {
+              setDragging(null)
+              setDropTarget(null)
+              setDragPos(null)
+            },
             onContextMenu: (event: React.MouseEvent) => openMenu(event, entry, entry.dir ? entry.path : parentOf(entry.path))
           },
           h('span', { className: 'dsv-caret' }, entry.dir ? (open ? '▾' : '▸') : ''),
@@ -293,13 +306,28 @@ export function FileTree(props: Props) {
         onClick: (event: React.MouseEvent) => (event.currentTarget as HTMLElement).focus(),
         onKeyDown: onTreeKeyDown,
         onDragOver: (event: React.DragEvent) => {
-          if (dragging) event.preventDefault()
+          if (!dragging) return
+          event.preventDefault()
+          setDragPos({ x: event.clientX, y: event.clientY })
+          // 靠近上下边缘时自动滚动，让滚动到窗口外的目录也能拖过去
+          const box = event.currentTarget.getBoundingClientRect()
+          const edge = 32
+          if (event.clientY < box.top + edge) event.currentTarget.scrollTop -= 16
+          else if (event.clientY > box.bottom - edge) event.currentTarget.scrollTop += 16
+          if (event.target === event.currentTarget && props.cwd) {
+            setDropTarget({ path: props.cwd, name: '工作区根目录' })
+          }
+        },
+        onDragLeave: (event: React.DragEvent) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTarget(null)
         },
         onDrop: (event: React.DragEvent) => {
           if (!props.cwd) return
           event.preventDefault()
           const from = dragging ?? event.dataTransfer.getData('text/plain')
           setDragging(null)
+          setDropTarget(null)
+          setDragPos(null)
           if (from) void moveInto(from, props.cwd)
         },
         onContextMenu: (event: React.MouseEvent) => {
@@ -311,6 +339,18 @@ export function FileTree(props: Props) {
       error ? h('div', { className: 'dsv-tree-error' }, error) : null,
       props.cwd ? renderEntries(props.cwd, 0) : null
     ),
+
+    /* 拖动时的落点提示 */
+    dragging && dragPos
+      ? h(
+          'div',
+          {
+            className: 'dsv-drag-hint',
+            style: { left: `${dragPos.x + 14}px`, top: `${dragPos.y + 14}px` }
+          },
+          dropTarget ? `移动到 ${dropTarget.name}` : '拖动到目录上松开即可移动'
+        )
+      : null,
 
     /* 右键菜单 */
     menu
