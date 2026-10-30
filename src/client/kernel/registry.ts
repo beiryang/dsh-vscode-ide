@@ -80,7 +80,7 @@ const views: ViewContribution[] = []
 const overlays: OverlayContribution[] = []
 const statusItems: StatusItem[] = []
 
-let documentState: DocumentState = { activePath: null, dirtyCount: 0, tabCount: 0 }
+let documentState: DocumentState = { activePath: null, dirtyCount: 0, tabCount: 0, problemCount: 0 }
 let fileOpener: ((path: string, options?: { name?: string }) => void) | null = null
 let diffOpener: ((left: DiffSide, right: DiffSide) => void) | null = null
 
