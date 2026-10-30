@@ -58,3 +58,18 @@ export function remoteBaseName(path: string): string {
   const name = clean.split('/').filter(Boolean).pop()
   return name || path
 }
+
+/** 远程目录的上一级；已是根（/、~、相对单段）时返回 null */
+export function remoteParentPath(path: string): string | null {
+  const clean = path.trim().replace(/\/+$/, '')
+  if (!clean || clean === '~' || clean === '/' || clean === '.') return null
+  if (clean.startsWith('~/')) {
+    const rest = clean.slice(2)
+    if (!rest.includes('/')) return '~'
+    return '~/' + rest.slice(0, rest.lastIndexOf('/'))
+  }
+  const index = clean.lastIndexOf('/')
+  if (index < 0) return null
+  if (index === 0) return '/'
+  return clean.slice(0, index)
+}

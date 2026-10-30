@@ -8,7 +8,7 @@
 import * as React from 'react'
 
 import { h } from '../../h'
-import { remoteApi, remoteBaseName, remoteJoin } from './api'
+import { remoteApi, remoteBaseName, remoteJoin, remoteParentPath } from './api'
 
 type Profile = {
   id: string
@@ -374,34 +374,48 @@ export function RemoteView() {
               h('option', { value: '' }, '选择连接…'),
               profiles.map((profile) => h('option', { key: profile.id, value: profile.id }, profile.name || profile.host))
             ),
-            h('input', {
-              className: 'dsv-remote-input',
-              placeholder: '远程目录，如 /home/you/workflow',
-              value: createPath,
-              onChange: (event: React.ChangeEvent<HTMLInputElement>) => setCreatePath(event.target.value)
-            }),
             h(
               'div',
-              { className: 'dsv-remote-form-row' },
+              { className: 'dsv-remote-path-row' },
+              h('input', {
+                className: 'dsv-remote-input dsv-remote-path-input',
+                placeholder: '远程目录，如 /home/you/workflow',
+                value: createPath,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) => setCreatePath(event.target.value)
+              }),
               h(
                 'button',
                 {
-                  className: 'dsv-remote-act dsv-remote-act-text',
+                  className: 'dsv-remote-primary dsv-remote-browse',
                   disabled: listing || !createProfile,
                   onClick: () => void browse(createProfile, createPath)
                 },
                 listing ? '浏览中…' : '浏览'
-              ),
-              h(
-                'button',
-                { className: 'dsv-remote-primary', disabled: busy === 'create', onClick: () => void createWorkspace() },
-                busy === 'create' ? '创建中…' : '创建并登记'
               )
             ),
-            entries.length > 0
+            h(
+              'button',
+              {
+                className: 'dsv-remote-primary dsv-remote-primary-block',
+                disabled: busy === 'create' || !createProfile || !createPath.trim(),
+                onClick: () => void createWorkspace()
+              },
+              busy === 'create' ? '创建中…' : '创建并登记'
+            ),
+            entries.length > 0 || remoteParentPath(createPath)
               ? h(
                   'div',
                   { className: 'dsv-remote-entries' },
+                  remoteParentPath(createPath)
+                    ? h(
+                        'button',
+                        {
+                          className: 'dsv-remote-entry',
+                          onClick: () => void browse(createProfile, remoteParentPath(createPath) as string)
+                        },
+                        '↰ 上一级'
+                      )
+                    : null,
                   entries
                     .filter((entry) => entry.type === 'directory')
                     .slice(0, 40)

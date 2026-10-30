@@ -1,6 +1,10 @@
 /** 远程面板样式（侧栏） */
 
 export const CSS = `
+.dsv-remote-path-row { display: flex; gap: 6px; align-items: center; }
+.dsv-remote-path-input { flex: 1; min-width: 0; }
+.dsv-remote-browse { height: 26px; padding: 0 12px; flex: none; }
+.dsv-remote-primary-block { width: 100%; }
 .dsv-remote { font-size: 12px; }
 
 .dsv-remote-dim { font-size: 11px; color: var(--dsv-fg-dim); }
