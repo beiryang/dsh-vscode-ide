@@ -65,7 +65,15 @@ async function pump(id: string, term: any, signal: AbortSignal) {
 /** 已创建终端实例（sessionId → xterm），供右键菜单做复制/粘贴/全选 */
 export const termRegistry = new Map<string, any>()
 
-export function TerminalView({ session, active }: { session: TermSession; active: boolean }) {
+export function TerminalView({
+  session,
+  active,
+  pane
+}: {
+  session: TermSession
+  active: boolean
+  pane?: 'right'
+}) {
   const hostRef = React.useRef<HTMLDivElement | null>(null)
   const termRef = React.useRef<any>(null)
   const fitRef = React.useRef<any>(null)
@@ -176,6 +184,7 @@ export function TerminalView({ session, active }: { session: TermSession; active
     className: 'dsv-term-view',
     'data-active': active ? 'true' : 'false',
     'data-session': session.id,
+    'data-pane': pane,
     ref: hostRef
   })
 }

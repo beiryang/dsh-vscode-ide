@@ -19,6 +19,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
   void prefsVersion
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
+  const [splitId, setSplitId] = React.useState<string | null>(null)
   const [bannerDismissed, setBannerDismissed] = React.useState<Set<string>>(new Set())
   const [workspaceRemote, setWorkspaceRemote] = React.useState<boolean | null>(null)
   const [workspaceCwd, setWorkspaceCwd] = React.useState<string | null>(ctx?.cwd ?? null)
@@ -54,6 +55,14 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
   const rootRef = React.useRef<HTMLDivElement | null>(null)
   const draggedRef = React.useRef(false)
   const collapsed = dock === 'bottom' && snap.height <= 48
+
+  const splitSession = splitId ? snap.sessions.find((session) => session.id === splitId) ?? null : null
+
+  React.useEffect(() => {
+    if (splitId && !snap.sessions.some((session) => session.id === splitId)) setSplitId(null)
+    // 用户把右侧那个标签点成当前标签时，分屏自然结束
+    if (splitId && active?.id === splitId) setSplitId(null)
+  }, [splitId, active?.id, snap.sessions])
 
   if (!snap.open) return null
 
@@ -185,6 +194,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
               key: session.id,
               className: 'dsv-term-tab',
               'data-active': session.id === active?.id ? 'true' : 'false',
+              'data-split': session.id === splitId ? 'true' : 'false',
               'data-status': session.status,
               onClick: () => terminal.setActive(session.id),
               title:
@@ -213,6 +223,26 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
       h('button', { className: 'dsv-mini-btn', title: '连接 SSH（已记住唯一主机时直接连）', onClick: () => create() }, busy ? '…' : '＋SSH'),
       h('button', { className: 'dsv-mini-btn', title: '选择或新建 SSH 连接', onClick: () => sshDialog.open() }, '▾'),
       h('button', { className: 'dsv-mini-btn', title: '本地 PowerShell（PTY）', onClick: () => void createLocal() }, busy ? '…' : '＋本地'),
+      h(
+        'button',
+        {
+          className: 'dsv-mini-btn',
+          title: '分屏：左右各一个终端（再点切换右侧；★ 关闭分屏）',
+          disabled: snap.sessions.length < 2,
+          'data-active': splitId ? 'true' : 'false',
+          onClick: () => {
+            const others = snap.sessions.filter((session) => session.id !== active?.id)
+            if (others.length === 0) return
+            const index = others.findIndex((session) => session.id === splitId)
+            const next = others[(index + 1) % others.length]
+            setSplitId((previous) => (previous ? next.id : next.id))
+          }
+        },
+        '⫽'
+      ),
+      splitId
+        ? h('button', { className: 'dsv-mini-btn', title: '关闭终端分屏', onClick: () => setSplitId(null) }, '⫽✕')
+        : null,
       h(
         'button',
         {
@@ -247,6 +277,7 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
       'div',
       {
         className: 'dsv-term-body',
+        'data-split': splitId ? 'true' : 'false',
         onContextMenu: (event: React.MouseEvent) => {
           // 以鼠标下的终端为准（多标签时右键非活动标签也能操作它）
           const holder = (event.target as HTMLElement | null)?.closest('[data-session]')
@@ -265,7 +296,12 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
           )
         : snap.sessions.map((session) =>
             session.status === 'ready'
-              ? h(TerminalView, { key: session.id, session, active: session.id === active?.id })
+              ? h(TerminalView, {
+                  key: session.id,
+                  session,
+                  active: session.id === active?.id,
+                  pane: session.id === splitId ? 'right' : undefined
+                })
                 : h(
                   'div',
                   {

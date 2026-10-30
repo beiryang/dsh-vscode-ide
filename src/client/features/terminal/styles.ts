@@ -239,6 +239,32 @@ export const CSS = `
 
 .dsv-term-view[data-active="true"] { display: block; }
 
+/* 终端分屏：左 = 当前标签，右 = 选中的另一个会话 */
+.dsv-term-body[data-split="true"] .dsv-term-view[data-active="true"] {
+  display: block;
+  right: 50%;
+}
+
+.dsv-term-body[data-split="true"] .dsv-term-view[data-pane="right"] {
+  display: block;
+  left: 50%;
+  border-left: 1px solid var(--dsv-border);
+}
+
+.dsv-term-body[data-split="true"] .dsv-term-view[data-pane="right"][data-active="true"] {
+  right: 0;
+  left: 0;
+}
+
+.dsv-term-tab[data-split="true"] {
+  box-shadow: inset 2px 0 0 var(--dsv-accent);
+}
+
+.dsv-term-tab[data-split="true"] .dsv-term-tab-name::after {
+  content: ' ⫽';
+  color: var(--dsv-accent);
+}
+
 .dsv-term-view .xterm { height: 100%; }
 
 .dsv-term-empty { padding: 12px; font-size: 11px; color: var(--dsv-fg-dim); }
