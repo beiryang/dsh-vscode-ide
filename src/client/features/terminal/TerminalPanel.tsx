@@ -56,13 +56,24 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
   const draggedRef = React.useRef(false)
   const collapsed = dock === 'bottom' && snap.height <= 48
 
-  const splitSession = splitId ? snap.sessions.find((session) => session.id === splitId) ?? null : null
+  const active = snap.sessions.find((item) => item.id === snap.activeId) ?? snap.sessions[snap.sessions.length - 1]
 
   React.useEffect(() => {
     if (splitId && !snap.sessions.some((session) => session.id === splitId)) setSplitId(null)
     // 用户把右侧那个标签点成当前标签时，分屏自然结束
     if (splitId && active?.id === splitId) setSplitId(null)
   }, [splitId, active?.id, snap.sessions])
+
+  React.useEffect(() => {
+    if (!menu) return
+    const close = () => setMenu(null)
+    window.addEventListener('pointerdown', close)
+    window.addEventListener('keydown', close)
+    return () => {
+      window.removeEventListener('pointerdown', close)
+      window.removeEventListener('keydown', close)
+    }
+  }, [menu])
 
   if (!snap.open) return null
 
@@ -118,18 +129,6 @@ export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string 
     window.addEventListener('pointerup', onUp)
   }
 
-  const active = snap.sessions.find((item) => item.id === snap.activeId) ?? snap.sessions[snap.sessions.length - 1]
-
-  React.useEffect(() => {
-    if (!menu) return
-    const close = () => setMenu(null)
-    window.addEventListener('pointerdown', close)
-    window.addEventListener('keydown', close)
-    return () => {
-      window.removeEventListener('pointerdown', close)
-      window.removeEventListener('keydown', close)
-    }
-  }, [menu])
 
   const termOf = (id: string | undefined) => (id ? termRegistry.get(id) : undefined)
 
