@@ -52,6 +52,9 @@ export function FileTree(props: Props) {
   const [dragging, setDragging] = React.useState<string | null>(null)
   const [dropTarget, setDropTarget] = React.useState<{ path: string; name: string } | null>(null)
   const [dragPos, setDragPos] = React.useState<{ x: number; y: number } | null>(null)
+  const [dropRow, setDropRow] = React.useState<string | null>(null)
+  const treeRef = React.useRef<HTMLDivElement | null>(null)
+  const autoScrollRef = React.useRef<{ dir: number; speed: number; raf: number | null }>({ dir: 0, speed: 10, raf: null })
 
   const load = React.useCallback(async (path: string) => {
     setLoading((prev) => new Set(prev).add(path))
@@ -170,6 +173,48 @@ export function FileTree(props: Props) {
     }
   }
 
+  const stopAutoScroll = () => {
+    const state = autoScrollRef.current
+    state.dir = 0
+    if (state.raf !== null) {
+      cancelAnimationFrame(state.raf)
+      state.raf = null
+    }
+  }
+
+  const tickAutoScroll = () => {
+    const state = autoScrollRef.current
+    const element = treeRef.current
+    if (!element || state.dir === 0) {
+      state.raf = null
+      return
+    }
+    element.scrollTop += state.dir * state.speed
+    state.raf = requestAnimationFrame(tickAutoScroll)
+  }
+
+  /** 鼠标靠近树的上/下边缘时，用 requestAnimationFrame 持续滚动（不依赖 dragover 触发频率） */
+  const updateAutoScroll = (clientY: number) => {
+    const element = treeRef.current
+    if (!element) return
+    const box = element.getBoundingClientRect()
+    const edge = 56
+    const state = autoScrollRef.current
+    if (clientY < box.top + edge) {
+      state.dir = -1
+      state.speed = Math.min(26, 8 + (box.top + edge - clientY) / 1.5)
+    } else if (clientY > box.bottom - edge) {
+      state.dir = 1
+      state.speed = Math.min(26, 8 + (clientY - (box.bottom - edge)) / 1.5)
+    } else {
+      state.dir = 0
+    }
+    if (state.dir !== 0 && state.raf === null) state.raf = requestAnimationFrame(tickAutoScroll)
+    if (state.dir === 0) stopAutoScroll()
+  }
+
+  const dirNameOf = (path: string) => path.split(/[\\/]/).filter(Boolean).pop() ?? path
+
   const openMenu = (event: React.MouseEvent, entry: Entry | null, parentDir: string) => {
     event.preventDefault()
     event.stopPropagation()
@@ -247,27 +292,38 @@ export function FileTree(props: Props) {
                 /* ignore */
               }
             },
-            'data-drop': dropTarget?.path === entry.path ? 'true' : 'false',
+            'data-drop': dropRow === entry.path ? 'true' : 'false',
             onDragOver: (event: React.DragEvent) => {
-              if (!entry.dir || !dragging || dragging === entry.path) return
+              if (!dragging) return
+              const targetDir = entry.dir ? entry.path : parentOf(entry.path)
               event.preventDefault()
               event.stopPropagation()
-              setDropTarget({ path: entry.path, name: entry.name })
+              updateAutoScroll(event.clientY)
+              if (dragging === targetDir) {
+                setDropRow(null)
+                return
+              }
+              setDropRow(entry.path)
+              setDropTarget({ path: targetDir, name: entry.dir ? entry.name : dirNameOf(targetDir) })
               setDragPos({ x: event.clientX, y: event.clientY })
             },
             onDrop: (event: React.DragEvent) => {
-              if (!entry.dir) return
               event.preventDefault()
               event.stopPropagation()
+              stopAutoScroll()
+              const targetDir = entry.dir ? entry.path : parentOf(entry.path)
               const from = dragging ?? event.dataTransfer.getData('text/plain')
               setDragging(null)
               setDropTarget(null)
+              setDropRow(null)
               setDragPos(null)
-              if (from) void moveInto(from, entry.path)
+              if (from && from !== targetDir) void moveInto(from, targetDir)
             },
             onDragEnd: () => {
+              stopAutoScroll()
               setDragging(null)
               setDropTarget(null)
+              setDropRow(null)
               setDragPos(null)
             },
             onContextMenu: (event: React.MouseEvent) => openMenu(event, entry, entry.dir ? entry.path : parentOf(entry.path))
@@ -305,28 +361,31 @@ export function FileTree(props: Props) {
         tabIndex: 0,
         onClick: (event: React.MouseEvent) => (event.currentTarget as HTMLElement).focus(),
         onKeyDown: onTreeKeyDown,
+        ref: treeRef,
         onDragOver: (event: React.DragEvent) => {
           if (!dragging) return
           event.preventDefault()
           setDragPos({ x: event.clientX, y: event.clientY })
-          // 靠近上下边缘时自动滚动，让滚动到窗口外的目录也能拖过去
-          const box = event.currentTarget.getBoundingClientRect()
-          const edge = 32
-          if (event.clientY < box.top + edge) event.currentTarget.scrollTop -= 16
-          else if (event.clientY > box.bottom - edge) event.currentTarget.scrollTop += 16
+          updateAutoScroll(event.clientY)
           if (event.target === event.currentTarget && props.cwd) {
+            setDropRow(null)
             setDropTarget({ path: props.cwd, name: '工作区根目录' })
           }
         },
         onDragLeave: (event: React.DragEvent) => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTarget(null)
+          if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+          setDropTarget(null)
+          setDropRow(null)
+          stopAutoScroll()
         },
         onDrop: (event: React.DragEvent) => {
           if (!props.cwd) return
           event.preventDefault()
           const from = dragging ?? event.dataTransfer.getData('text/plain')
+          stopAutoScroll()
           setDragging(null)
           setDropTarget(null)
+          setDropRow(null)
           setDragPos(null)
           if (from) void moveInto(from, props.cwd)
         },
