@@ -12,12 +12,13 @@ import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
 import { TerminalView, termRegistry } from './TerminalView'
 
-export function TerminalPanel() {
+export function TerminalPanel({ ctx }: { ctx?: { remote?: boolean; cwd?: string | null } }) {
   const snap = React.useSyncExternalStore(terminal.subscribe, terminal.getSnapshot)
   const prefsVersion = React.useSyncExternalStore(prefs.subscribe, () => prefs.version)
   void prefsVersion
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
+  const [bannerDismissed, setBannerDismissed] = React.useState<Set<string>>(new Set())
   const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null)
   const [renameFor, setRenameFor] = React.useState<{ id: string; value: string } | null>(null)
   const lastHeight = React.useRef(260)
@@ -157,9 +158,13 @@ export function TerminalPanel() {
               'data-active': session.id === active?.id ? 'true' : 'false',
               'data-status': session.status,
               onClick: () => terminal.setActive(session.id),
-              title: session.message || session.label
+              title:
+                session.kind === 'ssh'
+                  ? `${session.label} · 远程 shell（当前工作区仍是本地）`
+                  : session.message || session.label
             },
             h('span', { className: 'dsv-term-tab-name' }, session.label),
+            session.kind === 'ssh' ? h('span', { className: 'dsv-term-tab-remote' }, '远程') : null,
             h(
               'button',
               {
@@ -190,6 +195,25 @@ export function TerminalPanel() {
       ),
       h('button', { className: 'dsv-mini-btn', title: '收起终端面板', onClick: () => terminal.close() }, '▾')
     ),
+    active && active.kind === 'ssh' && !ctx?.remote && !bannerDismissed.has(active.id)
+      ? h(
+          'div',
+          { className: 'dsv-term-banner' },
+          h(
+            'span',
+            { className: 'dsv-term-banner-text' },
+            `此终端运行在 ${active.label} 上；当前工作区仍是本地${ctx?.cwd ? `（${ctx.cwd}）` : ''}，命令只在远端生效。`
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-mini-btn',
+              onClick: () => setBannerDismissed((previous) => new Set(previous).add(active.id))
+            },
+            '知道了'
+          )
+        )
+      : null,
     h(
       'div',
       {

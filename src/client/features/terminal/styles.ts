@@ -400,4 +400,29 @@ export const CSS = `
   background: var(--dsv-accent);
   color: #fff;
 }
+
+/* SSH 会话徽标与"远程终端"一次性提示 */
+.dsv-term-tab-remote {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, #d7ba7d 30%, transparent);
+  color: #f0dfb4;
+  font-size: 9px;
+  line-height: 14px;
+  flex: none;
+}
+
+.dsv-term-banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  background: color-mix(in srgb, #d7ba7d 14%, transparent);
+  color: var(--dsv-fg);
+  font-size: 11px;
+}
+
+.dsv-term-banner-text { flex: 1; min-width: 0; }
 `
