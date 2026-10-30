@@ -29,3 +29,20 @@ export function openDshWorkspace(workspaceId: string): { ok: boolean; error?: st
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
+
+/** 只读拿到 DSH 客户端的根 ctx（feature 注册 slot 时用） */
+export function getDshContext(): LooseCtx | null {
+  return root
+}
+
+/** 取一个 DSH 客户端服务（优先直接属性，其次 ctx.get） */
+export function dshService<T = unknown>(name: string): T | undefined {
+  try {
+    const anyRoot = root as unknown as Record<string, unknown> | null
+    if (!anyRoot) return undefined
+    if (name in anyRoot) return anyRoot[name] as T
+    return typeof anyRoot.get === 'function' ? (anyRoot.get(name) as T) : undefined
+  } catch {
+    return undefined
+  }
+}

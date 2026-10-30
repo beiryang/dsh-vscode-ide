@@ -209,4 +209,138 @@ export const CSS = `
   white-space: nowrap;
   border: 1px solid var(--dsv-border);
 }
+
+/* DSH「添加工作区」目录流程的远程扩展（跟随 DSH 主题变量） */
+.dsv-dirflow-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dsv-dirflow {
+  width: min(620px, 94vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-l1, #fff);
+  color: var(--dsw-alias-label-primary, #1f2328);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.dsv-dirflow-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+}
+
+.dsv-dirflow-close {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dsv-dirflow-tabs { display: flex; gap: 0; padding: 10px 14px 0; }
+
+.dsv-dirflow-tab {
+  flex: 1;
+  height: 34px;
+  border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dsv-dirflow-tab:first-child { border-radius: 6px 0 0 6px; }
+.dsv-dirflow-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.dsv-dirflow-tab[data-active="true"] { background: #2f6feb; border-color: #2f6feb; color: #fff; }
+
+.dsv-dirflow-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; overflow: auto; }
+.dsv-dirflow-field { display: flex; flex-direction: column; gap: 4px; }
+.dsv-dirflow-label { font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); }
+.dsv-dirflow-hint { font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); line-height: 1.5; }
+
+.dsv-dirflow-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-l1, #fff);
+  color: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.dsv-dirflow-path { display: flex; gap: 6px; }
+.dsv-dirflow-path .dsv-dirflow-input { flex: 1; min-width: 0; }
+
+.dsv-dirflow-btn {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dsv-dirflow-primary {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #2f6feb;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dsv-dirflow-primary:disabled, .dsv-dirflow-btn:disabled { opacity: 0.55; cursor: default; }
+
+.dsv-dirflow-list {
+  min-height: 180px;
+  max-height: 320px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.dsv-dirflow-entry {
+  flex: none;
+  height: 28px;
+  text-align: left;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dsv-dirflow-entry:hover { background: var(--dsw-alias-interactive-bg-hover, rgba(0, 0, 0, 0.06)); }
+.dsv-dirflow-empty { padding: 12px; font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); }
+.dsv-dirflow-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.dsv-dirflow-error { padding: 8px 14px 12px; font-size: 12px; color: #cf222e; }
 `
