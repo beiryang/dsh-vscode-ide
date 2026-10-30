@@ -172,5 +172,10 @@ export function TerminalView({ session, active }: { session: TermSession; active
     return () => window.clearTimeout(timer)
   }, [active])
 
-  return h('div', { className: 'dsv-term-view', 'data-active': active ? 'true' : 'false', ref: hostRef })
+  return h('div', {
+    className: 'dsv-term-view',
+    'data-active': active ? 'true' : 'false',
+    'data-session': session.id,
+    ref: hostRef
+  })
 }

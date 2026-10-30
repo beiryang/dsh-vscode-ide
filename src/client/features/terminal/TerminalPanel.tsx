@@ -195,8 +195,12 @@ export function TerminalPanel() {
       {
         className: 'dsv-term-body',
         onContextMenu: (event: React.MouseEvent) => {
-          if (!active) return
+          // 以鼠标下的终端为准（多标签时右键非活动标签也能操作它）
+          const holder = (event.target as HTMLElement | null)?.closest('[data-session]')
+          const id = holder?.getAttribute('data-session') ?? active?.id
+          if (!id) return
           event.preventDefault()
+          terminal.setActive(id)
           setMenu({ x: event.clientX, y: event.clientY })
         }
       },
@@ -259,7 +263,8 @@ export function TerminalPanel() {
             {
               className: 'dsv-term-menu-item',
               onClick: () => {
-                termOf(active?.id)?.clear?.()
+                // 发 Ctrl+L 给 shell：清掉当前屏幕，和终端里按 Ctrl+L 一致
+                if (active) void api.termWrite(active.id, '\u000c')
                 setMenu(null)
               }
             },

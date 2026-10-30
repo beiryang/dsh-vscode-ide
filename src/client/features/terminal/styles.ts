@@ -300,6 +300,7 @@ export const CSS = `
   display: flex;
   gap: 4px;
   opacity: 0.8;
+}
 
 .dsv-local-prompt { color: var(--dsv-accent); font-family: var(--dsv-mono, monospace); font-size: 12px; }
 
