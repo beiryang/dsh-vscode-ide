@@ -53,6 +53,23 @@ export const CSS = `
   color: var(--dsv-fg-dim);
 }
 
+.dsv-remote-profile {
+  height: 30px;
+  margin: 3px 6px;
+  padding: 0 6px 0 8px;
+  border: 1px solid var(--dsv-border);
+  border-left: 2px solid var(--dsv-accent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--dsv-accent) 8%, var(--dsv-panel));
+}
+
+.dsv-remote-profile:hover { background: color-mix(in srgb, var(--dsv-accent) 14%, var(--dsv-panel)); }
+
+.dsv-remote-profile .dsv-remote-name { font-weight: 600; }
+
+.dsv-remote-dot { flex: none; font-size: 9px; color: var(--dsv-fg-faint, var(--dsv-fg-dim)); }
+.dsv-remote-dot[data-ok="true"] { color: #98c379; }
+
 .dsv-remote-act {
   flex: none;
   width: 20px;

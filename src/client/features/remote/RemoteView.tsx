@@ -39,6 +39,7 @@ export function RemoteView() {
   const [loading, setLoading] = React.useState(true)
   const [note, setNote] = React.useState<Note>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
+  const [testedOk, setTestedOk] = React.useState<Set<string>>(new Set())
 
   const [profileForm, setProfileForm] = React.useState<null | {
     name: string
@@ -137,8 +138,14 @@ export function RemoteView() {
         45000
       )
       if (result.ok) {
+        setTestedOk((previous) => new Set(previous).add(profile.id))
         setNote({ kind: 'info', text: `连接正常${result.value.warning ? `（${result.value.warning}）` : ''}` })
       } else {
+        setTestedOk((previous) => {
+          const next = new Set(previous)
+          next.delete(profile.id)
+          return next
+        })
         setNote({ kind: 'error', text: `连接失败：${result.error}` })
       }
     } finally {
@@ -317,7 +324,16 @@ export function RemoteView() {
         : profiles.map((profile) =>
             h(
               'div',
-              { className: 'dsv-remote-row', key: profile.id },
+              { className: 'dsv-remote-row dsv-remote-profile', key: profile.id },
+              h(
+                'span',
+                {
+                  className: 'dsv-remote-dot',
+                  'data-ok': testedOk.has(profile.id) ? 'true' : 'false',
+                  title: testedOk.has(profile.id) ? '最近一次测试成功' : '尚未测试或测试失败'
+                },
+                '●'
+              ),
               h('span', { className: 'dsv-remote-name', title: `${profile.user}@${profile.host}` }, profile.name || profile.host),
               h('span', { className: 'dsv-remote-meta' }, `${profile.user}@${profile.host}${profile.port ? `:${profile.port}` : ''}`),
               h(
