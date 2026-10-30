@@ -20,6 +20,9 @@ type Profile = {
   port?: number
   keyPath?: string
   passwordConfigured?: boolean
+  authMethod?: 'key' | 'password'
+  proxyJump?: string
+  remoteRoot?: string
 }
 
 type RemoteWorkspace = {
@@ -34,6 +37,15 @@ type RemoteWorkspace = {
 }
 
 type DirEntry = { name: string; path?: string; type?: string; size?: number }
+
+type SshConfigHost = {
+  name: string
+  hostName: string
+  user?: string
+  port?: number
+  identityFile?: string
+  proxyJump?: string
+}
 
 type Note = { kind: 'info' | 'error'; text: string } | null
 
@@ -81,6 +93,12 @@ export function RemoteView() {
     void probeAll()
   }, [])
 
+  const [importDialog, setImportDialog] = React.useState<null | {
+    loading: boolean
+    error?: string
+    hosts: SshConfigHost[]
+    selected: Record<string, boolean>
+  }>(null)
   const [profileForm, setProfileForm] = React.useState<null | {
     name: string
     host: string
@@ -88,6 +106,9 @@ export function RemoteView() {
     port: string
     keyPath: string
     password: string
+    authMethod: 'key' | 'password'
+    proxyJump: string
+    remoteRoot: string
   }>(null)
 
   const [creating, setCreating] = React.useState(false)
@@ -148,8 +169,11 @@ export function RemoteView() {
       host,
       user: profileForm.user.trim(),
       port: Number(profileForm.port) || 22,
-      keyPath: profileForm.keyPath.trim() || undefined,
-      password: profileForm.password || undefined
+      keyPath: profileForm.authMethod === 'key' ? profileForm.keyPath.trim() || undefined : undefined,
+      password: profileForm.authMethod === 'password' ? profileForm.password || undefined : undefined,
+      authMethod: profileForm.authMethod,
+      proxyJump: profileForm.proxyJump.trim() || undefined,
+      remoteRoot: profileForm.remoteRoot.trim() || '~'
     })
     setBusy(null)
     if (!result.ok) {
@@ -271,6 +295,52 @@ export function RemoteView() {
     }, 6000)
   }
 
+  const openImport = async () => {
+    setImportDialog({ loading: true, hosts: [], selected: {} })
+    const result = await remoteApi<{ hosts: SshConfigHost[] }>('listSshConfigHosts', undefined, 10000)
+    if (!result.ok) {
+      setImportDialog({ loading: false, error: result.error, hosts: [], selected: {} })
+      return
+    }
+    const hosts = result.value.hosts ?? []
+    const selected: Record<string, boolean> = {}
+    for (const host of hosts) selected[host.name + '|' + host.hostName] = true
+    setImportDialog({ loading: false, hosts, selected })
+  }
+
+  const doImport = async () => {
+    if (!importDialog) return
+    const picked = importDialog.hosts.filter((host) => importDialog.selected[host.name + '|' + host.hostName])
+    setBusy('import')
+    let saved = 0
+    let skipped = 0
+    for (const host of picked) {
+      if (!host.user?.trim()) {
+        skipped += 1
+        continue
+      }
+      const result = await remoteApi('saveProfile', {
+        name: host.name || host.hostName,
+        host: host.hostName,
+        user: host.user.trim(),
+        port: host.port || 22,
+        keyPath: host.identityFile || undefined,
+        authMethod: 'key',
+        proxyJump: host.proxyJump || undefined,
+        remoteRoot: '~'
+      })
+      if (result.ok) saved += 1
+      else skipped += 1
+    }
+    setBusy(null)
+    setImportDialog(null)
+    setNote({
+      kind: 'info',
+      text: `已导入 ${saved} 个连接${skipped ? `，跳过 ${skipped} 个（缺用户名或保存失败）` : ''}`
+    })
+    void load()
+  }
+
   const removeWorkspace = async (workspace: RemoteWorkspace) => {
     if (!window.confirm(`移除远程工作区「${remoteBaseName(workspace.remotePath)}」？（只移除登记，不动远端/镜像文件）`))
       return
@@ -311,10 +381,19 @@ export function RemoteView() {
           'button',
           {
             className: 'dsv-remote-act dsv-remote-act-text dsv-remote-toggle',
+            title: '从 ~/.ssh/config 导入连接',
+            onClick: () => void openImport()
+          },
+          '导入'
+        ),
+        h(
+          'button',
+          {
+            className: 'dsv-remote-act dsv-remote-act-text dsv-remote-toggle',
             title: '新建 SSH 连接',
             onClick: () =>
               setProfileForm((previous) =>
-                previous ? null : { name: '', host: '', user: '', port: '22', keyPath: '', password: '' }
+                previous ? null : { name: '', host: '', user: '', port: '22', keyPath: '', password: '', authMethod: 'key', proxyJump: '', remoteRoot: '~' }
               )
           },
           profileForm ? '取消' : '＋'
@@ -356,21 +435,55 @@ export function RemoteView() {
                   setProfileForm((previous) => (previous ? { ...previous, port: event.target.value } : previous))
               })
             ),
-            h('input', {
-              className: 'dsv-remote-input',
-              placeholder: '密码（可空；留空则用私钥）',
-              type: 'password',
-              value: profileForm.password,
-              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                setProfileForm((previous) => (previous ? { ...previous, password: event.target.value } : previous))
-            }),
-            h('input', {
-              className: 'dsv-remote-input',
-              placeholder: '私钥路径（可空，默认 ~/.ssh/id_ed25519 等）',
-              value: profileForm.keyPath,
-              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                setProfileForm((previous) => (previous ? { ...previous, keyPath: event.target.value } : previous))
-            }),
+            h(
+              'div',
+              { className: 'dsv-remote-form-row' },
+              h(
+                'select',
+                {
+                  className: 'dsv-remote-input',
+                  value: profileForm.authMethod,
+                  onChange: (event: React.ChangeEvent<HTMLSelectElement>) =>
+                    setProfileForm((previous) =>
+                      previous ? { ...previous, authMethod: event.target.value as 'key' | 'password' } : previous
+                    )
+                },
+                h('option', { value: 'key' }, '密钥认证'),
+                h('option', { value: 'password' }, '密码认证')
+              ),
+              h('input', {
+                className: 'dsv-remote-input',
+                placeholder: profileForm.authMethod === 'key' ? '私钥路径（可空）' : '密码（不落盘）',
+                type: profileForm.authMethod === 'key' ? 'text' : 'password',
+                value: profileForm.authMethod === 'key' ? profileForm.keyPath : profileForm.password,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setProfileForm((previous) =>
+                    previous
+                      ? profileForm.authMethod === 'key'
+                        ? { ...previous, keyPath: event.target.value }
+                        : { ...previous, password: event.target.value }
+                      : previous
+                  )
+              })
+            ),
+            h(
+              'div',
+              { className: 'dsv-remote-form-row' },
+              h('input', {
+                className: 'dsv-remote-input',
+                placeholder: 'ProxyJump（可空，如 user@jump:22）',
+                value: profileForm.proxyJump,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setProfileForm((previous) => (previous ? { ...previous, proxyJump: event.target.value } : previous))
+              }),
+              h('input', {
+                className: 'dsv-remote-input',
+                placeholder: '默认远端根目录（默认 ~）',
+                value: profileForm.remoteRoot,
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setProfileForm((previous) => (previous ? { ...previous, remoteRoot: event.target.value } : previous))
+              })
+            ),
             h(
               'div',
               { className: 'dsv-remote-form-row' },
@@ -419,7 +532,11 @@ export function RemoteView() {
                 '●'
               ),
               h('span', { className: 'dsv-remote-name', title: `${profile.user}@${profile.host}` }, profile.name || profile.host),
-              h('span', { className: 'dsv-remote-meta' }, `${profile.user}@${profile.host}${profile.port ? `:${profile.port}` : ''}`),
+              h(
+                'span',
+                { className: 'dsv-remote-meta', title: profile.proxyJump ? `ProxyJump: ${profile.proxyJump}` : undefined },
+                `${profile.user}@${profile.host}${profile.port ? `:${profile.port}` : ''}${profile.proxyJump ? ' · 跳板' : ''}${profile.authMethod === 'password' ? ' · 密码' : ''}`
+              ),
               selectedProfile === profile.id ? h('span', { className: 'dsv-remote-current' }, '当前') : null,
               h(
                 'button',
@@ -642,6 +759,65 @@ export function RemoteView() {
           )
     ),
 
+    importDialog
+      ? h(
+          'div',
+          { className: 'dsv-sync-backdrop' },
+          h(
+            'div',
+            { className: 'dsv-sync-dlg' },
+            h('div', { className: 'dsv-sync-head' }, '从 ~/.ssh/config 导入'),
+            importDialog.error
+              ? h('div', { className: 'dsv-dirflow-error' }, importDialog.error)
+              : null,
+            importDialog.loading
+              ? h('div', { className: 'dsv-remote-empty' }, '正在读取…')
+              : importDialog.hosts.length === 0
+                ? h('div', { className: 'dsv-remote-empty' }, '没有找到可用主机（需要 HostName）')
+                : h(
+                    'div',
+                    { className: 'dsv-import-list' },
+                    importDialog.hosts.map((host) => {
+                      const key = host.name + '|' + host.hostName
+                      return h(
+                        'label',
+                        { className: 'dsv-import-row', key },
+                        h('input', {
+                          type: 'checkbox',
+                          checked: importDialog.selected[key] === true,
+                          onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                            setImportDialog((previous) =>
+                              previous
+                                ? { ...previous, selected: { ...previous.selected, [key]: event.target.checked } }
+                                : previous
+                            )
+                        }),
+                        h('span', { className: 'dsv-import-name' }, host.name || host.hostName),
+                        h(
+                          'span',
+                          { className: 'dsv-import-meta' },
+                          `${host.user || '(缺用户名)'}@${host.hostName}${host.port && host.port !== 22 ? ':' + host.port : ''}`
+                        )
+                      )
+                    })
+                  ),
+            h(
+              'div',
+              { className: 'dsv-sync-actions' },
+              h('button', { className: 'dsv-sync-btn', onClick: () => setImportDialog(null) }, '取消'),
+              h(
+                'button',
+                {
+                  className: 'dsv-sync-btn dsv-sync-primary',
+                  disabled: busy === 'import' || importDialog.loading,
+                  onClick: () => void doImport()
+                },
+                busy === 'import' ? '导入中…' : '导入选中'
+              )
+            )
+          )
+        )
+      : null,
     syncDialog
       ? h(
           'div',

@@ -417,4 +417,27 @@ export const CSS = `
   font-size: 11px;
   cursor: pointer;
 }
+
+.dsv-import-list {
+  max-height: 320px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dsv-border);
+  border-radius: 5px;
+  padding: 4px;
+}
+.dsv-import-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.dsv-import-row:hover { background: var(--dsv-hover); }
+.dsv-import-name { flex: none; min-width: 90px; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsv-import-meta { flex: 1; min-width: 0; color: var(--dsv-fg-dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 `
