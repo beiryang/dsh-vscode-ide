@@ -32,28 +32,45 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 
 - **Floating workbench** — drag, 8-way resize, maximize with a 44px top safety strip (so you can always reach DSH's own window buttons), geometry remembered
 - **Peek mode** — `Ctrl+Alt+Q` hides the workbench so you can read the conversation, press again to return with editor state, scroll position and cursor intact; a draggable floating button does the same with the mouse
-- **File explorer** — follows the active session's cwd, lazy directory loading; **remote workspaces go through SFTP** automatically
+- **File explorer** — follows the active session's cwd, lazy directory loading; **remote workspaces go through SFTP**
+  automatically. Right-click for new file/folder, rename, delete, copy path and “reveal in file manager”; drag rows
+  onto folders (or the empty area for the workspace root) to move them, with edge auto-scroll and a live drop hint;
+  `↑`/`↓`/`Enter`/`F2`/`Delete` drive it from the keyboard
 - **Monaco editor** — pre-bundled ESM, loaded on demand; one `ITextModel` per file, so switching tabs never loses unsaved work
+- **Tabs & breadcrumbs** — single click opens a preview tab (italic) that is replaced by the next one, double click
+  pins it, drag to reorder, right-click to close others/to the right/saved; the breadcrumb bar above the editor
+  lists siblings and drills into folders
+- **Split editor** — “open in split pane” puts a second file on the right with its own tab row and breadcrumbs;
+  both panes edit the same model, so changes and undo history stay in sync
+- **Problems panel** — `Ctrl+Alt+Shift+M` or the titlebar `⚠` badge lists Monaco diagnostics grouped by file;
+  the badge shows a live error/warning count and turns amber when there is something to fix
+- **Status bar** — Git branch with ahead/behind, cursor position, language and line endings
 - **Save / close** — `Ctrl+S` (temp file + atomic rename), `Ctrl+W`, dirty markers, close confirmation
 - **Find & replace** — Monaco's built-in widget (`Ctrl+F`)
 - **Quick open / command palette** — `Ctrl+Alt+P` and `Ctrl+Alt+Shift+P` (`Ctrl+P` belongs to DSH)
-- **Content search & replace** — `Ctrl+Alt+Shift+F` opens a floating search panel: search the whole workspace, results grouped per file, click to jump to the line, `⇄` reveals the replace box for a confirmed replace-all;
+- **Content search & replace** — `Ctrl+Alt+Shift+F` opens a floating search panel: search the whole workspace, results grouped per file, click to jump to the line, `⇄` reveals the replace box for a confirmed replace-all, `⋯` adds include/exclude glob filters;
   `git grep` inside repositories, bounded filesystem walk elsewhere (local workspaces only for now)
 - **Hot exit** — unsaved buffers are persisted to `localStorage: dsv:drafts.v1` and restored (with dirty markers) after a restart
 - **Diff** — against disk, against `HEAD`, or between two files
-- **Git** — branch and changes list, per-file stage/unstage, commit (dropdown: staged / all / commit-and-push), discard, push;
-  works on remote workspaces too — the commands run on the server over SSH. If the workspace root is not a repo,
-  “select repository folder…” lets you point Git at a subdirectory (local and remote)
-- **SSH terminal** — xterm.js, multiple sessions. The panel sits **under the editor inside the editor column**
-  (VS Code style, file tree keeps the full height): drag the divider to resize, drag all the way down to collapse it
-  to a single strip and click/drag that strip to bring it back. A header button can dock it to the right side instead. Connection details are reused from
-  `dsh-remote-ssh` when available; otherwise “＋SSH” lets you type host / user / key (or password) directly —
-  first use needs no pre-configured remote workspace. With exactly one remembered host (or a remote workspace)
-  “＋SSH” connects immediately; the chooser only appears when there are several or none. Passwords are never stored
-- **Local PowerShell console** — output pane + input line (no PTY, so no `vim`/`top`)
+- **Git** — VS Code-style Source Control (branch row, message box, collapsible staged/changes sections, per-file
+  stage/unstage, colour-coded status letters), commit dropdown (staged / all / commit-and-push), discard, push, and a
+  **commit graph** with lane lines, ref badges, per-commit file lists and a context menu (copy hash, checkout,
+  create branch, revert). Works on remote workspaces too — the commands run on the server over SSH. If the workspace
+  root is not a repo, “select repository folder…” lets you point Git at a subdirectory (local and remote)
+- **SSH terminal** — xterm.js with a real PTY, multiple sessions. The panel sits **under the editor inside the editor
+  column** (VS Code style, file tree keeps the full height): drag the divider to resize, drag all the way down to
+  collapse it to a single strip and click/drag that strip to bring it back. A header button can dock it to the right
+  side instead, `⫽` shows two sessions side by side, and the content area has a right-click menu (copy / paste /
+  select all / clear / rename / close). Connection details are reused from `dsh-remote-ssh` when available; otherwise
+  “＋SSH” lets you type host / user / key (or password) directly — first use needs no pre-configured remote workspace.
+  With exactly one remembered host (or a remote workspace) “＋SSH” connects immediately; the chooser only appears when
+  there are several or none. Passwords are never stored. SSH tabs are marked `远程`, and connecting from a local
+  workspace shows a one-time reminder that commands run on the server while the workspace stays local
+- **Local PowerShell** — a real ConPTY session (`@homebridge/node-pty-prebuilt-multiarch`), so `vim`, `top`, colours
+  and Tab completion behave like a normal terminal
 - **Themes** — follow DSH, built-in One Dark Pro, or **import any VS Code theme JSON** (editor and shell change together)
 - **Icons** — built-in Material Icon Theme, or **import any VS Code icon theme** (sprites are generated at build time and lazily loaded)
-- **Settings** — editor font, editor font size, word wrap, line numbers, tab width, terminal font size,
+- **Settings** — editor font / size, word wrap, line numbers, tab width, **terminal font family and size**,
   theme/icon import, host diagnostics; all persisted and applied without reopening tabs
 - **Environment probe** — `await __dsv.probe()` (`probe(true)` writes the result to a file)
 

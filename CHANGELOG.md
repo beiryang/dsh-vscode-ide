@@ -64,10 +64,62 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   commit / push / discard` run on the server over the existing SSH connection (`lib/host/remote-git.js`),
   paths are mapped back to the local mirror so diffs still open in Monaco
 
+- **Terminal right-click menu** — copy (selection), paste, select all, clear (sends `Ctrl+L` so the shell really clears),
+  rename session, close session; the menu follows the cursor and acts on the terminal under the pointer
+- **Path-aware search filters** — the search panel's `⋯` row takes include / exclude globs (e.g. `src/**/*.ts`,
+  `**/*.min.js`), applied to both the `git grep` and filesystem-walk backends
+- **Editor tabs** — preview tabs (italic) replaced on single click, pinned on double click, drag to reorder,
+  right-click menu: close / close others / close to the right / close saved; `workspace.moveTab` etc.
+- **Breadcrumbs** above the editor — every segment is clickable: a directory opens its sibling list (and can be
+  drilled into) and the file segment reopens the file; the split pane has its own breadcrumb bar
+- **Status bar** — Git branch with `↑ahead ↓behind`, `Ln x, Col y`, language id and line endings, alongside the
+  existing session / version chips
+- **Explorer file operations** — right-click menu: new file / new folder / rename / delete (with confirmation) /
+  copy path / reveal in OS; backed by `fs/create|delete|rename|reveal` host routes (local only)
+- **Drag to move in the explorer** — drop a file or folder onto any row (that row's directory) or the empty area
+  (workspace root); self/descendant and overwrite moves are rejected, the tree auto-scrolls near its edges via
+  `requestAnimationFrame`, and a cursor-following chip plus row outline show the destination
+- **Explorer keyboard navigation** — `↑`/`↓` move the selection through visible rows, `Enter` opens a file or
+  toggles a folder, `F2` renames, `Delete` deletes; the selected row is highlighted
+- **Problems panel** — `Ctrl+Alt+Shift+M` (or the titlebar `⚠` badge) opens a floating list of Monaco diagnostics
+  grouped by file with severity icons and line/column; clicking an entry jumps to it. The badge shows the live
+  error/warning count, turns amber when non-zero and stays subdued otherwise
+- **Split editor** — “open in split pane” in the explorer context menu shows a second file on the right; both
+  panes share the same `ITextModel` (edits and undo history stay in sync), the right pane has its own tab row,
+  breadcrumb bar and close button
+- **Split terminal** — `⫽` splits the terminal panel into two side-by-side sessions (the right one is cycled with
+  another click, `⫽✕` closes it); terminals are not re-created, so buffers and running commands survive
+- **SSH session safety hints** — SSH tabs carry a `远程` badge, and opening an SSH terminal from a **local**
+  workspace shows a one-time banner explaining that commands run on the remote host while the workspace stays local
+  (the workspace kind is re-probed on every session change and every 1.5s, so switching workspaces updates it)
+- **Terminal font family** setting (defaults to Maple Mono NF CN with Nerd Font fallbacks), applied live to open
+  and new terminals
+- **Git graph / commit actions** — branch tooltip shows ahead/behind; commits have a context menu (copy short and
+  full hash, checkout, create branch, revert), backed by `git/checkout|branch|revert` routes for local and remote
+  workspaces
+
 ### Fixed
 
 - Source Control now shows the real reason (including the remote case) instead of a generic
   “当前工作区不是 Git 仓库”, and offers a hint on how to fix it
+- **React #310 (“Rendered more hooks than during the previous render”)** could blank the workbench: the sidebar
+  width hook sat after the window's early return, and the terminal panel's context-menu effect sat after its own
+  early return; both moved above the returns. Every view is also wrapped in a small error boundary, so a broken
+  panel shows a red message and a retry button instead of taking the whole window down
+- Breadcrumb directory segments did nothing on click (the menu was closed before reading the previous state)
+- Terminal right-click menu looked like a row of default buttons pinned under the panel: a missing `}` in
+  `styles.ts` made the CSS parser swallow all following rules, including the menu's `position: fixed`
+- The titlebar `⚠` badge was not amber and its count wrapped to a second line: a generic
+  `.dsv-titlebar-actions button` rule won on specificity, and the button was fixed-width
+- `Esc` closed the whole workbench even when an overlay was open; overlays/dialogs now consume it first, and
+  the “escape hatch” only closes the window when nothing else is showing
+- Keyboard shortcuts are dispatched explicitly in `app.tsx`, so the problems panel needed its own branch
+  (registering `keybinding` alone does not bind anything)
+- Split editor: the second Monaco instance was created while its container had zero height (blank, uneditable);
+  it now waits for a real size, and the pane was moved to its own column so its tab row lines up with the left one
+- Opening a file that only existed as a model (created by the split pane) changed the content but left the old tab
+  title and breadcrumbs; such files now get a tab before activation
+- Terminal “clear” used xterm's viewport clear and was immediately repainted by the shell; it now sends `Ctrl+L`
 
 ### Changed
 
