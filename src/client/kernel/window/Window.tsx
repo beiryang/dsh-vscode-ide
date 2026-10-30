@@ -244,6 +244,17 @@ export function WorkbenchWindow({ sessionId }: { sessionId: string }) {
         document.dirtyCount > 0 ? h('span', { className: 'dsv-titlebar-badge' }, `${document.dirtyCount} 未保存`) : null,
         h('button', { title: '转到文件（Ctrl+Alt+P）', onClick: () => palette.open('files') }, '⌕'),
         h('button', { title: '命令面板（Ctrl+Alt+Shift+P）', onClick: () => palette.open('commands') }, '>'),
+        h(
+          'button',
+          {
+            title: '问题面板（Ctrl+Alt+Shift+M）',
+            onClick: () => {
+              const openProblems = (window as unknown as { __dsvOpenProblems?: () => void }).__dsvOpenProblems
+              if (openProblems) openProblems()
+            }
+          },
+          '!'
+        ),
         h('button', { title: '刷新工作区', onClick: () => void loadRoot() }, '↻'),
         h(
           'button',
