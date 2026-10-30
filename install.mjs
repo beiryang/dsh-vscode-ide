@@ -143,7 +143,7 @@ log(`已复制到 ${targetDir}`)
 /* 运行期依赖（目前只有 node-pty）：npm 安装时会自动装，本地脚本复制时需要手动带过去 */
 {
   const own = JSON.parse(readFileSync(join(SRC, 'package.json'), 'utf8'))
-  const deps = Object.keys(own.dependencies ?? {})
+  const deps = [...Object.keys(own.dependencies ?? {}), ...Object.keys(own.optionalDependencies ?? {})]
   for (const name of deps) {
     const from = join(SRC, 'node_modules', name)
     if (!existsSync(from)) {

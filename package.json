@@ -86,8 +86,7 @@
     "pack:dry": "npm pack --dry-run"
   },
   "dependencies": {
-    "ssh2": "^1.17.0",
-    "@homebridge/node-pty-prebuilt-multiarch": "^0.14.1"
+    "ssh2": "^1.17.0"
   },
   "repository": {
     "type": "git",
@@ -96,5 +95,8 @@
   "homepage": "https://github.com/beiryang/dsh-vscode-ide#readme",
   "bugs": {
     "url": "https://github.com/beiryang/dsh-vscode-ide/issues"
+  },
+  "optionalDependencies": {
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.14.1"
   }
 }
