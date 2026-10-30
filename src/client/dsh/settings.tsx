@@ -198,6 +198,32 @@ export function SettingsSection() {
       h(
         'div',
         { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '导入图标主题（VS Code 图标主题 JSON 的完整路径，同目录需有 SVG）'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h('input', {
+            className: 'dsv-settings-input',
+            value: iconPath,
+            spellCheck: false,
+            placeholder: 'C:\\Users\\你\\.vscode\\extensions\\...\\material-icons.json',
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) => setIconPath(event.target.value)
+          }),
+          h(
+            'button',
+            { disabled: importing !== null || !iconPath.trim(), onClick: () => void importIconFile() },
+            importing === 'icons' ? '导入中…' : '导入'
+          ),
+          customIcons.getName() ? h('button', { onClick: () => customIcons.clear() }, '恢复内置') : null
+        ),
+        customIcons.getName() ? h('div', { className: 'dsv-settings-hint' }, `当前图标：${customIcons.getName()}`) : null
+      ),
+
+      importNote ? h('div', { className: 'dsv-settings-note' }, importNote) : null,
+
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
         h('div', { className: 'dsv-settings-label' }, '编辑器字体'),
         h(
           'div',
@@ -327,39 +353,6 @@ export function SettingsSection() {
           h('span', { className: 'dsv-settings-hint' }, `${TERMINAL_FONT_MIN}–${TERMINAL_FONT_MAX}px，只影响底部终端`)
         )
       )
-    ),
-
-    /* ── 扩展资源 ─────────────────────────────────────── */
-    h(
-      'div',
-      { className: 'dsv-settings-group' },
-      h('div', { className: 'dsv-settings-group-title' }, '图标'),
-
-      h(
-        'div',
-        { className: 'dsv-settings-item' },
-        h('div', { className: 'dsv-settings-label' }, '导入图标主题（VS Code 图标主题 JSON 的完整路径，同目录需有 SVG）'),
-        h(
-          'div',
-          { className: 'dsv-settings-row' },
-          h('input', {
-            className: 'dsv-settings-input',
-            value: iconPath,
-            spellCheck: false,
-            placeholder: 'C:\\Users\\你\\.vscode\\extensions\\...\\material-icons.json',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) => setIconPath(event.target.value)
-          }),
-          h(
-            'button',
-            { disabled: importing !== null || !iconPath.trim(), onClick: () => void importIconFile() },
-            importing === 'icons' ? '导入中…' : '导入'
-          ),
-          customIcons.getName() ? h('button', { onClick: () => customIcons.clear() }, '恢复内置') : null
-        ),
-        customIcons.getName() ? h('div', { className: 'dsv-settings-hint' }, `当前图标：${customIcons.getName()}`) : null
-      ),
-
-      importNote ? h('div', { className: 'dsv-settings-note' }, importNote) : null
     ),
 
     /* ── 诊断 ─────────────────────────────────────────── */
