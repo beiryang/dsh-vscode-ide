@@ -5,11 +5,12 @@
 import * as React from 'react'
 
 import { h } from '../../h'
+import { api } from '../../kernel/transport'
 import { prefs } from '../../kernel/prefs'
 import { quickConnect } from './connect'
 import { sshDialog } from './sshTargets'
 import { terminal } from './terminal'
-import { TerminalView } from './TerminalView'
+import { TerminalView, termRegistry } from './TerminalView'
 
 export function TerminalPanel() {
   const snap = React.useSyncExternalStore(terminal.subscribe, terminal.getSnapshot)
@@ -17,6 +18,8 @@ export function TerminalPanel() {
   void prefsVersion
   const dock = prefs.getSnapshot().panelDock
   const [busy, setBusy] = React.useState(false)
+  const [menu, setMenu] = React.useState<{ x: number; y: number } | null>(null)
+  const [renameFor, setRenameFor] = React.useState<{ id: string; value: string } | null>(null)
   const lastHeight = React.useRef(260)
   const rootRef = React.useRef<HTMLDivElement | null>(null)
   const draggedRef = React.useRef(false)
@@ -77,6 +80,34 @@ export function TerminalPanel() {
   }
 
   const active = snap.sessions.find((item) => item.id === snap.activeId) ?? snap.sessions[snap.sessions.length - 1]
+
+  React.useEffect(() => {
+    if (!menu) return
+    const close = () => setMenu(null)
+    window.addEventListener('pointerdown', close)
+    window.addEventListener('keydown', close)
+    return () => {
+      window.removeEventListener('pointerdown', close)
+      window.removeEventListener('keydown', close)
+    }
+  }, [menu])
+
+  const termOf = (id: string | undefined) => (id ? termRegistry.get(id) : undefined)
+
+  const copySelection = () => {
+    const text = termOf(active?.id)?.getSelection?.() ?? ''
+    if (text) void navigator.clipboard?.writeText(text).catch(() => undefined)
+  }
+
+  const paste = async () => {
+    if (!active) return
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) await api.termWrite(active.id, text)
+    } catch {
+      /* 没有剪贴板权限时忽略 */
+    }
+  }
 
   return h(
     'div',
@@ -161,7 +192,14 @@ export function TerminalPanel() {
     ),
     h(
       'div',
-      { className: 'dsv-term-body' },
+      {
+        className: 'dsv-term-body',
+        onContextMenu: (event: React.MouseEvent) => {
+          if (!active) return
+          event.preventDefault()
+          setMenu({ x: event.clientX, y: event.clientY })
+        }
+      },
       snap.sessions.length === 0
         ? h(
             'div',
@@ -190,5 +228,109 @@ export function TerminalPanel() {
                 )
           )
     )
+    ,
+    menu
+      ? h(
+          'div',
+          {
+            className: 'dsv-term-menu',
+            style: { left: `${menu.x}px`, top: `${menu.y}px` },
+            onPointerDown: (event: React.PointerEvent) => event.stopPropagation()
+          },
+          h(
+            'button',
+            { className: 'dsv-term-menu-item', disabled: !termOf(active?.id)?.getSelection?.(), onClick: () => { copySelection(); setMenu(null) } },
+            '复制（选中内容）'
+          ),
+          h('button', { className: 'dsv-term-menu-item', onClick: () => { void paste(); setMenu(null) } }, '粘贴'),
+          h(
+            'button',
+            {
+              className: 'dsv-term-menu-item',
+              onClick: () => {
+                termOf(active?.id)?.selectAll?.()
+                setMenu(null)
+              }
+            },
+            '全选'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-term-menu-item',
+              onClick: () => {
+                termOf(active?.id)?.clear?.()
+                setMenu(null)
+              }
+            },
+            '清屏'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-term-menu-item',
+              onClick: () => {
+                if (active) setRenameFor({ id: active.id, value: active.label })
+                setMenu(null)
+              }
+            },
+            '重命名会话…'
+          ),
+          h(
+            'button',
+            {
+              className: 'dsv-term-menu-item',
+              'data-danger': 'true',
+              onClick: () => {
+                if (active) void terminal.closeSession(active.id)
+                setMenu(null)
+              }
+            },
+            '关闭终端'
+          )
+        )
+      : null,
+    renameFor
+      ? h(
+          'div',
+          { className: 'dsv-term-dialog-backdrop', onPointerDown: () => setRenameFor(null) },
+          h(
+            'div',
+            { className: 'dsv-term-dialog', onPointerDown: (event: React.PointerEvent) => event.stopPropagation() },
+            h('div', { className: 'dsv-term-dialog-title' }, '重命名终端'),
+            h('input', {
+              className: 'dsv-term-dialog-input',
+              value: renameFor.value,
+              autoFocus: true,
+              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                setRenameFor({ ...renameFor, value: (event.target as HTMLInputElement).value }),
+              onKeyDown: (event: React.KeyboardEvent) => {
+                if (event.key === 'Escape') setRenameFor(null)
+                if (event.key === 'Enter') {
+                  terminal.rename(renameFor.id, renameFor.value)
+                  setRenameFor(null)
+                }
+              }
+            }),
+            h(
+              'div',
+              { className: 'dsv-term-dialog-actions' },
+              h('button', { className: 'dsv-term-dialog-btn', onClick: () => setRenameFor(null) }, '取消'),
+              h(
+                'button',
+                {
+                  className: 'dsv-term-dialog-btn',
+                  'data-primary': 'true',
+                  onClick: () => {
+                    terminal.rename(renameFor.id, renameFor.value)
+                    setRenameFor(null)
+                  }
+                },
+                '保存'
+              )
+            )
+          )
+        )
+      : null
   )
 }

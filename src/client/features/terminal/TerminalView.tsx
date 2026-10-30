@@ -62,6 +62,9 @@ async function pump(id: string, term: any, signal: AbortSignal) {
   }
 }
 
+/** 已创建终端实例（sessionId → xterm），供右键菜单做复制/粘贴/全选 */
+export const termRegistry = new Map<string, any>()
+
 export function TerminalView({ session, active }: { session: TermSession; active: boolean }) {
   const hostRef = React.useRef<HTMLDivElement | null>(null)
   const termRef = React.useRef<any>(null)
@@ -100,6 +103,7 @@ export function TerminalView({ session, active }: { session: TermSession; active
           }
         })
         termRef.current = term
+        termRegistry.set(session.id, term)
         fitRef.current = fit
         try {
           fit.fit()
@@ -147,6 +151,7 @@ export function TerminalView({ session, active }: { session: TermSession; active
       } catch {
         /* ignore */
       }
+      termRegistry.delete(session.id)
       termRef.current = null
       fitRef.current = null
     }

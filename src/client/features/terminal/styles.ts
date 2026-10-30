@@ -317,4 +317,86 @@ export const CSS = `
 }
 
 .dsv-local-input:focus { border-color: var(--dsv-accent); }
+
+/* 终端右键菜单与重命名对话框 */
+.dsv-term-menu {
+  position: fixed;
+  z-index: 1400;
+  min-width: 190px;
+  padding: 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 6px;
+  background: var(--dsv-panel);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.dsv-term-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsv-term-menu-item:hover { background: var(--dsv-hover); }
+.dsv-term-menu-item[data-danger="true"] { color: #e06c75; }
+.dsv-term-menu-item:disabled { opacity: 0.45; cursor: default; }
+
+.dsv-term-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dsv-term-dialog {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 8px;
+  background: var(--dsv-panel);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.dsv-term-dialog-title { font-size: 13px; font-weight: 600; }
+
+.dsv-term-dialog-input {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: var(--dsv-bg);
+  color: var(--dsv-fg);
+  font-size: 12px;
+}
+
+.dsv-term-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.dsv-term-dialog-btn {
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsv-fg);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dsv-term-dialog-btn[data-primary="true"] {
+  border-color: transparent;
+  background: var(--dsv-accent);
+  color: #fff;
+}
 `

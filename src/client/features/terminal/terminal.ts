@@ -102,6 +102,13 @@ export const terminal = {
   setHeight(height: number) {
     publish({ height: clampHeight(height) })
   },
+  /** 重命名会话标签（仅本地显示） */
+  rename(id: string, label: string) {
+    const clean = label.trim()
+    if (!clean) return
+    publish({ sessions: state.sessions.map((session) => (session.id === id ? { ...session, label: clean } : session)) })
+  },
+
   setActive(id: string) {
     publish({ activeId: id })
   },
