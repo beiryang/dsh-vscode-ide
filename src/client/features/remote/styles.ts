@@ -53,7 +53,8 @@ export const CSS = `
   color: var(--dsv-fg-dim);
 }
 
-.dsv-remote-profile {
+.dsv-remote-profile,
+.dsv-remote-ws {
   height: 30px;
   margin: 3px 6px;
   padding: 0 6px 0 8px;
@@ -63,9 +64,28 @@ export const CSS = `
   background: color-mix(in srgb, var(--dsv-accent) 8%, var(--dsv-panel));
 }
 
-.dsv-remote-profile:hover { background: color-mix(in srgb, var(--dsv-accent) 14%, var(--dsv-panel)); }
+.dsv-remote-profile:hover,
+.dsv-remote-ws:hover { background: color-mix(in srgb, var(--dsv-accent) 14%, var(--dsv-panel)); }
 
-.dsv-remote-profile .dsv-remote-name { font-weight: 600; }
+.dsv-remote-profile[data-selected="true"] {
+  border-color: var(--dsv-accent);
+  border-left-width: 3px;
+  background: color-mix(in srgb, var(--dsv-accent) 20%, var(--dsv-panel));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dsv-accent) 35%, transparent);
+}
+
+.dsv-remote-current {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--dsv-accent);
+  color: #fff;
+  font-size: 9px;
+  line-height: 14px;
+}
+
+.dsv-remote-profile .dsv-remote-name,
+.dsv-remote-ws .dsv-remote-name { font-weight: 600; }
 
 .dsv-remote-dot { flex: none; font-size: 9px; color: var(--dsv-fg-faint, var(--dsv-fg-dim)); }
 .dsv-remote-dot[data-ok="true"] { color: #98c379; }

@@ -41,6 +41,26 @@ export function RemoteView() {
   const [note, setNote] = React.useState<Note>(null)
   const [busy, setBusy] = React.useState<string | null>(null)
   const connected = React.useSyncExternalStore(remoteStatus.subscribe, remoteStatus.getSnapshot)
+  const [selectedProfile, setSelectedProfile] = React.useState<string>(() => {
+    try {
+      return localStorage.getItem('dsv:remote.selectedProfile') ?? ''
+    } catch {
+      return ''
+    }
+  })
+
+  React.useEffect(() => {
+    if (profiles.length === 0) return
+    if (!profiles.some((profile) => profile.id === selectedProfile)) setSelectedProfile(profiles[0].id)
+  }, [profiles, selectedProfile])
+
+  React.useEffect(() => {
+    try {
+      if (selectedProfile) localStorage.setItem('dsv:remote.selectedProfile', selectedProfile)
+    } catch {
+      /* ignore */
+    }
+  }, [selectedProfile])
 
   React.useEffect(() => {
     void ensureAutoProbe()
@@ -324,7 +344,12 @@ export function RemoteView() {
         : profiles.map((profile) =>
             h(
               'div',
-              { className: 'dsv-remote-row dsv-remote-profile', key: profile.id },
+              {
+                className: 'dsv-remote-row dsv-remote-profile',
+                key: profile.id,
+                'data-selected': selectedProfile === profile.id ? 'true' : 'false',
+                onClick: () => setSelectedProfile(profile.id)
+              },
               h(
                 'span',
                 {
@@ -336,19 +361,30 @@ export function RemoteView() {
               ),
               h('span', { className: 'dsv-remote-name', title: `${profile.user}@${profile.host}` }, profile.name || profile.host),
               h('span', { className: 'dsv-remote-meta' }, `${profile.user}@${profile.host}${profile.port ? `:${profile.port}` : ''}`),
+              selectedProfile === profile.id ? h('span', { className: 'dsv-remote-current' }, '当前') : null,
               h(
                 'button',
                 {
                   className: 'dsv-remote-act dsv-remote-act-text',
                   title: '测试连接',
                   disabled: busy === `test:${profile.id}`,
-                  onClick: () => void testProfile(profile)
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    void testProfile(profile)
+                  }
                 },
                 busy === `test:${profile.id}` ? '测试中…' : '测试'
               ),
               h(
                 'button',
-                { className: 'dsv-remote-act dsv-remote-act-text', title: '删除连接', onClick: () => void deleteProfile(profile) },
+                {
+                  className: 'dsv-remote-act dsv-remote-act-text',
+                  title: '删除连接',
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    void deleteProfile(profile)
+                  }
+                },
                 '删除'
               )
             )
@@ -368,7 +404,12 @@ export function RemoteView() {
           {
             className: 'dsv-remote-act dsv-remote-act-text dsv-remote-toggle',
             title: '新建远程工作区（创建本地镜像）',
-            onClick: () => setCreating((previous) => !previous)
+            onClick: () =>
+              setCreating((previous) => {
+                const next = !previous
+                if (next) setCreateProfile(selectedProfile || profiles[0]?.id || '')
+                return next
+              })
           },
           creating ? '取消' : '＋'
         )
@@ -457,6 +498,15 @@ export function RemoteView() {
             h(
               'div',
               { className: 'dsv-remote-row dsv-remote-ws', key: workspace.id },
+              h(
+                'span',
+                {
+                  className: 'dsv-remote-dot',
+                  'data-ok': connected[workspace.profileId] ? 'true' : 'false',
+                  title: connected[workspace.profileId] ? '所属连接最近一次探测成功' : '所属连接尚未探测或探测失败'
+                },
+                '●'
+              ),
               h(
                 'span',
                 { className: 'dsv-remote-name', title: workspace.remotePath },
