@@ -367,13 +367,15 @@ function syncSecondary() {
   } catch {
     /* ignore */
   }
-  window.setTimeout(() => {
-    try {
-      editor2?.layout()
-    } catch {
-      /* ignore */
-    }
-  }, 0)
+  for (const delay of [0, 60, 200]) {
+    window.setTimeout(() => {
+      try {
+        editor2?.layout()
+      } catch {
+        /* ignore */
+      }
+    }, delay)
+  }
 }
 
 function ensureDiffEditor() {
@@ -497,7 +499,18 @@ export const workspace = {
     secondaryContainer = element
     const monaco = monacoRef ?? (await ensureMonaco())
     if (!monaco) return
-    if (!editor2) {
+
+    // 容器刚挂上 DOM 时高度可能还是 0，此时创建 Monaco 会得到一个"看不见"的编辑器
+    const ensure = (attempt = 0) => {
+      if (editor2) {
+        syncSecondary()
+        return
+      }
+      if (!element.isConnected || attempt > 20) return
+      if (element.clientHeight < 40) {
+        requestAnimationFrame(() => ensure(attempt + 1))
+        return
+      }
       editor2 = monaco.editor.create(element, {
         theme: themeName(),
         automaticLayout: true,
@@ -508,8 +521,9 @@ export const workspace = {
         overviewRulerBorder: false,
         renderLineHighlight: 'line'
       } as any)
+      syncSecondary()
     }
-    syncSecondary()
+    ensure()
   },
 
   detachSecondary() {

@@ -298,5 +298,21 @@ export const CSS = `
   color: var(--dsv-fg);
 }
 
+.dsv-split-crumbs {
+  flex: none;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--dsv-border-soft, var(--dsv-border));
+  font-size: 11px;
+  color: var(--dsv-fg-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .dsv-split-editor { flex: 1; min-height: 0; position: relative; }
+
+.dsv-split-editor .monaco-editor { position: absolute; inset: 0; }
 `

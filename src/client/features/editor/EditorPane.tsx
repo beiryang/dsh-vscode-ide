@@ -93,6 +93,15 @@ export function EditorPane() {
             h('span', { className: 'dsv-split-name', title: snap.secondary.path }, snap.secondary.name),
             h('button', { className: 'dsv-mini-btn', title: '关闭分屏', onClick: () => workspace.closeSecondary() }, '✕')
           ),
+          h(
+            'div',
+            { className: 'dsv-split-crumbs', title: snap.secondary.path },
+            snap.secondary.path
+              .split(/[\\/]/)
+              .filter(Boolean)
+              .slice(-4)
+              .join(' › ')
+          ),
           h('div', { ref: secondaryRef, className: 'dsv-split-editor' })
         )
       : null
