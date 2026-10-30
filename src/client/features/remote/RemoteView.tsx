@@ -46,6 +46,7 @@ export function RemoteView() {
     user: string
     port: string
     keyPath: string
+    password: string
   }>(null)
 
   const [creating, setCreating] = React.useState(false)
@@ -86,15 +87,28 @@ export function RemoteView() {
     setEntries(result.value.entries ?? [])
   }
 
-  const saveProfile = async () => {
+  const normalizeHost = (raw: string) => {
+    let value = raw.trim()
+    value = value.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, '')
+    value = value.replace(/\/.*$/, '')
+    return value
+  }
+
+  const saveProfile = async (afterTest = false) => {
     if (!profileForm) return
-    setBusy('profile')
+    const host = normalizeHost(profileForm.host)
+    if (!host) {
+      setNote({ kind: 'error', text: '主机不能为空（只需要 IP 或域名，不要带 https://）' })
+      return
+    }
+    setBusy(afterTest ? 'save-test' : 'profile')
     const result = await remoteApi<{ profiles: Profile[] }>('saveProfile', {
       name: profileForm.name.trim(),
-      host: profileForm.host.trim(),
+      host,
       user: profileForm.user.trim(),
       port: Number(profileForm.port) || 22,
-      keyPath: profileForm.keyPath.trim() || undefined
+      keyPath: profileForm.keyPath.trim() || undefined,
+      password: profileForm.password || undefined
     })
     setBusy(null)
     if (!result.ok) {
@@ -103,7 +117,14 @@ export function RemoteView() {
     }
     setProfileForm(null)
     setNote({ kind: 'info', text: '连接已保存' })
-    void load()
+    await load()
+    if (afterTest) {
+      const saved = (result.value?.profiles ?? []).find(
+        (profile) => profile.host === host && profile.user === profileForm.user.trim()
+      )
+      if (saved) await testProfile(saved)
+      else setNote({ kind: 'error', text: '连接已保存，但没有找到对应的配置，无法自动测试' })
+    }
   }
 
   const testProfile = async (profile: Profile) => {
@@ -198,7 +219,7 @@ export function RemoteView() {
             title: '新建 SSH 连接',
             onClick: () =>
               setProfileForm((previous) =>
-                previous ? null : { name: '', host: '', user: '', port: '22', keyPath: '' }
+                previous ? null : { name: '', host: '', user: '', port: '22', keyPath: '', password: '' }
               )
           },
           profileForm ? '取消' : '＋'
@@ -242,24 +263,48 @@ export function RemoteView() {
             ),
             h('input', {
               className: 'dsv-remote-input',
+              placeholder: '密码（可空；留空则用私钥）',
+              type: 'password',
+              value: profileForm.password,
+              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                setProfileForm((previous) => (previous ? { ...previous, password: event.target.value } : previous))
+            }),
+            h('input', {
+              className: 'dsv-remote-input',
               placeholder: '私钥路径（可空，默认 ~/.ssh/id_ed25519 等）',
               value: profileForm.keyPath,
               onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
                 setProfileForm((previous) => (previous ? { ...previous, keyPath: event.target.value } : previous))
             }),
             h(
-              'button',
-              {
-                className: 'dsv-remote-primary',
-                disabled: busy === 'profile' || !profileForm.name.trim() || !profileForm.host.trim() || !profileForm.user.trim(),
-                onClick: () => void saveProfile()
-              },
-              busy === 'profile' ? '保存中…' : '保存连接'
-            )
+              'div',
+              { className: 'dsv-remote-form-row' },
+              h(
+                'button',
+                {
+                  className: 'dsv-remote-primary',
+                  disabled:
+                    busy === 'profile' || busy === 'save-test' || !profileForm.name.trim() || !profileForm.host.trim() || !profileForm.user.trim(),
+                  onClick: () => void saveProfile(false)
+                },
+                busy === 'profile' ? '保存中…' : '保存连接'
+              ),
+              h(
+                'button',
+                {
+                  className: 'dsv-remote-act dsv-remote-act-text',
+                  disabled:
+                    busy === 'profile' || busy === 'save-test' || !profileForm.name.trim() || !profileForm.host.trim() || !profileForm.user.trim(),
+                  onClick: () => void saveProfile(true)
+                },
+                busy === 'save-test' ? '测试中…' : '保存并测试'
+              )
+            ),
+            h('div', { className: 'dsv-remote-hint' }, '保存成功后，连接行尾会出现「测试 / 删除」按钮')
           )
         : null,
       profiles.length === 0
-        ? h('div', { className: 'dsv-remote-empty' }, '还没有远程连接。点「＋」填主机/用户/私钥即可。')
+        ? h('div', { className: 'dsv-remote-empty' }, '还没有远程连接。点「＋」填名称/主机/用户，保存后行尾会出现「测试」。')
         : profiles.map((profile) =>
             h(
               'div',
@@ -269,14 +314,18 @@ export function RemoteView() {
               h(
                 'button',
                 {
-                  className: 'dsv-remote-act',
+                  className: 'dsv-remote-act dsv-remote-act-text',
                   title: '测试连接',
                   disabled: busy === `test:${profile.id}`,
                   onClick: () => void testProfile(profile)
                 },
-                busy === `test:${profile.id}` ? '…' : '测'
+                busy === `test:${profile.id}` ? '测试中…' : '测试'
               ),
-              h('button', { className: 'dsv-remote-act', title: '删除连接', onClick: () => void deleteProfile(profile) }, '✕')
+              h(
+                'button',
+                { className: 'dsv-remote-act dsv-remote-act-text', title: '删除连接', onClick: () => void deleteProfile(profile) },
+                '删除'
+              )
             )
           )
     ),

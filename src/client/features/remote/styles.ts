@@ -62,6 +62,14 @@ export const CSS = `
 }
 
 .dsv-remote-act:hover:not(:disabled) { background: var(--dsv-hover); color: var(--dsv-fg); }
+
+.dsv-remote-act-text {
+  width: auto;
+  min-width: 34px;
+  padding: 0 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
 .dsv-remote-act:disabled { opacity: 0.45; cursor: default; }
 
 .dsv-remote-form { display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 8px; }
