@@ -135,7 +135,7 @@ export const CSS = `
   background: var(--dsv-hover);
 }
 
-/* 注意：标题栏通用规则是 `.dsv-titlebar-actions button`，这里要同权重或更高才会生效 */
+/* 标题栏通用规则是 .dsv-titlebar-actions button，这里用同权重以上的选择器才会生效 */
 .dsv-titlebar-actions button.dsv-titlebar-problems {
   color: #f0b45a;
   background: color-mix(in srgb, #f0b45a 18%, transparent);
