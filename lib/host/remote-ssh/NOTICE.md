@@ -29,6 +29,11 @@ What we do with it:
    ssh/tar child processes stay in a per-workspace map so Code Space can terminate them; the
    normal failure path then discards the temporary directory and leaves the mirror untouched.
 3. **Diagnostics**: the parent plugin logs mount progress to `~/.dsh/code-space-remote.log`.
+4. **Shell wrapper is opt-in** (`DSV_REMOTE_SHELL_WRAPPER=1`): upstream unconditionally writes
+   `dsh-remote-shell.js` / `.cmd` into `~/.dsh/remote-ssh` on startup for DSH's own integrated
+   terminal. Code Space's terminal connects with ssh2 directly and nothing in this profile points
+   DSH's terminal at that wrapper, so generation is skipped unless the env var is set. The
+   directory still holds `writeback-mtimes.json` (write-back freshness state).
 
 Dependencies required by the copied file (declared in the root `package.json` so the
 module keeps resolving after the upstream plugin is uninstalled): `yaml`,
