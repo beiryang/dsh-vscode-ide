@@ -8,7 +8,7 @@ import { api } from '../../kernel/transport'
 
 type Hit = { path: string; rel: string; line: number; text: string }
 type Options = { caseSensitive: boolean; wholeWord: boolean; regex: boolean; include: string; exclude: string }
-type Meta = { engine: 'git' | 'walk'; elapsedMs: number; truncated: boolean; scanned?: number }
+type Meta = { engine: 'git' | 'walk' | 'remote'; elapsedMs: number; truncated: boolean; scanned?: number }
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -259,7 +259,7 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
         ? h(
             'div',
             { className: 'dsv-search-meta' },
-            h('span', null, `${meta.engine === 'git' ? 'git grep' : '遍历'} · ${meta.elapsedMs}ms`),
+            h('span', null, `${meta.engine === 'git' ? 'git grep' : meta.engine === 'remote' ? '远端 grep' : '遍历'} · ${meta.elapsedMs}ms`),
             h('span', null, `${hits.length} 处 / ${groups.length} 个文件`),
             meta.truncated ? h('span', { style: { color: '#d7ba7d' } }, '已截断（结果太多）') : null,
             busy ? h('span', null, '搜索中…') : null
