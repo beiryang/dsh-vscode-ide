@@ -49,7 +49,16 @@ export function ProblemsOverlay() {
       h('span', { className: 'dsv-problems-count', 'data-kind': 'error' }, `✖ ${errors}`),
       h('span', { className: 'dsv-problems-count', 'data-kind': 'warning' }, `▲ ${warnings}`),
       h('span', { style: { flex: 1 } }),
-      h('button', { className: 'dsv-mini-btn', title: '关闭（Esc）', onClick: () => problemsPanel.close() }, '✕')
+      h(
+        'button',
+        {
+          className: 'dsv-mini-btn',
+          title: '关闭（Esc）',
+          'data-dsv-overlay-close': 'true',
+          onClick: () => problemsPanel.close()
+        },
+        '✕'
+      )
     ),
     h(
       'div',

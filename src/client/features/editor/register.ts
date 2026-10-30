@@ -62,6 +62,15 @@ export function registerEditorFeature(): () => void {
     })
   )
 
+  // 标题栏「!」等外部入口：注册时挂好，避免依赖先执行命令
+  ;(window as unknown as { __dsvOpenProblems?: () => void }).__dsvOpenProblems = () => {
+    layout.open()
+    problemsPanel.toggle()
+  }
+  disposers.push(() => {
+    delete (window as unknown as { __dsvOpenProblems?: () => void }).__dsvOpenProblems
+  })
+
   registry.setFileOpener((path, options) => {
     void workspace.openPath(path, options?.name).then(() => {
       if (options?.line) workspace.revealLine(options.line)

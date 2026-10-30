@@ -82,9 +82,29 @@ export function App({ ctx }: { ctx: unknown }) {
         void runCommand('search.inFiles')
         return
       }
+      // 问题面板：Ctrl+Alt+Shift+M
+      const isProblems =
+        event.ctrlKey && event.altKey && event.shiftKey && (event.code === 'KeyM' || event.key.toLowerCase() === 'm')
+      if (isProblems) {
+        event.preventDefault()
+        event.stopPropagation()
+        void runCommand('problems.open')
+        return
+      }
       // Esc 关窗作为逃生出口：编辑区/输入框里不抢（那里 Esc 有别的用途），
-      // 其余情况一律关 —— 窗口被盖住时这是最可靠的退路
+      // 有浮层/对话框时只关浮层，不关整个窗口
       if (event.key === 'Escape' && layout.getSnapshot().open) {
+        const overlay = document.querySelector(
+          '.dsv-problems, .dsv-search, .dsv-tree-dialog-backdrop, .dsv-scm-dialog-backdrop, .dsv-term-dialog-backdrop'
+        ) as HTMLElement | null
+        if (overlay) {
+          event.preventDefault()
+          event.stopPropagation()
+          const closeButton = overlay.querySelector('[data-dsv-overlay-close]') as HTMLElement | null
+          if (closeButton) closeButton.click()
+          else overlay.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+          return
+        }
         const target = event.target as HTMLElement | null
         const editing =
           typeof target?.closest === 'function' &&
