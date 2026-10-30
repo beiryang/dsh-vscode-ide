@@ -34,6 +34,9 @@ type RemoteWorkspace = {
   name?: string
   /** DSH 原生工作区 id（宿主 reconcile 后可用） */
   shellWorkspaceId?: string
+  syncPaths?: string[]
+  syncExclude?: string[]
+  syncMaxBytes?: number
 }
 
 type DirEntry = { name: string; path?: string; type?: string; size?: number }
@@ -58,6 +61,14 @@ export function RemoteView() {
   const [syncJob, setSyncJob] = React.useState<{ id: string; name: string } | null>(null)
   const [cancelling, setCancelling] = React.useState(false)
   const cancelRequested = React.useRef(false)
+  const [editDialog, setEditDialog] = React.useState<null | {
+    workspace: RemoteWorkspace
+    remotePath: string
+    title: string
+    paths: string
+    exclude: string
+    maxGiB: string
+  }>(null)
   const [syncDialog, setSyncDialog] = React.useState<null | {
     workspace: RemoteWorkspace
     paths: string
@@ -338,6 +349,27 @@ export function RemoteView() {
       kind: 'info',
       text: `已导入 ${saved} 个连接${skipped ? `，跳过 ${skipped} 个（缺用户名或保存失败）` : ''}`
     })
+    void load()
+  }
+
+  const saveWorkspaceEdit = async () => {
+    if (!editDialog) return
+    setBusy('workspace-edit')
+    const result = await remoteApi('updateWorkspace', {
+      id: editDialog.workspace.id,
+      remotePath: editDialog.remotePath.trim() || undefined,
+      title: editDialog.title.trim() || undefined,
+      syncPaths: splitList(editDialog.paths),
+      syncExclude: splitList(editDialog.exclude),
+      syncMaxBytes: Number(editDialog.maxGiB) > 0 ? Math.round(Number(editDialog.maxGiB) * 1024 ** 3) : 0
+    })
+    setBusy(null)
+    if (!result.ok) {
+      setNote({ kind: 'error', text: `保存工作区设置失败：${result.error}` })
+      return
+    }
+    setEditDialog(null)
+    setNote({ kind: 'info', text: '工作区设置已保存（远端路径只更新登记，不移动文件）' })
     void load()
   }
 
@@ -747,6 +779,28 @@ export function RemoteView() {
                 'button',
                 {
                   className: 'dsv-remote-act',
+                  title: '工作区设置（远端路径 / 标题 / 同步范围 / 上限）',
+                  onClick: (event: React.MouseEvent) => {
+                    event.stopPropagation()
+                    setEditDialog({
+                      workspace,
+                      remotePath: workspace.remotePath,
+                      title: workspace.title || workspace.name || '',
+                      paths: (workspace.syncPaths || []).join(', '),
+                      exclude: (workspace.syncExclude || []).join(', '),
+                      maxGiB:
+                        workspace.syncMaxBytes && workspace.syncMaxBytes > 0
+                          ? String(Math.round((workspace.syncMaxBytes / 1024 ** 3) * 10) / 10)
+                          : ''
+                    })
+                  }
+                },
+                '✎'
+              ),
+              h(
+                'button',
+                {
+                  className: 'dsv-remote-act',
                   title: '移除登记',
                   onClick: (event: React.MouseEvent) => {
                     event.stopPropagation()
@@ -759,6 +813,91 @@ export function RemoteView() {
           )
     ),
 
+    editDialog
+      ? h(
+          'div',
+          { className: 'dsv-sync-backdrop' },
+          h(
+            'div',
+            { className: 'dsv-sync-dlg' },
+            h('div', { className: 'dsv-sync-head' }, `工作区设置 · ${remoteBaseName(editDialog.workspace.remotePath)}`),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '标题（显示在远程面板列表里）',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: editDialog.title,
+                placeholder: editDialog.workspace.title || '',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEditDialog((previous) => (previous ? { ...previous, title: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '远端路径（只更新登记，不移动远端/镜像文件）',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: editDialog.remotePath,
+                placeholder: '~/workflow',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEditDialog((previous) => (previous ? { ...previous, remotePath: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '默认同步范围（留空 = 整树）',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: editDialog.paths,
+                placeholder: 'src,docs',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEditDialog((previous) => (previous ? { ...previous, paths: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '默认同步排除',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: editDialog.exclude,
+                placeholder: 'data,*.log',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEditDialog((previous) => (previous ? { ...previous, exclude: event.target.value } : previous))
+              })
+            ),
+            h(
+              'label',
+              { className: 'dsv-sync-field' },
+              '同步体积上限（GiB，留空 = 默认 2 GiB）',
+              h('input', {
+                className: 'dsv-sync-input',
+                value: editDialog.maxGiB,
+                placeholder: '2',
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEditDialog((previous) => (previous ? { ...previous, maxGiB: event.target.value } : previous))
+              })
+            ),
+            h(
+              'div',
+              { className: 'dsv-sync-actions' },
+              h('button', { className: 'dsv-sync-btn', onClick: () => setEditDialog(null) }, '取消'),
+              h(
+                'button',
+                {
+                  className: 'dsv-sync-btn dsv-sync-primary',
+                  disabled: busy === 'workspace-edit',
+                  onClick: () => void saveWorkspaceEdit()
+                },
+                busy === 'workspace-edit' ? '保存中…' : '保存设置'
+              )
+            )
+          )
+        )
+      : null,
     importDialog
       ? h(
           'div',
