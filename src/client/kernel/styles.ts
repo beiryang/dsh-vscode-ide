@@ -135,21 +135,28 @@ export const CSS = `
   background: var(--dsv-hover);
 }
 
-.dsv-titlebar-problems {
+/* 注意：标题栏通用规则是 `.dsv-titlebar-actions button`，这里要同权重或更高才会生效 */
+.dsv-titlebar-actions button.dsv-titlebar-problems {
   color: #f0b45a;
-  background: color-mix(in srgb, #f0b45a 16%, transparent);
-  border: 1px solid color-mix(in srgb, #f0b45a 42%, transparent);
+  background: color-mix(in srgb, #f0b45a 18%, transparent);
+  border: 1px solid color-mix(in srgb, #f0b45a 45%, transparent);
   border-radius: 4px;
+  width: auto;
+  min-width: 22px;
   padding: 0 6px;
   font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.dsv-titlebar-problems:hover {
-  background: color-mix(in srgb, #f0b45a 28%, transparent);
+.dsv-titlebar-actions button.dsv-titlebar-problems:hover {
+  background: color-mix(in srgb, #f0b45a 30%, transparent);
   color: #ffd08a;
 }
 
-.dsv-titlebar-problems[data-empty="true"] {
+.dsv-titlebar-actions button.dsv-titlebar-problems[data-empty="true"] {
   color: var(--dsv-fg-dim);
   background: transparent;
   border-color: var(--dsv-border);
