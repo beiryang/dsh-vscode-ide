@@ -9,12 +9,19 @@ export type RemoteApiFailure = { ok: false; error: string }
 export type RemoteApiSuccess<T> = { ok: true; value: T }
 export type RemoteApiResult<T> = RemoteApiSuccess<T> | RemoteApiFailure
 
-export async function remoteApi<T>(method: string, args?: Record<string, unknown>): Promise<RemoteApiResult<T>> {
+export async function remoteApi<T>(
+  method: string,
+  args?: Record<string, unknown>,
+  timeoutMs = 60000
+): Promise<RemoteApiResult<T>> {
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch(`/remote-ssh/api/${method}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
-      body: JSON.stringify(args ?? {})
+      body: JSON.stringify(args ?? {}),
+      signal: controller.signal
     })
     const text = await response.text()
     if (!text.trim()) {
@@ -31,7 +38,12 @@ export async function remoteApi<T>(method: string, args?: Record<string, unknown
       return { ok: false, error: `HTTP ${response.status}：响应不是 JSON（${text.slice(0, 80)}）` }
     }
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return { ok: false, error: `请求超时（${Math.round(timeoutMs / 1000)} 秒）` }
+    }
     return { ok: false, error: error instanceof Error ? error.message : String(error) }
+  } finally {
+    window.clearTimeout(timer)
   }
 }
 

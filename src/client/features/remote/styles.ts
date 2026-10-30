@@ -103,17 +103,24 @@ export const CSS = `
 .dsv-remote-primary:disabled { opacity: 0.5; cursor: default; }
 
 .dsv-remote-entries {
-  max-height: 160px;
-  overflow: auto;
+  max-height: 180px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 2px;
+  gap: 0;
+  margin-top: 2px;
+  padding: 3px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 5px;
+  background: var(--dsv-bg);
 }
 
 .dsv-remote-entry {
+  flex: none;
+  min-height: 22px;
+  line-height: 20px;
   text-align: left;
-  padding: 3px 8px;
+  padding: 1px 8px;
   border: none;
   border-radius: 4px;
   background: transparent;
@@ -153,3 +160,12 @@ export const CSS = `
 .dsv-remote-hint { padding: 4px 10px; font-size: 10px; color: var(--dsv-fg-dim); line-height: 1.45; }
 .dsv-remote-foot { padding-top: 8px; }
 `
+
+.dsv-remote-toggle {
+  height: 22px;
+  min-width: 0;
+  padding: 0 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  border: 1px solid var(--dsv-border);
+}

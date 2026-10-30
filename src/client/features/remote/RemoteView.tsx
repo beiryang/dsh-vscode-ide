@@ -129,12 +129,21 @@ export function RemoteView() {
 
   const testProfile = async (profile: Profile) => {
     setBusy(`test:${profile.id}`)
-    const result = await remoteApi<{ stdout?: string; warning?: string; stderr?: string }>('testConnection', {
-      id: profile.id
-    })
-    setBusy(null)
-    if (result.ok) setNote({ kind: 'info', text: `连接正常${result.value.warning ? `（${result.value.warning}）` : ''}` })
-    else setNote({ kind: 'error', text: `连接失败：${result.error}` })
+    setNote({ kind: 'info', text: `正在测试 ${profile.name || profile.host}…（最长 45 秒）` })
+    try {
+      const result = await remoteApi<{ stdout?: string; warning?: string; stderr?: string }>(
+        'testConnection',
+        { id: profile.id },
+        45000
+      )
+      if (result.ok) {
+        setNote({ kind: 'info', text: `连接正常${result.value.warning ? `（${result.value.warning}）` : ''}` })
+      } else {
+        setNote({ kind: 'error', text: `连接失败：${result.error}` })
+      }
+    } finally {
+      setBusy(null)
+    }
   }
 
   const deleteProfile = async (profile: Profile) => {
@@ -215,7 +224,7 @@ export function RemoteView() {
         h(
           'button',
           {
-            className: 'dsv-mini-btn',
+            className: 'dsv-remote-act dsv-remote-act-text dsv-remote-toggle',
             title: '新建 SSH 连接',
             onClick: () =>
               setProfileForm((previous) =>
@@ -341,7 +350,7 @@ export function RemoteView() {
         h(
           'button',
           {
-            className: 'dsv-mini-btn',
+            className: 'dsv-remote-act dsv-remote-act-text dsv-remote-toggle',
             title: '新建远程工作区（创建本地镜像）',
             onClick: () => setCreating((previous) => !previous)
           },
@@ -376,7 +385,11 @@ export function RemoteView() {
               { className: 'dsv-remote-form-row' },
               h(
                 'button',
-                { className: 'dsv-remote-act', disabled: listing || !createProfile, onClick: () => void browse(createProfile, createPath) },
+                {
+                  className: 'dsv-remote-act dsv-remote-act-text',
+                  disabled: listing || !createProfile,
+                  onClick: () => void browse(createProfile, createPath)
+                },
                 listing ? '浏览中…' : '浏览'
               ),
               h(
