@@ -168,12 +168,23 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
     h(
       'div',
       { className: 'dsv-search-bar' },
+      h(
+        'select',
+        {
+          className: 'dsv-search-mode',
+          value: mode,
+          title: '搜索模式',
+          onChange: (event: React.ChangeEvent<HTMLSelectElement>) => setMode(event.target.value as 'content' | 'files')
+        },
+        h('option', { value: 'content' }, '内容'),
+        h('option', { value: 'files' }, '文件名')
+      ),
       h('input', {
         ref: inputRef,
         className: 'dsv-search-input',
         value: query,
         spellCheck: false,
-        placeholder: '搜索内容，Enter 执行',
+        placeholder: mode === 'files' ? '搜索文件名，Enter 执行' : '搜索内容，Enter 执行',
         onChange: (event: React.ChangeEvent<HTMLInputElement>) => setQuery(event.target.value),
         onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === 'Enter') {
@@ -190,26 +201,6 @@ export function SearchView({ ctx }: { ctx: WorkbenchContext }) {
           'data-active': options.caseSensitive ? 'true' : 'false',
           onClick: () => toggleOption('caseSensitive')
         },
-        h(
-          'button',
-          {
-            className: 'dsv-search-toggle',
-            title: '搜索文件内容',
-            'data-active': mode === 'content' ? 'true' : 'false',
-            onClick: () => setMode('content')
-          },
-          '内容'
-        ),
-        h(
-          'button',
-          {
-            className: 'dsv-search-toggle',
-            title: '按文件名搜索',
-            'data-active': mode === 'files' ? 'true' : 'false',
-            onClick: () => setMode('files')
-          },
-          '文件名'
-        ),
         'Aa'
       ),
       h(

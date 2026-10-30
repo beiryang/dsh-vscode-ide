@@ -188,4 +188,22 @@ export const CSS = `
   color: var(--dsv-fg-dim);
   line-height: 1.7;
 }
+
+.dsv-search-mode {
+  flex: none;
+  height: 24px;
+  padding: 0 4px;
+  border: 1px solid var(--dsv-border);
+  border-radius: 4px;
+  background: var(--dsv-bg);
+  color: var(--dsv-fg);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+.dsv-search-input,
+.dsv-search-toggle,
+.dsv-search-replace-btn {
+  font-family: inherit;
+}
 `
