@@ -24,6 +24,11 @@ export function terminalFontSize(): number {
   return prefs.getSnapshot().terminalFontSize
 }
 
+/** 终端字体族也由设置驱动（默认 Maple Mono NF CN） */
+export function terminalFontFamily(): string {
+  return prefs.getSnapshot().terminalFontFamily
+}
+
 function shellRoot(): HTMLElement | null {
   return document.querySelector('[data-dsv-root]') as HTMLElement | null
 }
@@ -93,9 +98,11 @@ export function syncTerminalTheme() {
 /** 字号变化后：改 options 并重新 fit 一次（列数会变） */
 export function syncTerminalFont() {
   const size = terminalFontSize()
+  const family = terminalFontFamily()
   for (const { term, refit } of terminals) {
     try {
       term.options.fontSize = size
+      term.options.fontFamily = family
       refit?.()
     } catch {
       /* 终端可能已经销毁 */

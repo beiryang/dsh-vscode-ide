@@ -10,6 +10,8 @@
 export type Prefs = {
   /** 终端（xterm）字号，px */
   terminalFontSize: number
+  /** 终端（xterm）字体族，CSS font-family 写法 */
+  terminalFontFamily: string
   /** 编辑器（Monaco）字体族，CSS font-family 写法 */
   editorFontFamily: string
   /** 编辑器字号，px */
@@ -29,6 +31,9 @@ export type Prefs = {
  * （早先是「英文 Maple + 中文文楷」的混合方案，文楷卸载后不再需要；
  * 老用户 localStorage 里存着的混合栈会在读取时自动迁移掉。）
  */
+export const DEFAULT_TERMINAL_FONT =
+  '"Maple Mono NF CN", "Maple Mono NF", "Symbols Nerd Font Mono", "Symbols Nerd Font", "Cascadia Mono", Consolas, "Courier New", monospace'
+
 export const DEFAULT_EDITOR_FONT =
   '"Maple Mono NF CN Light", "Maple Mono NF CN", "Cascadia Mono", Consolas, monospace'
 
@@ -47,6 +52,7 @@ export const EDITOR_FONT_CANDIDATES = [
 
 export const DEFAULT_PREFS: Prefs = {
   terminalFontSize: 12,
+  terminalFontFamily: DEFAULT_TERMINAL_FONT,
   editorFontFamily: DEFAULT_EDITOR_FONT,
   editorFontSize: 13,
   editorWordWrap: false,
@@ -82,6 +88,14 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback
 }
 
+function normalizeTerminalFont(value: unknown): string {
+  if (typeof value !== 'string') return DEFAULT_TERMINAL_FONT
+  const trimmed = value.trim().slice(0, MAX_FONT_LENGTH)
+  if (!trimmed) return DEFAULT_TERMINAL_FONT
+  if (!trimmed.includes(',') && !trimmed.includes('"') && !trimmed.includes("'")) return `"${trimmed}"`
+  return trimmed
+}
+
 function normalizeFontFamily(value: unknown): string {
   if (typeof value !== 'string') return DEFAULT_EDITOR_FONT
   const trimmed = value.trim().slice(0, MAX_FONT_LENGTH)
@@ -98,6 +112,7 @@ function load(): Prefs {
     const parsed = JSON.parse(raw) as Partial<Prefs>
     return {
       terminalFontSize: clampFontSize(parsed.terminalFontSize ?? DEFAULT_PREFS.terminalFontSize),
+    terminalFontFamily: normalizeTerminalFont(parsed.terminalFontFamily),
       editorFontFamily: migrateFontFamily(parsed.editorFontFamily),
       editorFontSize: clampNumber(parsed.editorFontSize, EDITOR_FONT_MIN, EDITOR_FONT_MAX, DEFAULT_PREFS.editorFontSize),
       editorWordWrap: asBoolean(parsed.editorWordWrap, DEFAULT_PREFS.editorWordWrap),
@@ -153,6 +168,7 @@ export const prefs = {
       ...state,
       ...patch,
       terminalFontSize: clampFontSize(patch.terminalFontSize ?? state.terminalFontSize),
+    terminalFontFamily: normalizeTerminalFont(patch.terminalFontFamily ?? state.terminalFontFamily),
       editorFontFamily: normalizeFontFamily(patch.editorFontFamily ?? state.editorFontFamily),
       editorFontSize: clampNumber(patch.editorFontSize ?? state.editorFontSize, EDITOR_FONT_MIN, EDITOR_FONT_MAX, state.editorFontSize),
       editorWordWrap: asBoolean(patch.editorWordWrap ?? state.editorWordWrap, state.editorWordWrap),
@@ -162,6 +178,12 @@ export const prefs = {
   },
   setTerminalFontSize(size: number) {
     publish({ ...state, terminalFontSize: clampFontSize(size) })
+  },
+  setTerminalFontFamily(family: string) {
+    publish({ ...state, terminalFontFamily: normalizeTerminalFont(family) })
+  },
+  resetTerminalFontFamily() {
+    publish({ ...state, terminalFontFamily: DEFAULT_TERMINAL_FONT })
   },
   setEditorFontFamily(family: string) {
     publish({ ...state, editorFontFamily: normalizeFontFamily(family) })

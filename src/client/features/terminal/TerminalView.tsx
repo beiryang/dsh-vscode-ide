@@ -10,7 +10,7 @@ import { h } from '../../h'
 import { api } from '../../kernel/transport'
 import { terminal, type TermSession } from './terminal'
 import { loadXterm } from './loader'
-import { TERMINAL_FONT, terminalFontSize, terminalTheme, trackTerminal } from './theme'
+import { terminalFontFamily, terminalFontSize, terminalTheme, trackTerminal } from './theme'
 
 function base64ToBytes(base64: string): Uint8Array {
   const raw = atob(base64)
@@ -86,7 +86,7 @@ export function TerminalView({ session, active }: { session: TermSession; active
         term = new Terminal({
           cursorBlink: true,
           fontSize: terminalFontSize(),
-          fontFamily: TERMINAL_FONT,
+          fontFamily: terminalFontFamily(),
           lineHeight: 1.15,
           allowProposedApi: true,
           scrollback: 5000,

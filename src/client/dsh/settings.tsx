@@ -248,6 +248,25 @@ export function SettingsSection() {
       h(
         'div',
         { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '终端字体'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h('input', {
+            className: 'dsv-settings-input',
+            list: 'dsv-font-candidates',
+            value: prefs.getSnapshot().terminalFontFamily,
+            spellCheck: false,
+            onChange: (event: React.ChangeEvent<HTMLInputElement>) => prefs.setTerminalFontFamily(event.target.value)
+          }),
+          h('button', { onClick: () => prefs.resetTerminalFontFamily() }, '重置默认')
+        ),
+        h('div', { className: 'dsv-settings-hint' }, '默认 Maple Mono NF CN（含 Nerd Font 图标回退）；输入框可直接填任意字体名，改动立即生效')
+      ),
+
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
         h('div', { className: 'dsv-settings-label' }, '终端字号'),
         h(
           'div',
