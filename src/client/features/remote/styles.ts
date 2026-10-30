@@ -443,16 +443,16 @@ export const CSS = `
 
 .dsv-ws-globe {
   position: absolute;
-  right: -3px;
-  bottom: -3px;
-  width: 11px;
-  height: 11px;
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  color: var(--dsv-accent, #4aa3ff);
-  background: var(--dsw-alias-bg-l1, var(--dsv-panel, #1e1e1e));
+  color: #2f6feb;
+  background: transparent;
   pointer-events: none;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.22));
 }
 `
