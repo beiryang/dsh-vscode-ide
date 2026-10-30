@@ -159,7 +159,6 @@ export const CSS = `
 
 .dsv-remote-hint { padding: 4px 10px; font-size: 10px; color: var(--dsv-fg-dim); line-height: 1.45; }
 .dsv-remote-foot { padding-top: 8px; }
-`
 
 .dsv-remote-toggle {
   height: 22px;
@@ -169,3 +168,4 @@ export const CSS = `
   white-space: nowrap;
   border: 1px solid var(--dsv-border);
 }
+`
