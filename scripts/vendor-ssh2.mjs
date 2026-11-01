@@ -34,6 +34,12 @@ for (const name of PACKAGES) {
   cpSync(from, to, { recursive: true })
 }
 
+// 测试夹具里塞着成对生成的私钥样本，运行时用不上，却会让安全扫描器把整包标成可疑
+const CRUFT = ['test', 'tests', 'benchmark', 'examples', 'example', '.github']
+for (const name of PACKAGES) {
+  for (const entry of CRUFT) rmSync(join(target, name, entry), { recursive: true, force: true })
+}
+
 // 从 vendor 目录里真正 import 一次，确保依赖解析完整
 const entry = pathToFileURL(join(target, 'ssh2', 'lib', 'index.js')).href
 try {

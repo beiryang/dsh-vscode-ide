@@ -149,12 +149,6 @@ npm run typecheck              # tsc --noEmit
 node install.mjs               # 装进 desktop profile（可加 --profile <dir>）
 ```
 
-改配置前建议先快照：
-
-```powershell
-node B:\Coding\workbench\dsh-float\profile-guard.mjs snapshot
-```
-
 发布流程见 [docs/PUBLISH.md](docs/PUBLISH.md)。
 
 ## 路线图

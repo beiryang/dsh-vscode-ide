@@ -36,7 +36,7 @@
 ## 0. 发布前检查
 
 ```powershell
-cd B:\Coding\workbench\dsh-vscode-ide
+cd <你的本地仓库目录>
 
 npm run typecheck        # tsc 无错
 npm run build            # 边界检查 → monaco → xterm → icons → client
@@ -140,7 +140,7 @@ npm pack        # 产出 dsh-vscode-ide-<version>.tgz
 # 解压后进目录
 tar -xzf dsh-vscode-ide-1.0.0.tgz
 cd package
-node install.mjs --profile "A:\Users\Liu\.dsh\profiles\desktop"
+node install.mjs --profile "$env:USERPROFILE\.dsh\profiles\desktop"
 ```
 
 （`install.mjs` 已包含在发布包里，所以解压即可安装，不依赖本仓库。）

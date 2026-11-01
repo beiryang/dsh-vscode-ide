@@ -16,6 +16,7 @@
  */
 
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,7 +32,7 @@ let profile = resolve(
     ? args[profileFlag + 1]
     : process.env.DSH_HOME
       ? join(process.env.DSH_HOME, 'profiles', 'desktop')
-      : 'A:\\Users\\Liu\\.dsh\\profiles\\desktop'
+      : join(homedir(), '.dsh', 'profiles', 'desktop')
 )
 
 const log = (message) => console.log(`[${PKG}] ${message}`)
@@ -206,4 +207,3 @@ log(`已复制到 ${targetDir}`)
 log('安装完成 ✅')
 log('下一步：完全退出 DSH Desktop（托盘图标 → 退出），再重新打开。')
 log('打开后：左侧栏「IDE」→「打开工作台」，或按 Ctrl+Alt+I；控制台可跑 await __dsv.probe()。')
-log('改配置前建议先留快照：node B:\\Coding\\workbench\\dsh-float\\profile-guard.mjs snapshot')

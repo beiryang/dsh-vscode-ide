@@ -144,7 +144,7 @@ export function SshDialog() {
         h('span', null, '主机'),
         h('input', {
           value: host,
-          placeholder: '159.138.20.217 或 example.com',
+          placeholder: '203.0.113.10 或 example.com',
           spellCheck: false,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) => setHost(event.target.value)
         })
@@ -165,7 +165,7 @@ export function SshDialog() {
         h('span', null, '用户名'),
         h('input', {
           value: user,
-          placeholder: 'liu',
+          placeholder: 'deploy',
           spellCheck: false,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) => setUser(event.target.value)
         })
