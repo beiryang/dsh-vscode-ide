@@ -9,6 +9,22 @@ only when a release is actually published. Intermediate iterations are collapsed
 Version format: `MAJOR.MINOR.PATCH` where **PATCH starts at 10** (10, 11, 12 … 99) and always has two digits.
 When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` → `1.2.10`).
 
+## 1.1.11 — 2026.11.05
+
+### Fixed
+
+- Deleting a file or folder that is already gone no longer fails with a raw `ENOENT`: the host treats a missing
+  target as already deleted, and the explorer refreshes the parent folder either way
+- A session whose working directory has been deleted or renamed now reports "workspace folder does not exist"
+  instead of a bare `ENOENT`
+
+### Changed
+
+- `engines.dsh` now states the supported range explicitly (`>=0.1.3-alpha.2 <0.3.0-0`): DSH 0.2.x, including the
+  current prereleases, is covered and 0.3 is not
+- README: npm is the primary install path now that `dsh-vscode-ide` is published; the GitHub Release package
+  remains as an alternative
+
 ## 1.1.10 — 2026.11.01
 
 ### Added

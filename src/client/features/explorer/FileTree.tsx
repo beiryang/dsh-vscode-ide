@@ -63,12 +63,32 @@ export function FileTree(props: Props) {
       const listing = await api.list(path)
       setChildren((prev) => {
         const next = new Map(prev)
+        // 该目录下已经不存在的子目录，连同它们的缓存一起丢掉（删除/改名后不留过期行）
+        const alive = new Set(listing.entries.map((entry) => entry.path))
+        for (const key of [...next.keys()]) {
+          if (key !== path && parentOf(key) === path && !alive.has(key)) next.delete(key)
+        }
         next.set(path, listing.entries)
         return next
       })
       setError(null)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause))
+      const message = cause instanceof Error ? cause.message : String(cause)
+      if (/ENOENT|no such file or directory/i.test(message)) {
+        // 目录本身已经被删掉：清掉它的缓存与展开状态，不要当成错误弹出来
+        setChildren((prev) => {
+          const next = new Map(prev)
+          next.delete(path)
+          return next
+        })
+        setExpanded((prev) => {
+          const next = new Set(prev)
+          next.delete(path)
+          return next
+        })
+        return
+      }
+      setError(message)
     } finally {
       setLoading((prev) => {
         const next = new Set(prev)
@@ -238,8 +258,30 @@ export function FileTree(props: Props) {
         await api.renameEntry(dialog.target.path, value)
         await load(dialog.parentDir)
       } else if (dialog.kind === 'delete' && dialog.target) {
-        await api.deleteEntry(dialog.target.path)
+        const target = dialog.target.path
+        let stale = false
+        try {
+          await api.deleteEntry(target)
+        } catch (cause) {
+          const message = cause instanceof Error ? cause.message : String(cause)
+          // 目标已经被删掉（并发删除 / 在系统里删过）不算失败，刷新列表即可
+          if (!/ENOENT|no such file or directory/i.test(message)) throw cause
+          stale = true
+        }
+        // 被删对象自己的缓存与展开状态一起清掉，否则下一次刷新会去列一个不存在的目录
+        const hit = (key: string) => key === target || key.startsWith(`${target}\\`) || key.startsWith(`${target}/`)
+        setChildren((prev) => {
+          const next = new Map(prev)
+          for (const key of [...next.keys()]) if (hit(key)) next.delete(key)
+          return next
+        })
+        setExpanded((prev) => {
+          const next = new Set(prev)
+          for (const key of [...next]) if (hit(key)) next.delete(key)
+          return next
+        })
         await load(dialog.parentDir)
+        if (stale) setError('该文件或目录已经不存在了，列表已刷新')
       }
       setDialog(null)
     } catch (cause) {

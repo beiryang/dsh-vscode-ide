@@ -63,15 +63,27 @@ dsh/      DSH 插槽适配：左侧栏入口、设置页分区
 
 ## 安装
 
-> npm 尚未发布（注册受地区风控限制），当前请用 GitHub Release 里的安装包。
+> 需要 DSH **0.1.3 或更新**；当前版本在 DSH 0.2.2-rc.1（Cordis 4.1.0）上验证通过。
 
-### 从 GitHub Release 安装（推荐）
+### 从 npm 安装（推荐）
 
-1. 到 [Releases](https://github.com/beiryang/dsh-vscode-ide/releases) 下载 `dsh-vscode-ide-1.0.0.tgz`
+```sh
+npm i dsh-vscode-ide
+```
+
+或装进某个 DSH profile：
+
+```sh
+dsh plugin --profile web add dsh-vscode-ide
+```
+
+### 从 GitHub Release 安装
+
+1. 到 [Releases](https://github.com/beiryang/dsh-vscode-ide/releases) 下载 `dsh-vscode-ide-<版本>.tgz`
 2. 解压并运行自带的安装器：
 
 ```powershell
-tar -xzf dsh-vscode-ide-1.0.0.tgz
+tar -xzf dsh-vscode-ide-<版本>.tgz
 cd package
 node install.mjs
 ```
@@ -86,12 +98,6 @@ node install.mjs
 npm install
 npm run build                     # 必须：vendor/ 与 lib/client.js 不在仓库里
 node install.mjs
-```
-
-### npm（发布后）
-
-```sh
-dsh plugin --profile web add dsh-vscode-ide
 ```
 
 ### 卸载（保留 `localStorage` 里的窗口几何等用户数据）

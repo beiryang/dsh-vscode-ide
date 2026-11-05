@@ -76,15 +76,27 @@ The trade-off: **keep the editing feel (Monaco), drop the weight (extension host
 
 ## Install
 
-> npm publishing is pending (region-restricted signup). Until then use the GitHub release package.
+> Requires DSH **0.1.3 or newer**; this release is tested against DSH 0.2.2-rc.1 (Cordis 4.1.0).
+
+### From npm (recommended)
+
+```sh
+npm i dsh-vscode-ide
+```
+
+Or add it to a DSH profile:
+
+```sh
+dsh plugin --profile web add dsh-vscode-ide
+```
 
 ### From GitHub Releases
 
-1. Download `dsh-vscode-ide-1.0.0.tgz` from [Releases](https://github.com/beiryang/dsh-vscode-ide/releases)
+1. Download `dsh-vscode-ide-<version>.tgz` from [Releases](https://github.com/beiryang/dsh-vscode-ide/releases)
 2. Extract it and run the bundled installer:
 
 ```powershell
-tar -xzf dsh-vscode-ide-1.0.0.tgz
+tar -xzf dsh-vscode-ide-<version>.tgz
 cd package
 node install.mjs
 ```
@@ -100,12 +112,6 @@ pass `--profile "<dir>"` to target an explicit profile directory.
 npm install
 npm run build                     # required: vendor/ and lib/client.js are not committed
 node install.mjs
-```
-
-### npm (once published)
-
-```sh
-dsh plugin --profile web add dsh-vscode-ide
 ```
 
 ### Uninstall
