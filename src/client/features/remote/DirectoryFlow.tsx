@@ -148,6 +148,22 @@ export function DirectoryFlow(props: FlowProps) {
     }
   }, [open, mode, localMode, props.browseLocal, browseLocal])
 
+  // 对话框长在侧栏/会话的 DOM 里：DSH 的侧栏滚动手势（scroll-handoff）会 preventDefault
+  // 并滚动自己的滚动区，把目录列表的原生滚动一起吞掉。必须在对话框本层用原生监听截住
+  // wheel（React 的合成事件挂在根容器上，晚于祖先的原生监听，来不及）。
+  const backdropRef = React.useRef<HTMLDivElement | null>(null)
+  React.useEffect(() => {
+    const element = backdropRef.current
+    if (element === null) return
+    const trapWheel = (event: WheelEvent): void => {
+      event.stopPropagation()
+    }
+    element.addEventListener('wheel', trapWheel)
+    return () => {
+      element.removeEventListener('wheel', trapWheel)
+    }
+  }, [open])
+
   const browse = React.useCallback(
     async (id: string, target: string) => {
       if (!id) {
@@ -322,7 +338,7 @@ export function DirectoryFlow(props: FlowProps) {
 
   return h(
     'div',
-    { className: 'dsv-dirflow-backdrop' },
+    { className: 'dsv-dirflow-backdrop', ref: backdropRef },
     h(
       'div',
       { className: 'dsv-dirflow' },

@@ -17,6 +17,9 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
   （`directoryPicker` 能力为 `browse`），旧行为把 `directoryPicker.pick needs the native capability` 直接抛在
   对话框里。现在该标签页会先探测宿主合成的通路：能列目录就渲染应用内目录浏览器（宿主路径、上一级、进入子目录、
   “使用此目录”），系统选择器可用时保持原有按钮与行为
+- 目录列表不再滚不动：对话框挂在侧栏/会话的 DOM 里，DSH 侧栏的滚动手势（`scroll-handoff`）会
+  `preventDefault` 并滚动自己的滚动区，把列表的原生滚动一起吞掉。现在对话框在本层截住 `wheel`
+  （原生监听，早于祖先），并给列表加 `overscroll-behavior: contain`，滚动回到列表本身
 
 ## 1.1.11 — 2026.11.05
 
