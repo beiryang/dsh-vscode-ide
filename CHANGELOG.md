@@ -9,6 +9,15 @@ only when a release is actually published. Intermediate iterations are collapsed
 Version format: `MAJOR.MINOR.PATCH` where **PATCH starts at 10** (10, 11, 12 … 99) and always has two digits.
 When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` → `1.2.10`).
 
+## Unreleased
+
+### Fixed
+
+- “添加工作区”的本地目录不再在宿主没有系统选择器时失败：远程访问 / 反向代理部署下 DSH 合成的是应用内浏览
+  （`directoryPicker` 能力为 `browse`），旧行为把 `directoryPicker.pick needs the native capability` 直接抛在
+  对话框里。现在该标签页会先探测宿主合成的通路：能列目录就渲染应用内目录浏览器（宿主路径、上一级、进入子目录、
+  “使用此目录”），系统选择器可用时保持原有按钮与行为
+
 ## 1.1.11 — 2026.11.05
 
 ### Fixed
