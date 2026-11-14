@@ -3,35 +3,70 @@
 export const CSS = `
 /* ── 插槽入口（DSH 左侧栏面板里渲染的内容） ── */
 /* 上下内边距必须对称：DSH 的列表行距是均等的，只要这里不对称，整行就会显得偏上/偏下 */
-.dsv-launcher { padding: 4px 10px; font-size: 12px; color: var(--dsv-fg, var(--dsw-alias-label-primary, #ddd)); }
+.dsv-launcher { padding: 0 2px; }
 
-/* 单个按钮：Code Space。整行铺满，30px 高，和 DSH 列表项行高一致 */
-.dsv-open-btn {
+/*
+ * 左侧栏入口：和 DSH 自带导航行同一视觉重量 —— 透明底、16px 线条图标 + 文字，
+ * 悬停才出浅底，打开时只加一点底色；不再用整块高饱和蓝色按钮（issue #3）。
+ */
+.dsv-nav-entry {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   width: 100%;
   height: 30px;
-  border: 1px solid transparent;
+  padding: 0 8px;
+  border: none;
   border-radius: 6px;
-  background: var(--dsv-accent, #0078d4);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  background: transparent;
+  color: var(--dsv-fg, var(--dsw-alias-label-primary, #ddd));
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
   cursor: pointer;
-  transition: filter 0.12s ease;
+  transition: background-color 0.12s ease;
 }
 
-.dsv-open-btn:hover { filter: brightness(1.08); }
-.dsv-open-btn:active { filter: brightness(0.94); }
+.dsv-nav-entry:hover { background: var(--dsw-alias-bg-layer-2, rgba(127, 127, 127, 0.12)); }
+.dsv-nav-entry:active { background: var(--dsw-alias-bg-layer-3, rgba(127, 127, 127, 0.18)); }
 
-/* 工作台已打开时按钮转为「按下去」的样式，提示再点一次会关闭 */
-.dsv-open-btn[data-open="true"] {
-  background: var(--dsv-panel-alt, #2d2d30);
-  color: var(--dsv-fg, #ddd);
-  border-color: var(--dsv-border, #3c3c3c);
+.dsv-nav-entry[data-open='true'] {
+  color: var(--dsw-alias-label-primary, #ddd);
+  background: var(--dsw-alias-bg-layer-2, rgba(127, 127, 127, 0.12));
 }
+
+.dsv-nav-glyph { flex: none; opacity: 0.85; }
+.dsv-nav-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── 会话顶部入口：和「标准模式」那排小胶囊同尺寸 ── */
+.dsv-header-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--dsw-alias-border-l2, #3c3c3c);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary, #9aa0a6);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.dsv-header-entry:hover {
+  color: var(--dsw-alias-label-primary, #ddd);
+  border-color: var(--dsw-alias-border-l1, #555);
+  background: var(--dsw-alias-bg-layer-2, rgba(127, 127, 127, 0.12));
+}
+
+.dsv-header-entry[data-open='true'] {
+  color: var(--dsw-alias-label-primary, #ddd);
+  border-color: var(--dsv-accent, #2f6feb);
+}
+
+.dsv-header-entry .dsv-nav-glyph { width: 13px; height: 13px; opacity: 0.9; }
 
 /* ── 设置页：分组卡片 ── */
 .dsv-settings {

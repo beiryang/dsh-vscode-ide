@@ -7,6 +7,8 @@
  * 免得每个 feature 各写一套 localStorage。
  */
 
+export type EntryPlacement = 'sidebar' | 'header' | 'both' | 'none'
+
 export type Prefs = {
   /** 终端（xterm）字号，px */
   terminalFontSize: number
@@ -24,6 +26,8 @@ export type Prefs = {
   editorLineNumbers: boolean
   /** 底部面板停靠位置：右侧（占满高度）或底部 */
   panelDock: 'right' | 'bottom'
+  /** 入口位置：左侧栏 / 会话顶部 / 两者 / 都不显示（快捷键仍可用） */
+  entryPlacement: EntryPlacement
 }
 
 /**
@@ -58,7 +62,8 @@ export const DEFAULT_PREFS: Prefs = {
   editorWordWrap: false,
   editorTabSize: 2,
   editorLineNumbers: true,
-  panelDock: 'bottom'
+  panelDock: 'bottom',
+  entryPlacement: 'both'
 }
 
 export const TERMINAL_FONT_MIN = 10
@@ -105,6 +110,10 @@ function normalizeFontFamily(value: unknown): string {
   return trimmed
 }
 
+function normalizePlacement(value: unknown): EntryPlacement {
+  return value === 'sidebar' || value === 'header' || value === 'none' ? value : 'both'
+}
+
 function load(): Prefs {
   try {
     const raw = localStorage.getItem(KEY)
@@ -118,7 +127,8 @@ function load(): Prefs {
       editorWordWrap: asBoolean(parsed.editorWordWrap, DEFAULT_PREFS.editorWordWrap),
       editorTabSize: clampNumber(parsed.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, DEFAULT_PREFS.editorTabSize),
       editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers),
-      panelDock: parsed.panelDock === 'right' ? 'right' : 'bottom'
+      panelDock: parsed.panelDock === 'right' ? 'right' : 'bottom',
+      entryPlacement: normalizePlacement(parsed.entryPlacement)
     }
   } catch {
     return { ...DEFAULT_PREFS }

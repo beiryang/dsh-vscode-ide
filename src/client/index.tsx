@@ -30,7 +30,7 @@ import { registerSearchFeature } from './features/search/register'
 import { registerTerminalFeature } from './features/terminal/register'
 import { CSS } from './kernel/styles'
 import { CSS as DSH_CSS } from './dsh/styles'
-import { Launcher } from './dsh/launcher'
+import { HeaderEntry, Launcher } from './dsh/launcher'
 import { NAV_LABEL, SHORT_NAME } from './dsh/brand'
 import { SettingsSection } from './dsh/settings'
 
@@ -194,11 +194,18 @@ function registerSlots(ctx: AnyCtx) {
       const slots = scoped?.slots ?? ctx.get?.('slots')
       if (!slots || typeof slots.register !== 'function') return
 
-      const register = (name: string, id: string, order: number, label: () => string, component: React.ComponentType<any>) => {
+      const register = (
+        name: string,
+        id: string,
+        order: number,
+        label: () => string,
+        component: React.ComponentType<any>,
+        extra?: Record<string, unknown>
+      ) => {
         try {
           return slots.inject(name, () =>
             slots.register(
-              { name, id, order, label, locale: LOCALE_NS, inject: () => ({ ctx }) },
+              { name, id, order, label, locale: LOCALE_NS, inject: () => ({ ctx }), ...extra },
               component
             )
           )
@@ -209,6 +216,11 @@ function registerSlots(ctx: AnyCtx) {
       }
 
       register('sidebar.panellist', 'dsv.launcher', 60, () => NAV_LABEL, Launcher)
+      // 会话顶部那一排（和「标准模式」同排）。作用域是 session，组件不依赖 session 参数，
+      // 因此显式去掉默认的 inject，避免宿主按 session 作用域解析时拿到不匹配的返回值。
+      register('conversation.session.header.actions', 'dsv.header-entry', 60, () => SHORT_NAME, HeaderEntry, {
+        inject: undefined
+      })
       register('settings.section', 'dsv.settings', 320, () => SHORT_NAME, SettingsSection)
     })
   } catch (error) {

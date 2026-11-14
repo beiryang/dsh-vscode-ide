@@ -19,7 +19,8 @@ import {
   EDITOR_TAB_MIN,
   prefs,
   TERMINAL_FONT_MAX,
-  TERMINAL_FONT_MIN
+  TERMINAL_FONT_MIN,
+  type EntryPlacement
 } from '../kernel/prefs'
 import { runProbe } from '../kernel/probe'
 import { themeStore } from '../kernel/themes'
@@ -125,6 +126,40 @@ export function SettingsSection() {
   return h(
     'section',
     { className: 'dsv-settings', 'data-dsv-settings': 'true' },
+
+    /* ── 入口 ─────────────────────────────────────────── */
+    h(
+      'div',
+      { className: 'dsv-settings-group' },
+      h('div', { className: 'dsv-settings-group-title' }, '入口'),
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '入口位置'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h(
+            'select',
+            {
+              className: 'dsv-settings-select',
+              value: snapshot.entryPlacement,
+              onChange: (event: React.ChangeEvent<HTMLSelectElement>) =>
+                prefs.set({ entryPlacement: event.target.value as EntryPlacement })
+            },
+            h('option', { value: 'both' }, '左侧栏 + 会话顶部'),
+            h('option', { value: 'sidebar' }, '仅左侧栏'),
+            h('option', { value: 'header' }, '仅会话顶部'),
+            h('option', { value: 'none' }, '不显示')
+          )
+        ),
+        h(
+          'div',
+          { className: 'dsv-settings-hint' },
+          '控制 Code Space 的入口出现在哪里。左侧栏入口与 DSH 原生导航行同样式（图标 + 文字）；选「不显示」时仍可用 Ctrl+Alt+I 或命令面板打开'
+        )
+      )
+    ),
 
     /* ── 外观 ─────────────────────────────────────────── */
     h(
