@@ -9,7 +9,7 @@ only when a release is actually published. Intermediate iterations are collapsed
 Version format: `MAJOR.MINOR.PATCH` where **PATCH starts at 10** (10, 11, 12 … 99) and always has two digits.
 When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` → `1.2.10`).
 
-## Unreleased
+## 1.1.12 — 2026.11.14
 
 ### Fixed
 
