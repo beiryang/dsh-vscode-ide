@@ -50,25 +50,39 @@ const ICON = h(
 
 export function Launcher() {
   const state = React.useSyncExternalStore(layout.subscribe, layout.getSnapshot)
-  const placement = React.useSyncExternalStore(prefs.subscribe, prefs.getSnapshot).entryPlacement
+  const { entryPlacement: placement, entryStyle: style } = React.useSyncExternalStore(
+    prefs.subscribe,
+    prefs.getSnapshot
+  )
 
   if (placement === 'header' || placement === 'none') return null
 
-  return h(
-    'div',
-    { className: 'dsv-launcher', 'data-dsv-slot': 'launcher' },
-    h(
-      'button',
-      {
-        className: 'dsv-nav-entry',
-        'data-open': state.open ? 'true' : 'false',
-        title: title(state.open),
-        onClick: toggleWorkbench
-      },
-      ICON,
-      h('span', { className: 'dsv-nav-text' }, SHORT_NAME)
-    )
-  )
+  const entry =
+    style === 'button'
+      ? h(
+          'button',
+          {
+            className: 'dsv-open-btn',
+            'data-primary': 'true',
+            'data-open': state.open ? 'true' : 'false',
+            title: title(state.open),
+            onClick: toggleWorkbench
+          },
+          SHORT_NAME
+        )
+      : h(
+          'button',
+          {
+            className: 'dsv-nav-entry',
+            'data-open': state.open ? 'true' : 'false',
+            title: title(state.open),
+            onClick: toggleWorkbench
+          },
+          ICON,
+          h('span', { className: 'dsv-nav-text' }, SHORT_NAME)
+        )
+
+  return h('div', { className: 'dsv-launcher', 'data-style': style, 'data-dsv-slot': 'launcher' }, entry)
 }
 
 /** 会话顶部那一排（对话/轨迹 右侧、和「标准模式」同排）的小入口 */

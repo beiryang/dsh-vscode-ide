@@ -4,6 +4,8 @@ export const CSS = `
 /* ── 插槽入口（DSH 左侧栏面板里渲染的内容） ── */
 /* 上下内边距必须对称：DSH 的列表行距是均等的，只要这里不对称，整行就会显得偏上/偏下 */
 .dsv-launcher { padding: 0 2px; }
+/* 「高亮按钮」样式沿用旧版留白 */
+.dsv-launcher[data-style='button'] { padding: 4px 10px; font-size: 12px; }
 
 /*
  * 左侧栏入口：和 DSH 自带导航行同一视觉重量 —— 透明底、16px 线条图标 + 文字，
@@ -37,6 +39,37 @@ export const CSS = `
 
 .dsv-nav-glyph { flex: none; opacity: 0.85; }
 .dsv-nav-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/*
+ * 「高亮按钮」样式：1.1.11 及以前的入口外观，保留给习惯它的用户
+ * （设置 → Code Space → 入口 → 入口样式）。整行铺满，30px 高，和 DSH 列表项行高一致。
+ */
+.dsv-open-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--dsv-accent, #0078d4);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: filter 0.12s ease;
+}
+
+.dsv-open-btn:hover { filter: brightness(1.08); }
+.dsv-open-btn:active { filter: brightness(0.94); }
+
+/* 工作台已打开时转为「按下去」的样式，提示再点一次会关闭 */
+.dsv-open-btn[data-open='true'] {
+  background: var(--dsv-panel-alt, #2d2d30);
+  color: var(--dsv-fg, #ddd);
+  border-color: var(--dsv-border, #3c3c3c);
+}
 
 /* ── 会话顶部入口：和「标准模式」那排小胶囊同尺寸 ── */
 .dsv-header-entry {

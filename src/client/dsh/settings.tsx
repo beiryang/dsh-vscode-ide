@@ -20,7 +20,8 @@ import {
   prefs,
   TERMINAL_FONT_MAX,
   TERMINAL_FONT_MIN,
-  type EntryPlacement
+  type EntryPlacement,
+  type EntryStyle
 } from '../kernel/prefs'
 import { runProbe } from '../kernel/probe'
 import { themeStore } from '../kernel/themes'
@@ -156,8 +157,29 @@ export function SettingsSection() {
         h(
           'div',
           { className: 'dsv-settings-hint' },
-          '控制 Code Space 的入口出现在哪里。左侧栏入口与 DSH 原生导航行同样式（图标 + 文字）；选「不显示」时仍可用 Ctrl+Alt+I 或命令面板打开'
+          '控制 Code Space 的入口出现在哪里；选「不显示」时仍可用 Ctrl+Alt+I 或命令面板打开'
         )
+      ),
+      h(
+        'div',
+        { className: 'dsv-settings-item' },
+        h('div', { className: 'dsv-settings-label' }, '入口样式'),
+        h(
+          'div',
+          { className: 'dsv-settings-row' },
+          h(
+            'select',
+            {
+              className: 'dsv-settings-select',
+              value: snapshot.entryStyle,
+              onChange: (event: React.ChangeEvent<HTMLSelectElement>) =>
+                prefs.set({ entryStyle: event.target.value as EntryStyle })
+            },
+            h('option', { value: 'native' }, '与导航行一致（图标 + 文字）'),
+            h('option', { value: 'button' }, '高亮按钮（1.1.11 及以前）')
+          )
+        ),
+        h('div', { className: 'dsv-settings-hint' }, '只影响左侧栏入口；会话顶部入口始终是小胶囊')
       )
     ),
 

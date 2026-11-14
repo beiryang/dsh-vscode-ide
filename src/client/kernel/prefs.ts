@@ -9,6 +9,9 @@
 
 export type EntryPlacement = 'sidebar' | 'header' | 'both' | 'none'
 
+/** 左侧栏入口的样式：与 DSH 导航行一致，或保留原来的高亮按钮 */
+export type EntryStyle = 'native' | 'button'
+
 export type Prefs = {
   /** 终端（xterm）字号，px */
   terminalFontSize: number
@@ -28,6 +31,8 @@ export type Prefs = {
   panelDock: 'right' | 'bottom'
   /** 入口位置：左侧栏 / 会话顶部 / 两者 / 都不显示（快捷键仍可用） */
   entryPlacement: EntryPlacement
+  /** 左侧栏入口样式：native = 和 DSH 导航行一致，button = 高亮按钮（旧样式） */
+  entryStyle: EntryStyle
 }
 
 /**
@@ -63,7 +68,8 @@ export const DEFAULT_PREFS: Prefs = {
   editorTabSize: 2,
   editorLineNumbers: true,
   panelDock: 'bottom',
-  entryPlacement: 'both'
+  entryPlacement: 'both',
+  entryStyle: 'native'
 }
 
 export const TERMINAL_FONT_MIN = 10
@@ -128,7 +134,8 @@ function load(): Prefs {
       editorTabSize: clampNumber(parsed.editorTabSize, EDITOR_TAB_MIN, EDITOR_TAB_MAX, DEFAULT_PREFS.editorTabSize),
       editorLineNumbers: asBoolean(parsed.editorLineNumbers, DEFAULT_PREFS.editorLineNumbers),
       panelDock: parsed.panelDock === 'right' ? 'right' : 'bottom',
-      entryPlacement: normalizePlacement(parsed.entryPlacement)
+      entryPlacement: normalizePlacement(parsed.entryPlacement),
+      entryStyle: parsed.entryStyle === 'button' ? 'button' : 'native'
     }
   } catch {
     return { ...DEFAULT_PREFS }
