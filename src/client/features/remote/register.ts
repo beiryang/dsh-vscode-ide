@@ -3,7 +3,7 @@
 import { registry } from '../../kernel/registry'
 import { dshInject, dshService, setDirectoryFlowState } from '../../kernel/dshContext'
 import { installRemoteWorkspaceAppearance } from './appearance'
-import { DirectoryFlow } from './DirectoryFlow'
+import { DirectoryFlow, type LocalBrowse } from './DirectoryFlow'
 import { RemoteProbe } from './RemoteProbe'
 import { RemoteView } from './RemoteView'
 import { CSS } from './styles'
@@ -41,13 +41,15 @@ export function registerRemoteFeature(): () => void {
           register?: (options: Record<string, unknown>, component: unknown) => () => void
         }
       | undefined
-    const uiWorkspace = scope.uiWorkspace as { pickDirectory?: () => Promise<string | null> } | undefined
+    const uiWorkspace = scope.uiWorkspace as UiWorkspaceLike | undefined
 
     if (!slots || typeof slots.inject !== 'function' || typeof slots.register !== 'function') {
       setDirectoryFlowState('slots 服务不可用')
       return
     }
 
+    // 每次 inject 都复用同一个适配对象：DirectoryFlow 以它作为探测 effect 的依赖。
+    const browseLocal = toLocalBrowse(uiWorkspace)
     const inject = () => ({
       pick: () => {
         const desktop = (globalThis as unknown as { __DSH_DIRECTORY_PICKER__?: { pick?: () => Promise<string | null> } })
@@ -55,7 +57,8 @@ export function registerRemoteFeature(): () => void {
         if (desktop && typeof desktop.pick === 'function') return desktop.pick()
         if (uiWorkspace && typeof uiWorkspace.pickDirectory === 'function') return uiWorkspace.pickDirectory()
         return Promise.resolve(null)
-      }
+      },
+      ...(browseLocal === undefined ? {} : { browseLocal })
     })
 
     const names = ['conversation.hero.workspace.directoryFlow', 'sidebar.workspaces.directoryFlow']
@@ -95,6 +98,42 @@ export function registerRemoteFeature(): () => void {
         dispose()
       } catch {
         /* ignore */
+      }
+    }
+  }
+}
+
+/** DSH `uiWorkspace` 里本流程用到的目录原语（宿主未合成 browse 能力时 list 会拒绝）。 */
+type UiWorkspaceLike = {
+  pickDirectory?: () => Promise<string | null>
+  listDirectory?: (path?: string) => Promise<{
+    path: string
+    crumbs?: Array<{ name: string; path: string }>
+    entries?: Array<{ name: string; path: string; hidden?: boolean }>
+  }>
+}
+
+/**
+ * 把 uiWorkspace 的列目录原语适配成「宿主应用内浏览」。
+ *
+ * 宿主合成 native 后端时 uiWorkspace.listDirectory 依旧存在、只是以
+ * directory-picker/unavailable 拒绝，由 DirectoryFlow 据此退回系统选择器。
+ */
+function toLocalBrowse(uiWorkspace: UiWorkspaceLike | undefined): LocalBrowse | undefined {
+  if (!uiWorkspace || typeof uiWorkspace.listDirectory !== 'function') return undefined
+  // 类方法不带绑定：先 bind 再交出去，否则调用时 this 丢失。
+  const listDirectory = uiWorkspace.listDirectory.bind(uiWorkspace)
+  return {
+    list: async (path) => {
+      const listing = await listDirectory(path)
+      const crumbs = Array.isArray(listing?.crumbs) ? listing.crumbs : []
+      const index = listing?.path ? crumbs.findIndex((crumb) => crumb.path === listing.path) : -1
+      return {
+        path: String(listing?.path ?? ''),
+        ...(index > 0 ? { parent: crumbs[index - 1].path } : {}),
+        entries: (listing?.entries ?? [])
+          .filter((entry) => entry.hidden !== true)
+          .map((entry) => ({ name: entry.name, path: entry.path, type: 'directory' }))
       }
     }
   }

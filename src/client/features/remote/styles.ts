@@ -271,7 +271,7 @@ export const CSS = `
 .dsv-dirflow-tab:last-child { border-radius: 0 6px 6px 0; border-left: none; }
 .dsv-dirflow-tab[data-active="true"] { background: #2f6feb; border-color: #2f6feb; color: #fff; }
 
-.dsv-dirflow-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; overflow: auto; }
+.dsv-dirflow-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; overflow: auto; overscroll-behavior: contain; }
 .dsv-dirflow-field { display: flex; flex-direction: column; gap: 4px; }
 .dsv-dirflow-label { font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); }
 .dsv-dirflow-hint { font-size: 12px; color: var(--dsw-alias-label-secondary, #57606a); line-height: 1.5; }
@@ -319,6 +319,7 @@ export const CSS = `
   min-height: 180px;
   max-height: 320px;
   overflow: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
