@@ -19,6 +19,8 @@ When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` →
 - 本地与远端的错误分开记录，只在各自的标签页显示；远端失败提供「重试」，切回本地即消失
 - 应用内目录浏览不再隐藏点目录：服务器上的 home（`/root`）常常只有 `.cache`/`.config`/`.npm`，
   过滤后会空成「没有子目录」，反而挡住选择
+- 深色主题下对话框白底白字：背景用了不存在的令牌 `--dsw-alias-bg-l1`，退化成了 `#fff`。改用
+  `--dsw-alias-bg-layer-1`（输入框用 `--dsw-alias-bg-base`），与 DSH 的深色主题一致
 
 ## 1.1.12 — 2026.11.14
 
