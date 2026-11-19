@@ -131,9 +131,9 @@ function toLocalBrowse(uiWorkspace: UiWorkspaceLike | undefined): LocalBrowse | 
       return {
         path: String(listing?.path ?? ''),
         ...(index > 0 ? { parent: crumbs[index - 1].path } : {}),
-        entries: (listing?.entries ?? [])
-          .filter((entry) => entry.hidden !== true)
-          .map((entry) => ({ name: entry.name, path: entry.path, type: 'directory' }))
+        // 不隐藏点目录：服务器上的 home（/root）常常只有 .cache/.config 这类目录，
+        // 过滤后列表会空成「没有子目录」，反而挡住选择；远程标签页同样不过滤。
+        entries: (listing?.entries ?? []).map((entry) => ({ name: entry.name, path: entry.path, type: 'directory' }))
       }
     }
   }
