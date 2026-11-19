@@ -34,6 +34,15 @@ What we do with it:
    terminal. Code Space's terminal connects with ssh2 directly and nothing in this profile points
    DSH's terminal at that wrapper, so generation is skipped unless the env var is set. The
    directory still holds `writeback-mtimes.json` (write-back freshness state).
+5. **Host trust follows the host's own admission** (`hostAdmitsRequest` + `requestTrust`): the
+   upstream fence samples `webStartup.trustedHosts` / `webRuntime.trustedHosts`, which only carry
+   startup arguments. A deployment that trusts its public authority through the `connection`
+   config entry (for example `cordis.patch.yml`) is then refused with `403 untrusted host` even
+   though `/api` accepts the same request. `requestTrust` now falls back to
+   `connection.admit(...)` — the admission the `/api` gateway uses — and treats only a `403`
+   source-policy rejection as untrusted, so the plugin's own credential model and its
+   `x-requested-with` requirement stay unchanged. Hosts without the `connection` service keep the
+   upstream behaviour.
 
 Dependencies required by the copied file (declared in the root `package.json` so the
 module keeps resolving after the upstream plugin is uninstalled): `yaml`,
