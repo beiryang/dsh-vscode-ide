@@ -62,8 +62,11 @@ export function DirectoryFlow(props: FlowProps) {
   const [syncPaths, setSyncPaths] = React.useState('')
   const [listing, setListing] = React.useState(false)
   const [creating, setCreating] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+  // 错误按标签页分开：远端 API 不可用/很慢时，本地目录页不该被它的超时污染。
+  const [localError, setLocalError] = React.useState<string | null>(null)
+  const [remoteError, setRemoteError] = React.useState<string | null>(null)
   const pickedOnce = React.useRef(false)
+  const profilesRequested = React.useRef(false)
   // 本地模式走哪条通路：unknown = 还没探测到宿主的合成结果
   const [localMode, setLocalMode] = React.useState<'unknown' | 'system' | 'browse'>('unknown')
   const [localPath, setLocalPath] = React.useState('')
@@ -74,34 +77,56 @@ export function DirectoryFlow(props: FlowProps) {
   React.useEffect(() => {
     if (!open) {
       pickedOnce.current = false
-      setError(null)
+      profilesRequested.current = false
+      setLocalError(null)
+      setRemoteError(null)
       setCreating(false)
       setLocalMode('unknown')
       setLocalPath('')
       setLocalParent(undefined)
       setLocalEntries([])
       setLocalListing(false)
+      setProfiles([])
+      setProfileId('')
       return
     }
-    setMode('remote')
-    setError(null)
-    void remoteApi<{ profiles: Profile[] }>('listProfiles', undefined, 8000).then((result) => {
-      if (!result.ok) {
-        setError(`读取连接列表失败：${result.error}`)
-        return
-      }
-      const list = result.value.profiles ?? []
-      setProfiles(list)
-      let preferred = ''
-      try {
-        preferred = localStorage.getItem('dsv:remote.selectedProfile') ?? ''
-      } catch {
-        preferred = ''
-      }
-      const chosen = list.find((profile) => profile.id === preferred) ?? list[0]
-      setProfileId(chosen?.id ?? '')
-    })
+    // 默认落在本地目录：它是无需远端 API 的常用动作。远端列表只在用户真正切到
+    // 「远程目录」时再拉，否则远端接口不可用的部署会先白等一次超时。
+    setMode('local')
+    setLocalError(null)
+    setRemoteError(null)
   }, [open])
+
+  /**
+   * 拉一次连接列表。失败时释放占位，用户才能在远程标签页重试；
+   * 错误只写进 remoteError，不污染本地目录页。
+   */
+  const loadProfiles = React.useCallback(async () => {
+    if (profilesRequested.current) return
+    profilesRequested.current = true
+    setRemoteError(null)
+    const result = await remoteApi<{ profiles: Profile[] }>('listProfiles', undefined, 8000)
+    if (!result.ok) {
+      profilesRequested.current = false
+      setRemoteError(`读取连接列表失败：${result.error}`)
+      return
+    }
+    const list = result.value.profiles ?? []
+    setProfiles(list)
+    let preferred = ''
+    try {
+      preferred = localStorage.getItem('dsv:remote.selectedProfile') ?? ''
+    } catch {
+      preferred = ''
+    }
+    const chosen = list.find((profile) => profile.id === preferred) ?? list[0]
+    setProfileId(chosen?.id ?? '')
+  }, [])
+
+  React.useEffect(() => {
+    if (!open || mode !== 'remote') return
+    void loadProfiles()
+  }, [open, mode, loadProfiles])
 
   /**
    * 列一级宿主目录。返回值区分「宿主不提供 browse 能力」和「真的读失败」，
@@ -112,7 +137,7 @@ export function DirectoryFlow(props: FlowProps) {
       const calls = props.browseLocal
       if (!calls) return 'refused'
       setLocalListing(true)
-      setError(null)
+      setLocalError(null)
       try {
         const listing = await calls.list(target)
         setLocalPath(listing.path)
@@ -121,7 +146,7 @@ export function DirectoryFlow(props: FlowProps) {
         return 'ok'
       } catch (cause) {
         if (isCapabilityRefusal(cause)) return 'refused'
-        setError(`读取宿主目录失败：${failureMessage(cause)}`)
+        setLocalError(`读取宿主目录失败：${failureMessage(cause)}`)
         return 'failed'
       } finally {
         setLocalListing(false)
@@ -167,18 +192,18 @@ export function DirectoryFlow(props: FlowProps) {
   const browse = React.useCallback(
     async (id: string, target: string) => {
       if (!id) {
-        setError('先选择一个连接')
+        setRemoteError('先选择一个连接')
         return
       }
       setListing(true)
-      setError(null)
+      setRemoteError(null)
       const result = await remoteApi<{ path: string; entries: DirEntry[] }>('listDir', {
         profileId: id,
         path: target || undefined
       })
       setListing(false)
       if (!result.ok) {
-        setError(`读取远端目录失败：${result.error}`)
+        setRemoteError(`读取远端目录失败：${result.error}`)
         return
       }
       setPath(result.value.path ?? target)
@@ -198,14 +223,14 @@ export function DirectoryFlow(props: FlowProps) {
   if (!open) return null
 
   const pickLocal = async () => {
-    setError(null)
+    setLocalError(null)
     if (!props.pick) {
       if (props.browseLocal) {
         setLocalMode('browse')
         void browseLocal(undefined)
         return
       }
-      setError('当前环境不支持系统文件夹选择器')
+      setLocalError('当前环境不支持系统文件夹选择器')
       return
     }
     try {
@@ -219,17 +244,17 @@ export function DirectoryFlow(props: FlowProps) {
         void browseLocal(undefined)
         return
       }
-      setError(failureMessage(cause))
+      setLocalError(failureMessage(cause))
     }
   }
 
   const createRemote = async () => {
     if (!profileId || !path.trim()) {
-      setError('请选择连接并打开一个远端目录')
+      setRemoteError('请选择连接并打开一个远端目录')
       return
     }
     setCreating(true)
-    setError(null)
+    setRemoteError(null)
     const scope = syncPaths
       .split(/[\n,]/)
       .map((item) => item.trim())
@@ -242,7 +267,7 @@ export function DirectoryFlow(props: FlowProps) {
     setCreating(false)
     if (!result.ok || !result.value?.mirrorPath) {
       const message = result.ok ? '创建远程工作区失败（没有返回镜像路径）' : result.error
-      setError(message)
+      setRemoteError(message)
       props.onError?.(message)
       return
     }
@@ -251,6 +276,8 @@ export function DirectoryFlow(props: FlowProps) {
 
   const parent = remoteParentPath(path)
   const dirs = entries.filter((entry) => entry.type === 'directory')
+
+  const currentError = mode === 'local' ? localError : remoteError
 
   // 本地标签页：宿主合成应用内浏览时渲染目录列表，系统选择器可用时保持原按钮。
   const localBody =
@@ -472,7 +499,20 @@ export function DirectoryFlow(props: FlowProps) {
             )
           ),
 
-      error ? h('div', { className: 'dsv-dirflow-error' }, error) : null
+      currentError
+        ? h(
+            'div',
+            { className: 'dsv-dirflow-error' },
+            currentError,
+            mode === 'remote'
+              ? h(
+                  'button',
+                  { className: 'dsv-dirflow-btn', style: { marginLeft: '8px' }, onClick: () => void loadProfiles() },
+                  '重试'
+                )
+              : null
+          )
+        : null
     )
   )
 }

@@ -228,7 +228,8 @@ export const CSS = `
   flex-direction: column;
   border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
   border-radius: 10px;
-  background: var(--dsw-alias-bg-l1, #fff);
+  /* DSH 的背景令牌叫 bg-layer-1；旧名 bg-l1 在深色主题下会退化成白底白字。 */
+  background: var(--dsw-alias-bg-layer-1, #fff);
   color: var(--dsw-alias-label-primary, #1f2328);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
   overflow: hidden;
@@ -281,7 +282,7 @@ export const CSS = `
   padding: 0 10px;
   border: 1px solid var(--dsw-alias-border-l2, #d0d7de);
   border-radius: 6px;
-  background: var(--dsw-alias-bg-l1, #fff);
+  background: var(--dsw-alias-bg-base, #fff);
   color: inherit;
   font-size: 13px;
   outline: none;
