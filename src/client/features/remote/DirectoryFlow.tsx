@@ -54,7 +54,9 @@ function failureMessage(error: unknown): string {
 
 export function DirectoryFlow(props: FlowProps) {
   const open = props.open === true
-  const [mode, setMode] = React.useState<'local' | 'remote'>('remote')
+  // 初始就是 local：首帧若仍是 remote，下面那个按 mode 触发的 effect 会在打开时
+  // 先发一次 listProfiles（要等 8s 超时），PR 里「打开不请求远端」的结论也就不成立。
+  const [mode, setMode] = React.useState<'local' | 'remote'>('local')
   const [profiles, setProfiles] = React.useState<Profile[]>([])
   const [profileId, setProfileId] = React.useState('')
   const [path, setPath] = React.useState('')

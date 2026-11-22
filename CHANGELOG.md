@@ -1,12 +1,3 @@
-## Unreleased
-
-### Fixed
-
-- 远程目录在「用 `connection` 配置可信域」的部署上一律 403 `untrusted host`：宿主半边的信任判定只采样
-  启动参数（`webStartup`/`webRuntime.trustedHosts`），看不到 `cordis.patch.yml` 里的
-  `connection.config.trustedHosts`。现在改为回落到宿主自己的准入（`connection.admit`，`/api` 网关用的
-  同一个 fence），只把 403 源站拒绝当成不可信；`x-requested-with` 仍强制，插件自己的凭据模型不变
-
 # Changelog
 
 All notable changes to this project are documented here.
@@ -18,18 +9,30 @@ only when a release is actually published. Intermediate iterations are collapsed
 Version format: `MAJOR.MINOR.PATCH` where **PATCH starts at 10** (10, 11, 12 … 99) and always has two digits.
 When patch reaches 99 the minor is bumped and patch restarts at 10 (`1.1.99` → `1.2.10`).
 
-## Unreleased
+## 1.1.13 — 2026.11.22
 
 ### Fixed
 
-- 「添加工作区」的默认标签页改回**本地目录**，并在切到「远程目录」时才请求连接列表：远端 API 不可用
+- 「添加工作区」默认落在**本地目录**，并且只在切到「远程目录」时才请求连接列表：远端 API 不可用
   或很慢的部署（远程访问 / 反向代理 + 只配了 `connection.trustedHosts` 的机器）不会再被一个用不到的
   请求拖住 8 秒，也不会把「读取连接列表失败」显示在本地目录页
+- 首次打开对话框仍会发一次 `listProfiles`：`mode` 的初始值还是 `remote`，打开时触发的效果会先看到
+  这一帧的值。初始值改成 `local` 后与上面的描述一致
 - 本地与远端的错误分开记录，只在各自的标签页显示；远端失败提供「重试」，切回本地即消失
 - 应用内目录浏览不再隐藏点目录：服务器上的 home（`/root`）常常只有 `.cache`/`.config`/`.npm`，
   过滤后会空成「没有子目录」，反而挡住选择
 - 深色主题下对话框白底白字：背景用了不存在的令牌 `--dsw-alias-bg-l1`，退化成了 `#fff`。改用
   `--dsw-alias-bg-layer-1`（输入框用 `--dsw-alias-bg-base`），与 DSH 的深色主题一致
+- 远程目录在「用 `connection` 配置可信域」的部署上一律 403 `untrusted host`：宿主半边的信任判定只采样
+  启动参数（`webStartup`/`webRuntime.trustedHosts`），看不到 `cordis.patch.yml` 里的
+  `connection.config.trustedHosts`。现在改为回落到宿主自己的准入（`connection.admit`，`/api` 网关用的
+  同一个 fence），只把 403 源站拒绝当成不可信；`x-requested-with` 仍强制，插件自己的凭据模型不变（#5）
+
+### Build
+
+- `package-lock.json` 与 `package.json` 重新同步：此前 4 个直接依赖（`@deepseek-ai/cosmokit`、
+  `@deepseek-ai/schemastery`、`@homebridge/node-pty-prebuilt-multiarch`、`yaml`）不在锁文件里，
+  `npm ci` 直接 EUSAGE，CI 全红
 
 ## 1.1.12 — 2026.11.14
 
