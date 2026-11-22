@@ -1,3 +1,12 @@
+## Unreleased
+
+### Fixed
+
+- 远程目录在「用 `connection` 配置可信域」的部署上一律 403 `untrusted host`：宿主半边的信任判定只采样
+  启动参数（`webStartup`/`webRuntime.trustedHosts`），看不到 `cordis.patch.yml` 里的
+  `connection.config.trustedHosts`。现在改为回落到宿主自己的准入（`connection.admit`，`/api` 网关用的
+  同一个 fence），只把 403 源站拒绝当成不可信；`x-requested-with` 仍强制，插件自己的凭据模型不变
+
 # Changelog
 
 All notable changes to this project are documented here.
